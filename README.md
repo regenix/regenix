@@ -41,7 +41,9 @@ Project `project1` already exists in regenix source.
 
 
 ```
-<? /* /src/project1/controllers/Application.php */
+<? 
+/* /src/project1/controllers/Application.php */
+
 namespace controllers
 
 use framework\mvc\Controller;
@@ -56,7 +58,7 @@ class Application extends Controller {
          /* Render template views/Application/index.{ext} and exit */
          $this->render();
 
-	 /* after code no work ...
+         /* after, the code will not work ...
           ... */
     }
 }
