@@ -57,9 +57,17 @@ class Request {
         $tmp = explode('?', $this->uri, 2);
         return (string)$tmp[1];
     }
-
-
+    
     /**
+     * get request path
+     * @return string
+     */
+    public function getPath(){
+        $tmp = explode('?', $this->uri, 1);
+        return (string)$tmp[0];
+    }
+
+        /**
      * @param string $url
      */
     public function setUri($url){

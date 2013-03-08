@@ -10,7 +10,7 @@ class Application extends Controller {
        
         $this->put("user", "test");
     }
-
+ 
     public function index(){
         
         $this->render();

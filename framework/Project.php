@@ -3,10 +3,10 @@
 namespace framework;
 
 use framework\io\File;
-use framework\utils\StringUtils;
 
 use framework\config\Configuration;
 use framework\config\PropertiesConfiguration;
+use framework\mvc\route\RouterConfiguration;
 use framework\config\ConfigurationReadException;
 
 use framework\mvc\template\TemplateLoader;
@@ -16,14 +16,10 @@ class Project {
     private $name;
     private $paths = array();
     
-    /**
-     * @var string
-     */
+    /** @var string */
     private $currentPath;
 
-    /**
-     * @var utils\ClassLoader
-     */
+    /** @var utils\ClassLoader */
     private $classLoader;
     
     /** @var string */
@@ -32,12 +28,13 @@ class Project {
     /** @var string */
     private $secret;
 
-    /**
-     * @var Configuration
-     */
+    /** @var PropertiesConfiguration */
     public $config;
+    
+    /** @var mvc\route\Router */
+    public $router;
 
-    /**
+        /**
      * @param string $projectName root directory name of project
      */
     public function __construct($projectName){
@@ -101,7 +98,7 @@ class Project {
         
         $request = mvc\Request::current();
         
-        foreach ($this->paths as $path => $url){
+        foreach ($this->paths as $url){
             if ( $request->isBase( $url ) )
                 return $url;
         }
@@ -135,6 +132,11 @@ class Project {
         if ( !$this->secret ){
             throw new ConfigurationReadException($this->config, '`app.secret` must be set as random string');
         }
+        
+        // routes
+        $routeConfig  = new RouterConfiguration(new File($this->getPath() . 'conf/route'));
+        $this->router = new mvc\route\Router();
+        $this->router->applyConfig($routeConfig);
         
         // classloader
         $this->classLoader = new utils\ClassLoader();

@@ -21,6 +21,7 @@ class Core {
 
     static function init(){
         // TODO
+        error_reporting(E_ALL ^ E_NOTICE);
         
         require 'framework/utils/ClassLoader.php';
         require 'framework/di/DI.php';
@@ -74,8 +75,13 @@ class Core {
     
     public static function proccessRoute(){
         
+        $project = Project::current();
+        
         $request = mvc\Request::current();
         $request->setBasePath( Project::current()->getUriPath() );
+        
+        $route = $project->router->route($request);
+        
         
         $controllerClass = '\controllers\\Application';
         $actionMethod    = 'index';
