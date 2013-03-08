@@ -3,7 +3,7 @@ Welcome to Regenix framework
 
 Regenix easy to use and learn MVC framework.
 
-Supports
+Features
 --------
 * MVC Architecture
 * Route for url
@@ -14,6 +14,14 @@ Supports
 * Lazy class loading
 * Session, Flash, etc.
 * More utils classes
+* Powerful modules, easy to write modules
+
+
+Requires
+--------
+
+* PHP 5.3 or greater
+* Apache, Nginx or another server
 
 
 Getting started
