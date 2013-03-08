@@ -41,6 +41,7 @@ Project `project1` already exists in regenix source.
 
 
 ```
+<? /* /src/project1/controllers/Application.php */
 namespace controllers
 
 use framework\mvc\Controller;
