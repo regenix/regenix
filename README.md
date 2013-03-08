@@ -11,7 +11,7 @@ Supports
 * Dependency injection
 * Validation based on tests
 * Twig, PHP or Smarty templates
-* Lazy loading of classes
+* Lazy class loading
 * Session, Flash, etc.
 * More utils classes
 
@@ -21,7 +21,7 @@ Getting started
 
 ### Installation
 
-Copy all source from git, create the directory project in 'src/<project_name>/'. 
+Copy all source from git, create the directory project in `src/<project_name>/`. 
 Project `project1` already exists in regenix source. 
 
 ### Project structure
@@ -37,8 +37,26 @@ Project `project1` already exists in regenix source.
 
 1. Create `Application.php` in `app/controllers/`
 2. Write `Application` class in `controllers` namespace, inherited from `framework\mvc\Controller` class
+3. Define controller public method `index`
 
+`
+namespace controllers
 
+use framework\mvc\Controller;
 
+class Application extends Controller {
 
+    public function index(){
+          
+         // add named variable to template
+         $this->put('var', 'Hello world');
+
+         // Render template views/Application/index.{ext} and exit
+         $this->render();
+
+	 // after code no work ...
+         // ...
+    }
+}
+`
 
