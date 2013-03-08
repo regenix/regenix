@@ -40,7 +40,8 @@ Project `project1` already exists in regenix source.
 3. Define controller public method `index`
 
 
-```namespace controllers
+```
+namespace controllers
 
 use framework\mvc\Controller;
 
@@ -48,14 +49,14 @@ class Application extends Controller {
 
     public function index(){
           
-         // add named variable to template
+         /* add named variable to template */
          $this->put('var', 'Hello world');
 
-         // Render template views/Application/index.{ext} and exit
+         /* Render template views/Application/index.{ext} and exit */
          $this->render();
 
-	 // after code no work ...
-         // ...
+	 /* after code no work ...
+          ... */
     }
 }
 ```
