@@ -35,7 +35,7 @@ Project `project1` already exists in regenix source.
 ### Project structure
 
 * conf/ - configuration directory
-** conf/application.conf - general config
+ * `conf/application.conf` - general config
 * public/ - directory for static content, images, javascript, css, etc.
 * app/controllers/ - controller directory
 * app/models/ - models directory, ORM
