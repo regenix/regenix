@@ -39,8 +39,8 @@ Project `project1` already exists in regenix source.
 2. Write `Application` class in `controllers` namespace, inherited from `framework\mvc\Controller` class
 3. Define controller public method `index`
 
-`
-namespace controllers
+
+```namespace controllers
 
 use framework\mvc\Controller;
 
@@ -58,5 +58,4 @@ class Application extends Controller {
          // ...
     }
 }
-`
-
+```
