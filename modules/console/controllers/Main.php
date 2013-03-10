@@ -8,6 +8,6 @@ class Main extends Controller{
     
     public function index(){
         
-        $this->renderText('OK');
+        $this->render();
     }
 }

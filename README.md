@@ -3,6 +3,8 @@ Welcome to Regenix framework
 
 Regenix easy to use and learn MVC framework.
 
+![regenix](http://develstudio.ru/upload/medialibrary/cf8/cf88db498096a1eba21c75f7910a4ef4.png)
+
 Features
 --------
 * MVC Architecture
