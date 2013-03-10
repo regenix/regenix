@@ -97,10 +97,13 @@ class Core {
             $controller = new $controllerClass;
             $reflection = new \ReflectionMethod($controller, $actionMethod);
             
-            if ( !$reflection->isPublic() || $reflection->isStatic() ){
+            if ( !$reflection->isPublic() || $reflection->isStatic() || $reflection->isFinal()
+                    || in_array(strtolower($actionMethod), mvc\Controller::$ignory, true) ){
                 throw new exceptions\CoreException(
                         utils\StringUtils::format('Can\'t use "%s.%s()" as action method', $controllerClass, $actionMethod));   
             }
+            
+            SDK::doBeforeRequest($controller);
             
             $controller->onBefore();
             $reflection->invoke($controller);
@@ -124,8 +127,10 @@ class Core {
             }
         }
         
-        if ( !$responseErr )
+        if ( !$responseErr ){
             $controller->onAfter();
+            SDK::doAfterRequest($controller);
+        }
         
         if ( !$response ){
             throw new exceptions\CoreException('Unknow type of controller result for response');
@@ -133,6 +138,7 @@ class Core {
         
         $response->send();
         $controller->onFinaly();
+        SDK::doFinalyRequest($controller);
     }
     
     

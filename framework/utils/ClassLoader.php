@@ -107,5 +107,6 @@ class ClassLoader {
 
 $loader = new ClassLoader();
 $loader->addNamespace('framework', '');
+$loader->addNamespace('modules', '');
 $loader->register();
 ClassLoader::$frameworkLoader = $loader;

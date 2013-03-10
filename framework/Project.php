@@ -173,8 +173,19 @@ class Project {
         
         // template
         $this->_registerTemplates();
+        
+        // modules
+        $this->_registerModules();
     }
     
+    private function _registerModules(){
+        
+        $modules = $this->config->getArray('app.modules');
+        foreach ($modules as $module){
+            modules\AbstractModule::register($module);
+        }
+    }
+
     private function _registerTemplates(){
         
         $default = $this->config->getString('template.default', 'Twig');

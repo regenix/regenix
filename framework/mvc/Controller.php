@@ -6,18 +6,20 @@ use framework\mvc\Response;
 use framework\utils\StringUtils;
 
 abstract class Controller {
+
+    static $ignory = array('onbefore', 'onafter', 'onfinaly');
     
     /** @var Response */
-    protected $response;
+    public $response;
 
     /** @var Request */
-    protected $request;
+    public $request;
     
     /** @var RequestURI */
-    protected $uri;
+    public $uri;
 
     /** @var \framework\cache\AbstractCache */
-    protected $cache;
+    public $cache;
 
 
     /** @var array */
@@ -44,21 +46,21 @@ abstract class Controller {
      * @param mixed $value
      * @return Controller
      */
-    protected function put($varName, $value){
+    final public function put($varName, $value){
         $this->renderArgs[ $varName ] = $value;
         return $this;
     }
     
-    protected function has($varName){
+    final public function has($varName){
         return isset($this->renderArgs[$varName]);
     }
 
-        /**
+    /**
      * put a variables for template
      * @param array $vars
      * @return Controller
      */
-    protected function putAll(array $vars){
+    final public function putAll(array $vars){
         foreach ($vars as $key => $value) {
             $this->put($key, $value);
         }
@@ -70,7 +72,7 @@ abstract class Controller {
         throw new results\Result($this->response);
     }
 
-    protected function redirect($url, $permanent = false){
+    final public function redirect($url, $permanent = false){
         
         $this->response
                 ->setStatus($permanent ? 301 : 302)
