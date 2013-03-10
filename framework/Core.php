@@ -96,8 +96,9 @@ class Core {
             $controller = new $controllerClass;
             $reflection = new \ReflectionMethod($controller, $actionMethod);
             
-            if ( !$reflection->isPublic() || $reflection->isStatic() || $reflection->isFinal()
-                    || in_array(strtolower($actionMethod), mvc\Controller::$ignory, true) ){
+            $declClass = $reflection->getDeclaringClass();
+            
+            if ( !$reflection->isPublic() || $reflection->isStatic() || $declClass->isAbstract()){
                 throw new exceptions\CoreException(
                         utils\StringUtils::format('Can\'t use "%s.%s()" as action method', $controllerClass, $actionMethod));   
             }

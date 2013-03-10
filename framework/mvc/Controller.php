@@ -8,8 +8,6 @@ use framework\utils\StringUtils;
 
 abstract class Controller {
 
-    static $ignory = array('onbefore', 'onafter', 'onfinaly');
-    
     /** @var Response */
     public $response;
 
@@ -47,12 +45,12 @@ abstract class Controller {
      * @param mixed $value
      * @return Controller
      */
-    final public function put($varName, $value){
+    public function put($varName, $value){
         $this->renderArgs[ $varName ] = $value;
         return $this;
     }
     
-    final public function has($varName){
+    public function has($varName){
         return isset($this->renderArgs[$varName]);
     }
 
@@ -61,7 +59,7 @@ abstract class Controller {
      * @param array $vars
      * @return Controller
      */
-    final public function putAll(array $vars){
+    public function putAll(array $vars){
         foreach ($vars as $key => $value) {
             $this->put($key, $value);
         }
@@ -73,7 +71,7 @@ abstract class Controller {
         throw new results\Result($this->response);
     }
 
-    final public function redirect($url, $permanent = false){
+    public function redirect($url, $permanent = false){
         
         $this->response
                 ->setStatus($permanent ? 301 : 302)
@@ -86,16 +84,16 @@ abstract class Controller {
      * switch template engine
      * @param string $templateEngine
      */
-    final public function setTemplateEngine($templateEngine){
+    public function setTemplateEngine($templateEngine){
         TemplateLoader::switchEngine($templateEngine);
     }
 
-        /**
+     /**
      * render template by action method name or template name
      * @param [string $template] default controller action method
      * @param [array $args] add vars to template
      */
-    final public function render($template = false, array $args = null){
+    public function render($template = false, array $args = null){
         
         if ( $template === false ) {
             $trace      = debug_backtrace();
@@ -111,7 +109,7 @@ abstract class Controller {
         $this->renderTemplate($template, $args);
     }
     
-    final public function renderTemplate($template, array $args = null){
+    public function renderTemplate($template, array $args = null){
         
         if ( $args )
             $this->putAll($args);
@@ -124,13 +122,13 @@ abstract class Controller {
     }
 
 
-    final public function renderText($text){
+    public function renderText($text){
         
         $this->response->setEntity( $text );
         $this->send();
     }
     
-    final public function renderHTML($html){
+    public function renderHTML($html){
         
         $this->response
                 ->setContentType(\framework\utils\MIMETypes::getByExt('html'))
@@ -139,7 +137,7 @@ abstract class Controller {
         $this->send();
     }
 
-    final public function renderJSON($object){
+    public function renderJSON($object){
         
         $this->response
                 ->setContentType( \framework\utils\MIMETypes::getByExt('json') )
@@ -153,7 +151,7 @@ abstract class Controller {
         $this->send();
     }
     
-    final public function renderXML($xml){
+    public function renderXML($xml){
         
         if ( $xml instanceof \SimpleXMLElement ){
             /** @var \SimpleXMLElement */
