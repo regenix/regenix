@@ -46,7 +46,6 @@ class Core {
 
     private static function _registerProjects(){
 
-        self::$projects['project1'] = new Project('project1');
         $dirs = scandir(Project::getSrcDir());
         foreach ($dirs as $dir){
             if ($dir == '.' || $dir == '..') continue;
