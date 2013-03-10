@@ -14,7 +14,8 @@ class TemplateLoader {
      */
     private static $default;
     
-    private static $engines;
+    private static $engines = array();
+    private static $registered = array();
 
     /** @var array */
     private static $paths = array();
@@ -62,6 +63,20 @@ class TemplateLoader {
         
         return $reflection;
     }
+    
+    public static function switchEngine($templateEngine){
+        
+        if ( !class_exists($templateEngine) ){
+            $templateEngine = '\\framework\\mvc\\template\\' . $templateEngine . 'Template';
+        }
+            
+        if ( self::$registered[ $templateEngine ] ){
+            $ext = self::getReflection($templateEngine);
+            self::setDefaultExt($ext->getConstant('FILE_EXT'));
+        } else {
+            TemplateLoader::register($templateEngine, true);
+        }
+    }
 
     public static function register($templateClass, $asDefault = FALSE){
     
@@ -73,6 +88,8 @@ class TemplateLoader {
         
         self::$engines[ $ext ] = $reflection->getName();
         ResponseProvider::register('\framework\mvc\providers\ResponseBaseTemplateProvider', $templateClass);
+        
+        self::$registered[ $templateClass ] = 1;
     }
 
     public static function setDefaultExt($ext){

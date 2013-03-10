@@ -2,14 +2,16 @@
 namespace controllers;
 
 use framework\mvc\Controller;
+use framework\mvc\template\BaseTemplate;
 
 class Application extends Controller {
 
- 
+    public function onBefore() {
+        // you can dynamic change template engine 
+        // $this->setTemplateEngine(BaseTemplate::SMARTY);
+    }
+
     public function index(){
-        
-        //$data = SystemCache::getFileContents('src/project1/conf/route');
-        //$data = file_get_contents('src/project1/conf/route');
         
         $this->put('var', 'Dmitriy');
         $this->render();

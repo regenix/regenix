@@ -4,6 +4,10 @@ namespace framework\mvc\template;
 
 abstract class BaseTemplate {
     
+    const TWIG = 'Twig';
+    const SMARTY = 'Smarty';
+    const PHP = 'PHP';
+
     protected $file;
     protected $name;
     protected $args = array();

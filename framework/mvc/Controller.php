@@ -3,6 +3,7 @@
 namespace framework\mvc;
 
 use framework\mvc\Response;
+use framework\mvc\template\TemplateLoader;
 use framework\utils\StringUtils;
 
 abstract class Controller {
@@ -82,6 +83,14 @@ abstract class Controller {
     }
 
     /**
+     * switch template engine
+     * @param string $templateEngine
+     */
+    final public function setTemplateEngine($templateEngine){
+        TemplateLoader::switchEngine($templateEngine);
+    }
+
+        /**
      * render template by action method name or template name
      * @param [string $template] default controller action method
      * @param [array $args] add vars to template

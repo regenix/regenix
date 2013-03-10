@@ -188,15 +188,11 @@ class Project {
 
     private function _registerTemplates(){
         
-        $default = $this->config->getString('template.default', 'Twig');
+        $default = $this->config->getString('template.default', 'Smarty');
         $classTemplate = $default;
         
-        if ( !class_exists($classTemplate) ){
-            $classTemplate = '\\framework\\mvc\\template\\' . $classTemplate . 'Template';
-        }
-        
+        TemplateLoader::switchEngine($classTemplate);
         TemplateLoader::registerPath( $this->getViewsPath() );
-        TemplateLoader::register($classTemplate, true);
     }
 
     private function _registerLoader(){
