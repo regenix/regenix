@@ -86,7 +86,7 @@ abstract class Controller {
      * @param [string $template] default controller action method
      * @param [array $args] add vars to template
      */
-    protected function render($template = false, array $args = null){
+    final public function render($template = false, array $args = null){
         
         if ( $template === false ) {
             $trace      = debug_backtrace();
@@ -102,7 +102,7 @@ abstract class Controller {
         $this->renderTemplate($template, $args);
     }
     
-    protected function renderTemplate($template, array $args = null){
+    final public function renderTemplate($template, array $args = null){
         
         if ( $args )
             $this->putAll($args);
@@ -115,13 +115,13 @@ abstract class Controller {
     }
 
 
-    protected function renderText($text){
+    final public function renderText($text){
         
         $this->response->setEntity( $text );
         $this->send();
     }
     
-    protected function renderHTML($html){
+    final public function renderHTML($html){
         
         $this->response
                 ->setContentType(\framework\utils\MIMETypes::getByExt('html'))
@@ -130,7 +130,7 @@ abstract class Controller {
         $this->send();
     }
 
-    protected function renderJSON($object){
+    final public function renderJSON($object){
         
         $this->response
                 ->setContentType( \framework\utils\MIMETypes::getByExt('json') )
@@ -144,7 +144,7 @@ abstract class Controller {
         $this->send();
     }
     
-    protected function renderXML($xml){
+    final public function renderXML($xml){
         
         if ( $xml instanceof \SimpleXMLElement ){
             /** @var \SimpleXMLElement */
