@@ -33,8 +33,10 @@ class TwigTemplate extends BaseTemplate {
         $options = array();
         if ( IS_PROD ){
             // TODO fix
-            //$options['cache'] = Core::$tempDir . 'templates/twig/';
+            $options['cache'] = Core::$tempDir . 'templates/twig/';
+            @mkdir( Core::$tempDir . 'templates/twig/', 0777, true );
         }
+        
         $options['debug'] = IS_DEV;
         
         $this->twig = new \Twig_Environment($this->loader, $options);
