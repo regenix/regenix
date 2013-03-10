@@ -41,6 +41,18 @@ class Request {
         
         return $req;
     }
+    
+    /** 
+     * @return string calc hash of request
+     */
+    public function getHash(){
+        
+        return sha1(
+                $this->method. '|' . 
+                $this->protocol . '|' . 
+                $this->host . '|' . 
+                $this->port . '|' . $this->uri );
+    }
 
     /**
      * @return string
@@ -63,7 +75,7 @@ class Request {
      * @return string
      */
     public function getPath(){
-        $tmp = explode('?', $this->uri, 1);
+        $tmp = explode('?', $this->uri, 2);
         return (string)$tmp[0];
     }
 

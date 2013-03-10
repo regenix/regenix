@@ -51,7 +51,7 @@ class Router {
                     $pattern .= '(' . substr($arg, $p + 1, strpos($arg, '>') - $p - 1) . ')';
                 } else {
                     $args[]   = substr($arg, 1);
-                    $pattern .= '(.+)';
+                    $pattern .= '([^/].+)';
                 }
             } else {
                 $pattern .= $arg;
@@ -63,7 +63,7 @@ class Router {
                 'path'    => $path,
                 'action'  => $action,
                 'params'  => $params,
-                'pattern' => '#' . $pattern . '#',
+                'pattern' => '#^' . $pattern . '$#',
                 'args'    => $args
         );
         
@@ -77,15 +77,39 @@ class Router {
 
     public function route(Request $request){
         
+        $isCached = IS_PROD;
+        
+        if ($isCached){
+            $cache = c('Cache');
+            
+            if ( $isCached = ($cache->isFast() && $cache->isAtomic()) ){
+                $hash  = $request->getHash();
+                $datas = $cache->get('$.system.routes');
+                
+                if ( $datas === null )
+                    $datas = array();
+                
+                $data = $datas[ $hash ];
+                
+                if ( $data !== null ){
+                    $this->args   = $data['args'];
+                    $this->action = $data['action']; 
+                    return;
+                }
+            }
+        }
+        
         $method = $request->getMethod();
-        $path   = $request->getUri();
+        $path   = $request->getPath();
         $format = '';
         $domain = $request->getHost();
         
         foreach($this->routes as $route){
             
             $args = self::routeMatches($route, $method, $path, $format, $domain);
-            if ( $args ){
+            
+            if ( $args !== null ){
+                
                 $this->args   = $args;
                 $this->action = $route['action'];
                 if (strpos($this->action, '{') !== false){
@@ -93,10 +117,15 @@ class Router {
                         $this->action = str_replace('{' . $key . '}', $value, $this->action);
                     }
                 }
+                
+                if ( $isCached ){
+                    $datas[ $hash ] = array('args'=>$args, 'action'=>$this->action);
+                    $cache->set('$.system.routes', $datas);
+                }
+                
+                break;
             }
         }
-        
-        dump($this);
     }
     
     private static function routeMatches($route, $method, $path, $format, $domain){
@@ -104,7 +133,10 @@ class Router {
         if ( $method === null || $route['method'] == '*' || $method == $route['method'] ){
             
             $args = array();
-            preg_match_all($route['pattern'], $path, $matches);
+            $result = preg_match_all($route['pattern'], $path, $matches);
+            if (!$result)
+                return null;
+            
             foreach($matches as $i => $value){
                 if ( $i === 0 )                    
                     continue;

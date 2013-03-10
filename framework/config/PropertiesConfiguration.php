@@ -4,6 +4,9 @@ namespace framework\config;
 
 class PropertiesConfiguration extends Configuration {
 
+    private $env = false;
+
+
     public function loadData(){
 
         $handle = fopen($this->file->getAbsolutePath(), "r+");
@@ -17,7 +20,11 @@ class PropertiesConfiguration extends Configuration {
         }
     }
     
-    
+    public function setEnv($env){
+        $this->env = $env;
+    }
+
+
     public function addProperty($key, $value){
         $this->data[ $key ] = $value;
     }
@@ -33,6 +40,9 @@ class PropertiesConfiguration extends Configuration {
 
     public function get($key, $default = null){
 
+        if ($this->env && isset($this->data[ $tmp = $this->env . '.' . $key ]) )
+            return $this->data[ $tmp ];
+        
         if ( $this->containsKey($key) )
             return $this->data[ $key ];
 

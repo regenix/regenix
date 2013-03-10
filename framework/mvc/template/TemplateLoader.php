@@ -34,6 +34,8 @@ class TemplateLoader {
                 $name .= '.' . $ext;
         }
         
+        $templateName = $name;
+        
         $engine = self::$engines[ $ext ];
         if ( !$engine )
             throw new TemplateEngineNotFoundException($ext);
@@ -42,18 +44,21 @@ class TemplateLoader {
         if ( $templateFile === false )
             throw new TemplateNotFoundException( $name );
         
-        $template = new $engine($templateFile);
+        $template = new $engine($templateFile, $templateName);
         return $template;
     }
     
     public static function getReflection($templateClass){
         
         $reflection = new \ReflectionClass($templateClass);
-        if ( !$reflection->isSubclassOf( '\framework\mvc\template\BaseTemplate' ) )
-            throw new CoreException(StringUtils::format('%s.class must be extends of BaseTemplate', $templateClass));
         
-        if ( !$reflection->isInstantiable() )
-            throw new CoreException(StringUtils::format('%s.class must be instantiable'));
+        if ( IS_DEV ){
+            if ( !$reflection->isSubclassOf( '\framework\mvc\template\BaseTemplate' ) )
+                throw new CoreException(StringUtils::format('%s.class must be extends of BaseTemplate', $templateClass));
+
+            if ( !$reflection->isInstantiable() )
+                throw new CoreException(StringUtils::format('%s.class must be instantiable'));
+        }
         
         return $reflection;
     }
@@ -81,6 +86,10 @@ class TemplateLoader {
             array_unshift(self::$paths, $path);
         else
             self::$paths[] = $path;
+    }
+    
+    public static function getPaths(){
+        return self::$paths;
     }
 
     public static function findFile($file){

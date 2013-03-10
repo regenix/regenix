@@ -16,6 +16,10 @@ abstract class Controller {
     /** @var RequestURI */
     protected $uri;
 
+    /** @var \framework\cache\AbstractCache */
+    protected $cache;
+
+
     /** @var array */
     private $renderArgs = array();
 
@@ -24,6 +28,7 @@ abstract class Controller {
         $this->request  = Request::current();
         $this->response = new Response();
         $this->uri      = new RequestURI();
+        $this->cache    = c('Cache');
         
         $this->onBefore();
     }

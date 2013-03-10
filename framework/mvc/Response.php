@@ -87,10 +87,10 @@ class Response {
             
             $providerClass = ResponseProvider::get(get_class($this->entity)); 
             
+            $provider = new $providerClass($this);
             if ( $headers )
                 $this->sendHeaders();
             
-            $provider = new $providerClass($this);
             $content  = $provider->getContent();
             
             if ( $content === null ){

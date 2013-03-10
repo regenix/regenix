@@ -5,13 +5,15 @@ namespace framework\mvc\template;
 abstract class BaseTemplate {
     
     protected $file;
+    protected $name;
     protected $args = array();
 
     const ENGINE_NAME = 'abstract';
     const FILE_EXT    = '???';
     
-    public function __construct($templateFile) {
+    public function __construct($templateFile, $templateName) {
         $this->file = $templateFile;
+        $this->name = $templateName;
     }
     
     public function getContent(){ return null; } 

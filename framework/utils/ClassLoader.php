@@ -12,6 +12,11 @@ class ClassLoader {
     private $classPaths = array();
     private $namespaces = array();
     
+    /** @var \framework\cache\AbstractCache */
+    private $cache = null;
+    private $isCached = false;
+
+
     static $classCount = 0;
 
 
@@ -19,7 +24,6 @@ class ClassLoader {
      * @var ClassLoader
      */
     public static $frameworkLoader;
-
 
 
     public function addClassPath($path, $prepend = false){
@@ -63,6 +67,8 @@ class ClassLoader {
             
             $file = $path . $class_rev . '.php';
             if ( file_exists($file) ){
+                
+                
                 return $file;
             }
         }
@@ -73,8 +79,11 @@ class ClassLoader {
             if ( $p !== false && $p < 2 ){
                 
                 $file = $item['path'] . $class_rev . '.php';
-                if (file_exists($file))
+                if (file_exists($file)){
+                    
+
                     return $file;
+                }
             }
         }
         
@@ -91,6 +100,7 @@ class ClassLoader {
     
     
     public static function load($class){
+        
         class_exists($class, true);
     }
 }
