@@ -91,7 +91,7 @@ class Core {
 
             // TODO optimize ?
             $tmp = explode('.', $router->action);
-            $controllerClass = 'controllers\\' . implode('\\', array_slice($tmp, 0, -1));
+            $controllerClass = implode('\\', array_slice($tmp, 0, -1));
             $actionMethod    = $tmp[ sizeof($tmp) - 1 ];
             
             $controller = new $controllerClass;

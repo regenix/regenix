@@ -12,6 +12,9 @@ class Configuration {
      * @var File
      */
     protected $file;
+    
+    /** @var File[] */
+    protected $files;
 
     /** @var array */
     protected $data = array();
@@ -22,11 +25,24 @@ class Configuration {
         throw new \Exception(StringUtils::format('Can`t loadData() in abstract configuration'));
     }
 
-    public function __construct(File $file = null){
+    /**
+     * 
+     * @param \framework\io\File $file|array files
+     */
+    public function __construct($file){
 
-        $this->setFile($file);
-        if ( $file != null )
-            $this->load();
+        if (is_array($file)){
+            
+            $this->file = null;
+            $this->files = $file;
+            if (count($file) > 0)
+                $this->load();
+            
+        } else {
+            $this->setFile($file);
+            if ( $file != null )
+                $this->load();
+        }
     }
 
     public function setFile(File $file){
@@ -36,13 +52,15 @@ class Configuration {
     public function load(){
 
         $this->clear();
-
-        if ($this->file == null || !$this->file->canRead() ){
-            
-            //throw new ConfigurationReadException($this, "can't open file " . $this->file);
-            throw new FileIOException( $this->file );
-        } else
+        if ( $this->files ){
             $this->loadData();
+        } else {
+            if ($this->file == null || !$this->file->canRead() ){
+                //throw new ConfigurationReadException($this, "can't open file " . $this->file);
+                throw new FileIOException( $this->file );
+            } else
+                $this->loadData();
+        }
     }
 
 

@@ -23,7 +23,7 @@ class SmartyTemplate extends BaseTemplate {
             require 'framework/libs/Smarty/Smarty.class.php';  
             
             self::$smarty = new \Smarty();
-            self::$smarty->debugging = IS_DEV;
+            //self::$smarty->debugging = IS_DEV;
             
             $compilerDir = Core::$tempDir . 'templates/smarty/compile/';
             if ( !file_exists($compilerDir) ){

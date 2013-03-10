@@ -4,10 +4,15 @@ namespace framework\modules;
 
 use framework\mvc\route\Router;
 use framework\exceptions\CoreException;
+use framework\io\File;
 
 abstract class AbstractModule {
     
-    static $instances = array();
+    
+    protected $uid;
+
+
+    static $modules = array();
 
     // abstract
     abstract public function getName();
@@ -18,6 +23,25 @@ abstract class AbstractModule {
     public function onRoute(Router $router){}
     
 
+    /**
+     * get route file
+     * @return \framework\io\File
+     */
+    final public function getRouteFile(){
+        
+        return new File( $this->getPath() . 'conf/route' );
+    }
+    
+    /**
+     * get module path
+     * @return string
+     */
+    final public function getPath(){
+        
+        return 'modules/' . $this->uid . '/';
+    }
+
+
     // statics
     
     /**
@@ -27,18 +51,19 @@ abstract class AbstractModule {
      */
     public static function register($moduleName){
         
-        if ( self::$instances[ $moduleName ] )
+        if ( self::$modules[ $moduleName ] )
             return false;
         
         $bootstrapName = '\\modules\\' . $moduleName . '\\Module';
         
         try {
             $module = new $bootstrapName();
+            $module->uid = $moduleName;
         } catch (framework\exceptions\ClassNotFoundException $e){
             throw CoreException::formated('Unload Module.php class of `%s` module', $module);
         }
         
-        self::$instances[ $moduleName ] = $module;
+        self::$modules[ $moduleName ] = $module;
         return true;
     }
 }

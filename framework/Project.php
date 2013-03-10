@@ -165,9 +165,6 @@ class Project {
             }
         }
         
-        // route
-        $this->_registerRoute();
-        
         // classloader
         $this->_registerLoader();
         
@@ -176,6 +173,9 @@ class Project {
         
         // modules
         $this->_registerModules();
+        
+        // route
+        $this->_registerRoute();
     }
     
     private function _registerModules(){
@@ -224,7 +224,14 @@ class Project {
         
         if ( $this->router === null ){
             
-            $routeConfig  = new RouterConfiguration($routeFile);
+            $routeFiles   = array();
+            foreach (modules\AbstractModule::$modules as $name => $module){
+                $routeFiles['\\modules\\' . $name . '\\controllers\\'] = $module->getRouteFile();
+            }
+            
+            $routeFiles[] = $routeFile;
+            
+            $routeConfig  = new RouterConfiguration($routeFiles);
             $this->router = new mvc\route\Router();
             $this->router->applyConfig($routeConfig);
             
