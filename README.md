@@ -24,6 +24,7 @@ Requires
 
 * PHP 5.3 or greater
 * Apache, Nginx or another server
+* Mod_rewrite enable
 
 
 Getting started

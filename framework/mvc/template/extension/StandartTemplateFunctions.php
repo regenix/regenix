@@ -12,6 +12,7 @@ abstract class StandartTemplateFunctions extends TemplateFunctions {
     }
 
     final public static function src($args){
+        
         return APP_PUBLIC_PATH . ($args['_arg'] ? $args['_arg'] : $args['file']);
     }
 
