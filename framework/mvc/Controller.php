@@ -34,11 +34,27 @@ abstract class Controller {
         $this->onBefore();
     }
 
-    public function onBefore(){}
-    public function onAfter(){}
-    public function onFinaly(){} 
-    public function onException(\Exception $e){}
+    protected function onBefore(){}
+    protected function onAfter(){}
+    protected function onFinaly(){} 
+    protected function onException(\Exception $e){}
     
+    public function callBefore(){
+        $this->onBefore();
+    }
+    
+    public function callAfter(){
+        $this->onAfter();
+    }
+    
+    public function callFinaly(){
+        $this->onFinaly();
+    }
+    
+    public function callException(\Exception $e){
+        $this->onException($e);
+    }
+
     /**
      * put a variable for template
      * @param string $varName

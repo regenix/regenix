@@ -106,14 +106,14 @@ class Core {
             
             $declClass = $reflection->getDeclaringClass();
             
-            if ( !$reflection->isPublic() || $reflection->isStatic() || $declClass->isAbstract()){
+            if ( $declClass->isAbstract() ){
                 throw new exceptions\CoreException(
                         utils\StringUtils::format('Can\'t use "%s.%s()" as action method', $controllerClass, $actionMethod));   
             }
             
             SDK::doBeforeRequest($controller);
             
-            $controller->onBefore();
+            $controller->callBefore();
             $reflection->invoke($controller);
             
         } catch (Result $result){
@@ -122,7 +122,7 @@ class Core {
             
             if ( $controller ){
                 try {
-                    $responseErr = $controller->onException($e);
+                    $responseErr = $controller->callException($e);
                 } catch (Result $result){
                     $responseErr = $result->getResponse();
                 }
@@ -136,7 +136,7 @@ class Core {
         }
         
         if ( !$responseErr ){
-            $controller->onAfter();
+            $controller->callAfter();
             SDK::doAfterRequest($controller);
         }
         
@@ -145,7 +145,7 @@ class Core {
         }
         
         $response->send();
-        $controller->onFinaly();
+        $controller->callFinaly();
         SDK::doFinalyRequest($controller);
     }
     

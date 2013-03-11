@@ -10,6 +10,7 @@ Features
 * MVC Architecture
 * Route for url
 * Multiple projects on a single core 
+* RESTfull services
 * Dependency injection
 * Validation based on tests
 * Twig, PHP or Smarty templates
