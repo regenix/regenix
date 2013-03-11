@@ -141,8 +141,11 @@ class Project {
         $this->mode   = strtolower($this->config->getString('app.mode', 'dev'));
         define('IS_PROD', $this->isProd());
         define('IS_DEV', $this->isDev());
-        define('APP_MODE', $this->mode);        
+        define('APP_MODE', $this->mode);     
         $this->config->setEnv( $this->mode );
+        
+        define('APP_PUBLIC_PATH', $this->config->get('app.public', '/public/' . $this->name . '/'));
+        TemplateLoader::setAssetPath('/src/' . $this->name . '/public/');        
         
         $this->secret = $this->config->getString('app.secret');
         if ( !$this->secret ){

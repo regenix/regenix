@@ -1,13 +1,15 @@
-<?php
+<?php namespace modules\console\controllers;
 
-namespace modules\console\controllers;
+use framework\modules\ModuleController;
 
-use framework\mvc\Controller;
-
-class Main extends Controller{
+class Main extends ModuleController {
     
+    public function onBefore() {
+        parent::onBefore();
+        $this->setTemplateEngine('Twig');
+    }
+
     public function index(){
-        
-        $this->render();
+        $this->render('Main/index');
     }
 }

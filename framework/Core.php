@@ -34,10 +34,18 @@ class Core {
         self::_registerProjects();
         self::_registerCurrentProject();
         
-        TemplateLoader::register('\framework\mvc\template\PHPTemplate');
-        TemplateLoader::registerPath(self::getFrameworkPath() . 'views/', false);
+        self::_registerTemplate();
         
         register_shutdown_function(array('\framework\Core','shutdown'), self::$__project);
+    }
+    
+    private static function _registerTemplate(){
+        
+        TemplateLoader::register('\framework\mvc\template\PHPTemplate');
+        TemplateLoader::registerFunctions('\framework\mvc\template\extension\StandartTemplateFunctions');
+        
+        TemplateLoader::registerPath(ROOT . 'modules/', false);
+        TemplateLoader::registerPath(self::getFrameworkPath() . 'views/', false);
     }
 
     private static function _registerLogger(){
@@ -144,7 +152,7 @@ class Core {
     
     public static function getFrameworkPath(){
         
-        return 'framework/';
+        return ROOT . 'framework/';
     }
     
     public static function shutdown(Project $project){

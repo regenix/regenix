@@ -20,8 +20,6 @@ class TwigTemplate extends BaseTemplate {
 
     public function __construct($templateFile, $templateName) {
         
-        parent::__construct($templateFile, $templateName);
-        
         if ( !self::$loaded ){
             require 'framework/libs/Twig/Autoloader.php';
             \Twig_Autoloader::register();  
@@ -38,42 +36,23 @@ class TwigTemplate extends BaseTemplate {
         }
         
         $options['debug'] = IS_DEV;
-        
         $this->twig = new \Twig_Environment($this->loader, $options);
-        $exts = new TwigExtension($this->twig);
+        parent::__construct($templateFile, $templateName);
     }
     
     public function render() {
         
         echo $this->twig->render($this->name, $this->args);
     }
-}
 
-
-class TwigExtension {
-    
-    public function __construct(\Twig_Environment $twig) {
+    public function registerFunction($name, $callback, $className) {
         
-        foreach ($this->getFunctions() as $func){
-            $twig->addFunction($func);
-        }
-    }
-
-    public function getFunctions() {
-        return array(
-            new \Twig_SimpleFunction('path', array($this, 'function_path'))
-        );
-    }
-    
-    
-    /*** functions ***/
-    
-    /**
-     * reverse routing action to url
-     * @param string $arg
-     * @return string
-     */
-    public function function_path($arg, array $args = array()){
-        return $arg . '('. implode(', ', $args) .')';
+        $this->twig->addFunction($name, new \Twig_SimpleFunction($name, 
+                function($arg, array $args = array()) use ($callback){
+                    $args['_arg'] = $arg;
+                    return call_user_func( $callback, $args );
+                }
+        , array('pre_escape' => false, 'preserves_safety' => false)));
+        
     }
 }

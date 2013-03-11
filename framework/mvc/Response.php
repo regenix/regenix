@@ -91,6 +91,7 @@ class Response {
             if ( $headers )
                 $this->sendHeaders();
             
+            $provider->onBeforeRender();
             $content  = $provider->getContent();
             
             if ( $content === null ){

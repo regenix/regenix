@@ -19,6 +19,12 @@ class TemplateLoader {
 
     /** @var array */
     private static $paths = array();
+    
+    /** @var string */
+    public static $ASSET_PATH;
+    
+    /** @var TemplateFunctions[] */
+    public static $FUNCTIONS = array();
 
     /**
      * @param string $name
@@ -77,6 +83,11 @@ class TemplateLoader {
             TemplateLoader::register($templateEngine, true);
         }
     }
+    
+    public static function setAssetPath($path){
+        
+        self::$ASSET_PATH = $path;
+    }
 
     public static function register($templateClass, $asDefault = FALSE){
     
@@ -118,5 +129,13 @@ class TemplateLoader {
         }
         
         return false;
+    }
+    
+    public static function registerFunctions($funcsClass, $prepend = false){
+        
+        if ( $prepend )
+            array_unshift(self::$FUNCTIONS, $funcsClass);
+        else
+            self::$FUNCTIONS[] = $funcsClass;
     }
 }

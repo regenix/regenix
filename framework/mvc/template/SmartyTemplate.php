@@ -17,8 +17,6 @@ class SmartyTemplate extends BaseTemplate {
 
     public function __construct($templateFile, $templateName) {
         
-        parent::__construct($templateFile, $templateName);
-        
         if ( !self::$loaded ){
             require 'framework/libs/Smarty/Smarty.class.php';  
             
@@ -38,16 +36,25 @@ class SmartyTemplate extends BaseTemplate {
             self::$smarty->setCompileDir($compilerDir);
             self::$smarty->setCacheDir($tempDir);
             
+            
             self::$loaded = true;
         }
         
         self::$smarty->setTemplateDir(TemplateLoader::getPaths());
+        
+        parent::__construct($templateFile, $templateName);
     }
+    
     
     public function render() {
         
         self::$smarty->clearAllAssign();
         self::$smarty->assign($this->args);
         self::$smarty->display($this->name);
+    }
+
+    public function registerFunction($name, $callback, $className) {
+        
+        self::$smarty->registerPlugin('function', $name, $callback);
     }
 }

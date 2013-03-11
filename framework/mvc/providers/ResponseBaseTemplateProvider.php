@@ -15,6 +15,11 @@ class ResponseBaseTemplateProvider extends ResponseProvider {
         $response->setContentType( 'text/html' );
     }
     
+    public function onBeforeRender(){
+        $this->template->onBeforeRender();
+    }
+
+
     public function getContent() {
         return $this->template->getContent();
     }
