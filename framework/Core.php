@@ -33,12 +33,21 @@ class Core {
         self::_registerLogger();
         self::_registerProjects();
         self::_registerCurrentProject();
+        self::_registerModel();
         
         self::_registerTemplate();
         
         register_shutdown_function(array('\framework\Core','shutdown'), self::$__project);
     }
     
+    private static function _registerModel(){
+        
+        /*require 'libs/Doctrine/Common/ClassLoader.php';
+        
+        $classLoader = new \Doctrine\Common\ClassLoader('Doctrine', self::getFrameworkPath() . 'libs/Doctrine/');
+        $classLoader->register();*/
+    }
+
     private static function _registerTemplate(){
         
         TemplateLoader::register('\framework\mvc\template\PHPTemplate');

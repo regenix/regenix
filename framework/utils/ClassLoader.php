@@ -6,6 +6,7 @@ require 'framework\utils\StringUtils.php';
 require 'framework\exceptions\CoreException.php';
 require 'framework\exceptions\ClassNotFoundException.php';
 
+define('CLASS_LOADER_USE_APC', extension_loaded('apc'));
 
 class ClassLoader {
 
@@ -52,8 +53,6 @@ class ClassLoader {
         
             if ( !class_exists($class, false) )
                 throw new ClassNotFoundException($class);
-            
-            self::$classCount += 1;
         }
     }
     
@@ -67,8 +66,6 @@ class ClassLoader {
             
             $file = $path . $class_rev . '.php';
             if ( file_exists($file) ){
-                
-                
                 return $file;
             }
         }
@@ -80,8 +77,7 @@ class ClassLoader {
                 
                 $file = $item['path'] . $class_rev . '.php';
                 if (file_exists($file)){
-                    
-
+                       
                     return $file;
                 }
             }
@@ -105,7 +101,27 @@ class ClassLoader {
     }
 }
 
-$loader = new ClassLoader();
+class FrameworkClassLoader extends ClassLoader {
+    
+    public function loadClass($class){
+        
+        $file = str_replace('\\', DIRECTORY_SEPARATOR, $class) . '.php';
+        
+        if (file_exists($file)){
+            require $file;
+        
+            if ( !class_exists($class, false) )
+                throw new ClassNotFoundException($class);
+        }
+    }
+    
+    public function findFile($class){
+        $file = str_replace('\\', DIRECTORY_SEPARATOR, $class) . '.php';
+        return file_exists($file) ? $file : null;
+    }
+}
+
+$loader = new FrameworkClassLoader();
 $loader->addNamespace('framework', '');
 $loader->addNamespace('modules', '');
 $loader->register();
