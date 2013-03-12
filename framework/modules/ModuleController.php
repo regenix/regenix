@@ -20,7 +20,7 @@ abstract class ModuleController extends Controller {
         $class  = explode('\\', get_class($this), 3);
         $this->module = $class[1];
         
-        TemplateLoader::setAssetPath('/modules/' . $this->module . '/public/');
+        TemplateLoader::setAssetPath('/modules/' . $this->module . '/assets/');
     }
 
 

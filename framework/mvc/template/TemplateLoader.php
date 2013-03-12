@@ -41,7 +41,7 @@ class TemplateLoader {
             
             // current project
             $project = Project::current();
-            self::setAssetPath('/src/' . $project->getName() . '/public/');        
+            self::setAssetPath('/src/' . $project->getName() . '/assets/');        
             
             $default = $project->config->getString('template.default', 'Smarty');
             $classTemplate = $default;
