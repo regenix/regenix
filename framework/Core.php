@@ -3,7 +3,6 @@ namespace framework {
 
 use framework\di\DI;
 use framework\mvc\results\Result;
-use framework\mvc\template\TemplateLoader;
 
 class Core {
     
@@ -26,7 +25,12 @@ class Core {
         // TODO
         error_reporting(E_ALL ^ E_NOTICE);
         
+        // register class loader
         require 'framework/utils/ClassLoader.php';
+        $loader = new utils\FrameworkClassLoader();
+        $loader->register();
+        
+        // register system
         require 'framework/cache/InternalCache.php';
         require 'framework/di/DI.php';
         
@@ -34,8 +38,6 @@ class Core {
         self::_registerProjects();
         self::_registerCurrentProject();
         self::_registerModel();
-        
-        self::_registerTemplate();
         
         register_shutdown_function(array('\framework\Core','shutdown'), self::$__project);
     }
@@ -46,15 +48,6 @@ class Core {
         
         $classLoader = new \Doctrine\Common\ClassLoader('Doctrine', self::getFrameworkPath() . 'libs/Doctrine/');
         $classLoader->register();*/
-    }
-
-    private static function _registerTemplate(){
-        
-        TemplateLoader::register('\framework\mvc\template\PHPTemplate');
-        TemplateLoader::registerFunctions('\framework\mvc\template\extension\StandartTemplateFunctions');
-        
-        TemplateLoader::registerPath(ROOT . 'modules/', false);
-        TemplateLoader::registerPath(self::getFrameworkPath() . 'views/', false);
     }
 
     private static function _registerLogger(){

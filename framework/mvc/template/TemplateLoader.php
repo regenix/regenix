@@ -4,10 +4,14 @@ namespace framework\mvc\template;
 
 use framework\exceptions\CoreException;
 use framework\utils\StringUtils;
-use framework\utils\FileUtils;
 use framework\mvc\providers\ResponseProvider;
+use framework\Core;
+use framework\Project;
 
 class TemplateLoader {
+
+    private static $lazyLoaded = false;
+
 
     /**
      * @var string
@@ -26,7 +30,30 @@ class TemplateLoader {
     /** @var TemplateFunctions[] */
     public static $FUNCTIONS = array();
 
-    /**
+    public static function __lazyLoad(){
+        
+        if ( !self::$lazyLoaded ){
+            
+            self::registerFunctions('\framework\mvc\template\extension\StandartTemplateFunctions');
+        
+            self::registerPath(ROOT . 'modules/', false);
+            self::registerPath(Core::getFrameworkPath() . 'views/', false);
+            
+            // current project
+            $project = Project::current();
+            self::setAssetPath('/src/' . $project->getName() . '/public/');        
+            
+            $default = $project->config->getString('template.default', 'Smarty');
+            $classTemplate = $default;
+
+            self::switchEngine($classTemplate);
+            self::registerPath( $project->getViewsPath() );                      
+        
+            self::$lazyLoaded = true;
+        }
+    }
+
+        /**
      * @param string $name
      * @return BaseTemplate
      */
@@ -34,7 +61,7 @@ class TemplateLoader {
     
         $name   = str_replace('\\', '/', $name);
         
-        $ext = FileUtils::getExtension($name);
+        $ext = pathinfo($name, PATHINFO_EXTENSION);
         if ( !$ext && self::$default ){
             $ext  = self::$default;
             if ( $ext )
@@ -139,3 +166,6 @@ class TemplateLoader {
             self::$FUNCTIONS[] = $funcsClass;
     }
 }
+
+
+TemplateLoader::__lazyLoad();

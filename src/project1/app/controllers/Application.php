@@ -9,9 +9,8 @@ class Application extends Controller {
    
     public function index(){
         
-        $this->renderText('OK');
+        $this->renderText( 'OK' );
         
-        $this->put('var', 'Dmitriy');
         $this->render();
     }
 }

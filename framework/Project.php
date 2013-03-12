@@ -145,8 +145,6 @@ class Project {
         $this->config->setEnv( $this->mode );
         
         define('APP_PUBLIC_PATH', $this->config->get('app.public', '/public/' . $this->name . '/'));
-        TemplateLoader::setAssetPath('/src/' . $this->name . '/public/');        
-        
         $this->secret = $this->config->getString('app.secret');
         if ( !$this->secret ){
             throw new ConfigurationReadException($this->config, '`app.secret` must be set as random string');
@@ -156,23 +154,30 @@ class Project {
         Core::setTempDir( $this->getPath() . 'tmp/' );
         
         // cache
-        DI::define('Cache', '\\framework\\cache\\DisableCache', true);
         if ( $this->config->getBoolean('cache.enable', true) ){
+            $done = false;
             $detect = $this->config->getArray('cache.detect');
             foreach ($detect as $el){
                 $class = '\\framework\\cache\\' . $el . 'Cache';
                 if ( call_user_func($class . '::canUse') ){
                     DI::define('Cache', $class, true);
+                    $done = true;
                     break;
                 }
             }
+            
+            if ( !$done )
+                DI::define('Cache', '\\framework\\cache\\DisableCache', true);
+            
+        } else {
+            DI::define('Cache', '\\framework\\cache\\DisableCache', true);
         }
         
         // classloader
         $this->_registerLoader();
         
         // template
-        $this->_registerTemplates();
+        //$this->_registerTemplates();
         
         // modules
         $this->_registerModules();
@@ -187,15 +192,6 @@ class Project {
         foreach ($modules as $module){
             modules\AbstractModule::register($module);
         }
-    }
-
-    private function _registerTemplates(){
-        
-        $default = $this->config->getString('template.default', 'Smarty');
-        $classTemplate = $default;
-        
-        TemplateLoader::switchEngine($classTemplate);
-        TemplateLoader::registerPath( $this->getViewsPath() );
     }
 
     private function _registerLoader(){

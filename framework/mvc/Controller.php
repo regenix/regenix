@@ -47,11 +47,11 @@ abstract class Controller {
         $this->onAfter();
     }
     
-    public function callFinaly(){
+    final public function callFinaly(){
         $this->onFinaly();
     }
     
-    public function callException(\Exception $e){
+    final public function callException(\Exception $e){
         $this->onException($e);
     }
 

@@ -49,6 +49,7 @@ class ClassLoader {
         $file = $this->findFile($class);
         
         if ( $file != null ){
+            
             require $file;
         
             if ( !class_exists($class, false) )
@@ -96,33 +97,37 @@ class ClassLoader {
     
     
     public static function load($class){
-        
         class_exists($class, true);
     }
 }
 
+/**
+ * Faster optimize classloader for framework classes
+ */
 class FrameworkClassLoader extends ClassLoader {
+    
+    static $classes = array();
     
     public function loadClass($class){
         
-        $file = str_replace('\\', DIRECTORY_SEPARATOR, $class) . '.php';
+        // optimize
+        $check = strpos($class, 'framework\\') === 0 || strpos($class, 'modules\\') === 0;
         
-        if (file_exists($file)){
-            require $file;
-        
-            if ( !class_exists($class, false) )
-                throw new ClassNotFoundException($class);
+        if ( $check ){
+            
+            self::$classes[] = $class;
+            require str_replace('\\', DIRECTORY_SEPARATOR, $class) . '.php';
+            return true;
         }
     }
-    
+
     public function findFile($class){
         $file = str_replace('\\', DIRECTORY_SEPARATOR, $class) . '.php';
         return file_exists($file) ? $file : null;
     }
+    
+    public function register($prepend = false) {
+        parent::register( $prepend );
+        ClassLoader::$frameworkLoader = $this;
+    }
 }
-
-$loader = new FrameworkClassLoader();
-$loader->addNamespace('framework', '');
-$loader->addNamespace('modules', '');
-$loader->register();
-ClassLoader::$frameworkLoader = $loader;

@@ -112,4 +112,15 @@ class URL {
         $tmp = explode('?', $uri, 2);
         return self::build( $host, $tmp[0], $tmp[1], $protocol, $port );
     }
+    
+    /**
+     * @param string $query URI query
+     * @return array
+     */
+    public static function parseQuery($query){
+        $result = array();
+        parse_str($query, $result);
+        
+        return $result;
+    }
 }
