@@ -49,12 +49,11 @@ class PropertiesConfiguration extends Configuration {
     public function get($key, $default = null){
 
         if ($this->env && isset($this->data[ $tmp = $this->env . '.' . $key ]) )
-            return $this->data[ $tmp ];
-        
-        if ( $this->containsKey($key) )
-            return $this->data[ $key ];
+            $value = $this->data[ $tmp ];
+        else if ( $this->containsKey($key) )
+            $value = $this->data[ $key ];
 
-        return $default;
+        return $value && $value != '!default' ? $value : $default;
     }
 
     public function getNumber($key, $default = 0){
@@ -75,7 +74,7 @@ class PropertiesConfiguration extends Configuration {
         if ( $this->containsKey($key) )
             return $this->data[ $key ] !== '' && $this->data[ $key ] != 0;
 
-        return $default !== false && $default !== '' && $default != 0;
+        return $default !== false && $default !== '' && $default != 0 && $default != 'off';
     }
 
     public function getString($key, $default = ""){
