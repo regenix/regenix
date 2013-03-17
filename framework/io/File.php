@@ -6,6 +6,8 @@ use framework\utils\MIMETypes;
 
 class File {
 
+    const type = __CLASS__;
+
     private $path;
     private $extension = null;
 

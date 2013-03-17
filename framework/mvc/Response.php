@@ -6,6 +6,8 @@ use framework\mvc\providers\ResponseProvider;
 
 class Response {
 
+    const type = __CLASS__;
+
     private $status;
     private $contentType;
     private $entity;

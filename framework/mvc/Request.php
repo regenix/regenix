@@ -7,6 +7,8 @@ use framework\utils\ArrayUtils;
 
 class Request {
 
+    const type = __CLASS__;
+
     protected $method = "GET";
     protected $uri    = "";
     protected $host   = "";

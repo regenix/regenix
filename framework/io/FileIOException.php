@@ -2,10 +2,12 @@
 
 namespace framework\io;
 
-use framework\utils\StringUtils;
+use framework\lang\String;
 use framework\io\File;
 
 class FileIOException extends \framework\exceptions\CoreException {
+
+    const type = __CLASS__;
 
     /**
      * @var string
@@ -15,6 +17,6 @@ class FileIOException extends \framework\exceptions\CoreException {
     public function __construct(File $file){
        
         $this->path = $file->getPath();
-        parent::__construct( StringUtils::format('File "%s" can\'t read', $file->getPath()) );
+        parent::__construct( String::format('File "%s" can\'t read', $file->getPath()) );
     }
 }

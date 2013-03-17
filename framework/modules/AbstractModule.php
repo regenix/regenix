@@ -7,7 +7,8 @@ use framework\exceptions\CoreException;
 use framework\io\File;
 
 abstract class AbstractModule {
-    
+
+    const type = __CLASS__;
     
     protected $uid;
 
@@ -22,6 +23,11 @@ abstract class AbstractModule {
     // on route reload
     public function onRoute(Router $router){}
     
+
+    public static function getCurrent(){
+        $tmp = explode('\\', get_called_class(), 3);
+        return self::$modules[ $tmp[1] ];
+    }
 
     /**
      * get route file
@@ -54,16 +60,20 @@ abstract class AbstractModule {
         if ( self::$modules[ $moduleName ] )
             return false;
         
+        self::$modules[ $moduleName ] = true;
         $bootstrapName = '\\modules\\' . $moduleName . '\\Module';
         
         try {
             $module = new $bootstrapName();
             $module->uid = $moduleName;
+            self::$modules[ $moduleName ] = $module;
+            
         } catch (framework\exceptions\ClassNotFoundException $e){
+            unset(self::$modules[ $moduleName ]);
             throw CoreException::formated('Unload Module.php class of `%s` module', $module);
         }
         
-        self::$modules[ $moduleName ] = $module;
+       
         return true;
     }
 }

@@ -6,6 +6,7 @@ use framework\io\File;
 
 use framework\config\Configuration;
 use framework\config\PropertiesConfiguration;
+use framework\mvc\ModelClassloader;
 use framework\mvc\route\RouterConfiguration;
 use framework\config\ConfigurationReadException;
 
@@ -13,6 +14,7 @@ use framework\mvc\template\TemplateLoader;
 use framework\di\DI;
 
 use framework\cache\SystemCache;
+use framework\lang\ClassLoader;
 
 class Project {
 
@@ -23,7 +25,7 @@ class Project {
     private $currentPath;
 
     /** @var utils\ClassLoader */
-    private $classLoader;
+    public $classLoader;
     
     /** @var string */
     private $mode = 'dev';
@@ -141,6 +143,8 @@ class Project {
         $this->mode   = strtolower($this->config->getString('app.mode', 'dev'));
         define('IS_PROD', $this->isProd());
         define('IS_DEV', $this->isDev());
+        define('IS_CORE_DEBUG', $this->config->getBoolean('core.debug'));
+
         define('APP_MODE', $this->mode);     
         $this->config->setEnv( $this->mode );
         
@@ -159,7 +163,7 @@ class Project {
             $detect = $this->config->getArray('cache.detect');
             foreach ($detect as $el){
                 $class = '\\framework\\cache\\' . $el . 'Cache';
-                if ( call_user_func($class . '::canUse') ){
+                if ( $class::canUse() ){
                     DI::define('Cache', $class, true);
                     $done = true;
                     break;
@@ -195,8 +199,12 @@ class Project {
     }
 
     private function _registerLoader(){
-        
-        $this->classLoader = new utils\ClassLoader();
+
+        // register model class loader
+        /*$modelLoader = new ModelClassloader($this);
+        $modelLoader->register();*/
+
+        $this->classLoader = new ClassLoader();
         $this->classLoader->addNamespace('controllers', $this->getPath() . 'app/');
         $this->classLoader->addNamespace('models', $this->getPath() . 'app/');
         

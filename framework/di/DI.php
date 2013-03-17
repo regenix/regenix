@@ -4,6 +4,8 @@ namespace framework\di {
     
     class DI {
 
+        const type = __CLASS__;
+
         static $dependencies = array();
         static $singletons   = array();
 

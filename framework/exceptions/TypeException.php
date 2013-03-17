@@ -1,12 +1,13 @@
 <?php
 namespace framework\exceptions;
 
-use framework\utils\StringUtils;
+use framework\lang\String;
 
 class TypeException extends CoreException {
-    
+
+    const type = __CLASS__;
     
     public function __construct($name, $type) {
-        parent::__construct(StringUtils::format('Argument "%s" must be `%s`', $name, $type));
+        parent::__construct(String::format('Argument "%s" must be `%s`', $name, $type));
     }
 }

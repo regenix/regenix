@@ -3,14 +3,14 @@ namespace framework {
 
 use framework\di\DI;
 use framework\mvc\results\Result;
+use framework\lang\FrameworkClassLoader;
 
-class Core {
+    class Core {
     
     /** @var string */
     public static $tempDir = 'tmp/';
     
     /**
-     *
      * @var array
      */
     private static $projects = array();
@@ -26,8 +26,8 @@ class Core {
         error_reporting(E_ALL ^ E_NOTICE);
         
         // register class loader
-        require 'framework/utils/ClassLoader.php';
-        $loader = new utils\FrameworkClassLoader();
+        require 'framework/lang/ClassLoader.php';
+        $loader = new FrameworkClassLoader();
         $loader->register();
         
         // register system
@@ -37,17 +37,13 @@ class Core {
         self::_registerLogger();
         self::_registerProjects();
         self::_registerCurrentProject();
-        self::_registerModel();
+        self::_registerDatabases();
         
         register_shutdown_function(array('\framework\Core','shutdown'), self::$__project);
     }
-    
-    private static function _registerModel(){
-        
-        /*require 'libs/Doctrine/Common/ClassLoader.php';
-        
-        $classLoader = new \Doctrine\Common\ClassLoader('Doctrine', self::getFrameworkPath() . 'libs/Doctrine/');
-        $classLoader->register();*/
+
+    private static function _registerDatabases(){
+
     }
 
     private static function _registerLogger(){
@@ -110,7 +106,7 @@ class Core {
             
             if ( $declClass->isAbstract() ){
                 throw new exceptions\CoreException(
-                        utils\StringUtils::format('Can\'t use "%s.%s()" as action method', $controllerClass, $actionMethod));   
+                        lang\String::format('Can\'t use "%s.%s()" as action method', $controllerClass, $actionMethod));
             }
             
             SDK::doBeforeRequest($controller);
@@ -148,7 +144,7 @@ class Core {
         
         $response->send();
         $controller->callFinaly();
-        SDK::doFinalyRequest($controller);
+        SDK::doFinallyRequest($controller);
     }
     
     

@@ -4,6 +4,8 @@ namespace framework\cache;
 
 abstract class AbstractCache {
 
+    const type = __CLASS__;
+
     const MAX_COUNT = 1000;
     
     const SPEED_SLOW     = 0;

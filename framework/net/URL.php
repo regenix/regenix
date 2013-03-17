@@ -4,6 +4,8 @@ namespace framework\net;
 
 class URL {
 
+    const type = __CLASS__;
+
     /**
      * @var string
      */

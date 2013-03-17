@@ -6,6 +6,8 @@ use framework\Core;
 
 class FileCache extends AbstractCache {
 
+    const type = __CLASS__;
+
     protected $speed  = self::SPEED_SLOW;
     protected $atomic = false;
 

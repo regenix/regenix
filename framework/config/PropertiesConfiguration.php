@@ -4,6 +4,8 @@ namespace framework\config;
 
 class PropertiesConfiguration extends Configuration {
 
+    const type = __CLASS__;
+
     private $env = false;
 
     public function loadData(){
@@ -71,10 +73,12 @@ class PropertiesConfiguration extends Configuration {
     }
 
     public function getBoolean($key, $default = false){
-        if ( $this->containsKey($key) )
-            return $this->data[ $key ] !== '' && $this->data[ $key ] != 0;
+        if ( $this->containsKey($key) ){
+            $value = $this->data[$key];
+            return $value !== '' && $value !== '0' && $value !== 'off';
+        }
 
-        return $default !== false && $default !== '' && $default != 0 && $default != 'off';
+        return $default !== false && $default !== '' && $default != 0;
     }
 
     public function getString($key, $default = ""){

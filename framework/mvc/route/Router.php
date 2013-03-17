@@ -2,9 +2,12 @@
 
 namespace framework\mvc\route;
 
+use framework\cache\SystemCache;
 use framework\mvc\Request;
 
 class Router {
+
+    const type = __CLASS__;
 
     /**
      * {
@@ -78,24 +81,19 @@ class Router {
     public function route(Request $request){
         
         $isCached = IS_PROD;
-        
         if ($isCached){
-            $cache = c('Cache');
-            
-            if ( $isCached = ($cache->isFast() && $cache->isAtomic()) ){
-                $hash  = $request->getHash();
-                $datas = $cache->get('$.system.routes');
-                
-                if ( $datas === null )
-                    $datas = array();
-                
-                $data = $datas[ $hash ];
-                
-                if ( $data !== null ){
-                    $this->args   = $data['args'];
-                    $this->action = $data['action']; 
-                    return;
-                }
+            $hash  = $request->getHash();
+            $datas = SystemCache::get('routes');
+
+            if ( $datas === null )
+                $datas = array();
+
+            $data = $datas[ $hash ];
+
+            if ( $data !== null ){
+                $this->args   = $data['args'];
+                $this->action = $data['action'];
+                return;
             }
         }
         
@@ -120,7 +118,7 @@ class Router {
                 
                 if ( $isCached ){
                     $datas[ $hash ] = array('args'=>$args, 'action'=>$this->action);
-                    $cache->set('$.system.routes', $datas);
+                    SystemCache::set('routes', $datas);
                 }
                 
                 break;

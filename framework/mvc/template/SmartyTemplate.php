@@ -5,6 +5,8 @@ namespace framework\mvc\template;
 use framework\Core;
 
 class SmartyTemplate extends BaseTemplate {
+
+    const type = __CLASS__;
  
     const ENGINE_NAME = 'Smarty3 Template';
     const FILE_EXT = 'tpl';

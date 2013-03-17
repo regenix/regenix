@@ -6,7 +6,9 @@ use framework\Project;
 use framework\exceptions\CacheException;
 
 class MemcacheCache extends AbstractCache {
- 
+
+    const type = __CLASS__;
+
     const TIMEOUT = 15;
 
     protected $compressed = false;

@@ -5,10 +5,11 @@ namespace framework\mvc\route;
 use framework\config\Configuration;
 
 class RouterConfiguration extends Configuration {
-    
+
+    const type = __CLASS__;
+
     private static $routePattern = '#^(GET|POST|PUT|DELETE|OPTIONS|HEAD|WS|\*)[(]?([^)]*)(\))?\s+(.*/[^\s]*)\s+([^\s(]+)(.+)?(\s*)$#';
-    
-    
+
     public function loadData(){
         
         $files = $this->files;

@@ -3,12 +3,14 @@
 namespace framework\mvc\template;
 
 use framework\exceptions\CoreException;
-use framework\utils\StringUtils;
+use framework\lang\String;
 use framework\mvc\providers\ResponseProvider;
 use framework\Core;
 use framework\Project;
 
 class TemplateLoader {
+
+    const type = __CLASS__;
 
     private static $lazyLoaded = false;
 
@@ -88,10 +90,10 @@ class TemplateLoader {
         
         if ( IS_DEV ){
             if ( !$reflection->isSubclassOf( '\framework\mvc\template\BaseTemplate' ) )
-                throw new CoreException(StringUtils::format('%s.class must be extends of BaseTemplate', $templateClass));
+                throw new CoreException(String::format('%s.class must be extends of BaseTemplate', $templateClass));
 
             if ( !$reflection->isInstantiable() )
-                throw new CoreException(StringUtils::format('%s.class must be instantiable'));
+                throw new CoreException(String::format('%s.class must be instantiable'));
         }
         
         return $reflection;

@@ -2,22 +2,39 @@
 
 namespace framework\cache;
 
+define('APC_ENABLED', extension_loaded('apc'));
+define('XCACHE_ENABLED', extension_loaded('xcache'));
+define('SYSTEM_CACHED', (!defined('IS_CORE_DEBUG') || IS_CORE_DEBUG === false) && (APC_ENABLED || XCACHE_ENABLED));
+
+define('FAST_SERIALIZE_ENABLE', extension_loaded('igbinary'));
+
 class SystemCache {
 
-    
+    const type = __CLASS__;
+
     public static function get($name){
-        
-        return INTERNAL_CACHE === true ? apc_fetch('$.sys.' . $name) : null;
+
+        return SYSTEM_CACHED === true ?
+            (FAST_SERIALIZE_ENABLE ? igbinary_unserialize(apc_fetch('$.fsys.' . $name)) :
+                apc_fetch('$.sys.' . $name)) :
+            null;
     }
     
     public static function set($name, $value, $lifetime = 3600){
         
-        if ( INTERNAL_CACHE === true )
-            apc_store('$.sys.' . $name, $value, $lifetime);
+        if ( SYSTEM_CACHED === true ){
+            if ( FAST_SERIALIZE_ENABLE )
+                apc_store('$.fsys.' . $name, igbinary_serialize($value), $lifetime);
+            else
+                apc_store('$.sys.' . $name, $value, $lifetime);
+        }
     }
     
     public static function getWithCheckFile($name, $filePath){
-        
+
+        if ( !SYSTEM_CACHED )
+            return null;
+
         $result = self::get($name);
         if ( $result ){
             $upd    = (int)self::get($name . '.$upd');
@@ -32,7 +49,10 @@ class SystemCache {
     }
     
     public static function setWithCheckFile($name, $value, $filePath, $lifetime = 3600){
-        
+
+        if ( !SYSTEM_CACHED )
+            return;
+
         self::set($name, $value, $lifetime);
         
         if (file_exists($filePath)){
@@ -43,7 +63,7 @@ class SystemCache {
     
     public static function getFileContents($filePath, $lifetime = 3600){
         
-        if ( INTERNAL_CACHE ){
+        if ( SYSTEM_CACHED ){
             $sha1  = '$.sys.file.' . sha1($filePath);
             $inmem = apc_fetch($sha1 . '.$upd');
             if ( $inmem ){
@@ -67,4 +87,33 @@ class SystemCache {
     }
 }
 
-define('INTERNAL_CACHE', extension_loaded('apc'));
+if(!function_exists('apc_store')){
+    function apc_store($key, $var, $ttl = 0){
+        return xcache_set($key, $var, $ttl);
+    }
+}
+if(!function_exists('apc_fetch')){
+    function apc_fetch($key, &$success=true){
+        $success = xcache_isset($key);
+        return xcache_get($key);
+    }
+}
+if(!function_exists('apc_delete')){
+    function apc_delete($key){
+        return xcache_unset($key);
+    }
+}
+if(!function_exists('apc_exists')){
+    function apc_exists($keys){
+        if(is_array($keys)){
+            $exists = array();
+            foreach($keys as $key){
+                if(xcache_isset($key))
+                    $exists[]=$key;
+            }
+            return $exists;
+        }
+
+        return xcache_isset($keys);
+    }
+}

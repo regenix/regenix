@@ -5,7 +5,9 @@ namespace framework\mvc\template;
 use framework\Core;
 
 class TwigTemplate extends BaseTemplate {
- 
+
+    const type = __CLASS__;
+
     const ENGINE_NAME = 'Twig Template';
     const FILE_EXT = 'twig';
 

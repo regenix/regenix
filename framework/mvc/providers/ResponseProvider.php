@@ -3,18 +3,21 @@
 namespace framework\mvc\providers;
 
 use framework\exceptions\CoreException;
-use framework\utils\StringUtils;
-use framework\utils\ClassLoader;
+use framework\mvc\Response;
+use framework\lang\String;
+use framework\lang\ClassLoader;
 
 abstract class ResponseProvider {
-    
+
+    const type = __CLASS__;
+
     /**
      * @var Response 
      */
     public $response = null;
 
 
-    protected function __construct(\framework\mvc\Response $response) {
+    protected function __construct(Response $response) {
         $this->response = $response;
     }
     
@@ -37,7 +40,7 @@ abstract class ResponseProvider {
         $provider = self::$providers[ $className ];
         if ( !$provider )
             throw new CoreException(
-                    StringUtils::format('Response provider not found for "%s" class', $className));
+                    String::format('Response provider not found for "%s" class', $className));
         
         return $provider;
     }

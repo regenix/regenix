@@ -2,9 +2,13 @@
 
 namespace framework\mvc\providers;
 
+use framework\mvc\template\BaseTemplate;
+
 class ResponseBaseTemplateProvider extends ResponseProvider {
-    
-    const CLASS_TYPE = '\framework\mvc\template\BaseTemplate'; 
+
+    const type = __CLASS__;
+
+    const CLASS_TYPE = BaseTemplate::type;
     
     /** @var \framework\mvc\template\BaseTemplate */
     private $template;

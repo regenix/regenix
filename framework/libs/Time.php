@@ -3,7 +3,9 @@
 namespace framework\libs;
 
 class Time {
-    
+
+    const type = __CLASS__;
+
     /**
      * parse duration and get in seconds  
      * @param string $duration - string time 1h - hour, 3m - minute, 1s - second, 1d - day

@@ -3,10 +3,12 @@
 namespace framework\config;
 
 use framework\io\FileIOException;
-use framework\utils\StringUtils;
+use framework\lang\String;
 use framework\io\File;
 
 class Configuration {
+
+    const type = __CLASS__;
 
     /**
      * @var File
@@ -22,7 +24,7 @@ class Configuration {
 
     protected function loadData(){
         //
-        throw new \Exception(StringUtils::format('Can`t loadData() in abstract configuration'));
+        throw new \Exception(String::format('Can`t loadData() in abstract configuration'));
     }
 
     /**

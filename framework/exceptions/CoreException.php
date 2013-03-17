@@ -1,9 +1,11 @@
 <?php
 namespace framework\exceptions;
 
-use framework\utils\StringUtils;
+use framework\lang\String;
 
 class CoreException extends \Exception {
+
+    const type = __CLASS__;
 
     public function __construct($message){
         parent::__construct($message);
@@ -18,6 +20,14 @@ class CoreException extends \Exception {
             $args = array_slice(func_get_args(), 1);
         }
         
-        return new CoreException(StringUtils::format($message, $args));
+        return new CoreException(vsprintf($message, $args));
+    }
+
+    public function getSourceLine(){
+        return $this->getLine();
+    }
+
+    public function getSourceFile(){
+        return $this->getFile();
     }
 }

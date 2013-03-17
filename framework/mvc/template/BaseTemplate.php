@@ -1,10 +1,10 @@
 <?php
 
 namespace framework\mvc\template {
-    
-    use framework\mvc\template\extension\StandartTemplateFunctions;
 
     abstract class BaseTemplate {
+
+        const type = __CLASS__;
 
         const TWIG = 'Twig';
         const SMARTY = 'Smarty';

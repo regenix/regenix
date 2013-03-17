@@ -6,7 +6,9 @@ use framework\mvc\Controller;
 use framework\mvc\template\TemplateLoader;
 
 abstract class ModuleController extends Controller {
-    
+
+    const type = __CLASS__;
+
     /**
      * Short module name
      * @var string

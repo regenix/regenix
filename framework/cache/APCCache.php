@@ -3,6 +3,8 @@
 namespace framework\cache;
 
 class APCCache extends AbstractCache {
+
+    const type = __CLASS__;
     
     protected $speed  = self::SPEED_VERYFAST;
     protected $atomic = true;

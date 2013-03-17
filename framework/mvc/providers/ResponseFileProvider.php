@@ -2,9 +2,13 @@
 
 namespace framework\mvc\providers;
 
+use framework\io\File;
+
 class ResponseFileProvider extends ResponseProvider {
-    
-    const CLASS_TYPE = '\framework\io\File';
+
+    const type = __CLASS__;
+
+    const CLASS_TYPE = File::type;
     
     public function __construct() {
        

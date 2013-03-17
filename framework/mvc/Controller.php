@@ -4,9 +4,11 @@ namespace framework\mvc;
 
 use framework\mvc\Response;
 use framework\mvc\template\TemplateLoader;
-use framework\utils\StringUtils;
+use framework\lang\String;
 
 abstract class Controller {
+
+    const type = __CLASS__;
 
     /** @var Response */
     public $response;
@@ -116,7 +118,7 @@ abstract class Controller {
             $current    = $trace[1];
             $controller = str_replace('\\', '/', $current['class']);
             
-            if ( StringUtils::startsWith($controller, 'controllers/') )
+            if ( String::startsWith($controller, 'controllers/') )
                 $controller = substr($controller, 12);    
             
             $template   = $controller . '/' . $current['function'];

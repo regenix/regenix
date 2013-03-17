@@ -2,9 +2,8 @@
 
 namespace framework\mvc;
 
+
 abstract class Model {
 
-    /** @var string */
-    static $table = null;
-    
+    const type = __CLASS__;
 }

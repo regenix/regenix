@@ -7,7 +7,9 @@ abstract class SDK {
     
     static $beforeHandlers = array();
     static $afterHandlers  = array();
-    static $finalyHandlers = array();
+    static $finallyHandlers = array();
+
+    static $modelLoadHandlers = array();
 
     private static function setCallable($callback, array &$to, $prepend = false){
         
@@ -41,11 +43,18 @@ abstract class SDK {
      * add callback handle to finaly request
      * @param callable $callback
      */
-    public static function addFinalyRequest($callback){
+    public static function addFinallyRequest($callback){
         self::setCallable($callback, self::$finalyHandlers, false);
     }
-    
-    
+
+
+    /**
+     * add callback handle to after model class load
+     * @param callable $callback
+     */
+    public static function addAfterModelLoad($callback){
+        self::setCallable($callback, self::$modelLoadHandlers, false);
+    }
     
     
     public static function doBeforeRequest(mvc\Controller $controller){
@@ -60,9 +69,19 @@ abstract class SDK {
         }
     }
     
-    public static function doFinalyRequest(mvc\Controller $controller){
-        foreach(self::$finalyHandlers as $handle){
+    public static function doFinallyRequest(mvc\Controller $controller){
+        foreach(self::$finallyHandlers as $handle){
             call_user_func($handle, $controller);
         }
+    }
+
+    public static function doAfterModelLoad($modelClass){
+        foreach(self::$modelLoadHandlers as $handle){
+            call_user_func($handle, $modelClass);
+        }
+    }
+    
+    public static function isModuleRegister($moduleUID){
+        return (boolean)modules\AbstractModule::$modules[ $moduleUID ];
     }
 }

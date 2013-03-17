@@ -3,6 +3,8 @@
 namespace framework\cache;
 
 class DisableCache extends AbstractCache {
+
+    const type = __CLASS__;
     
     protected $speed  = -1;
     protected $atomic = true;

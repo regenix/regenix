@@ -4,6 +4,8 @@ namespace framework\mvc\template {
 
     class PHPTemplate extends BaseTemplate {
 
+        const type = __CLASS__;
+
         const ENGINE_NAME = 'PHP Template';
         const FILE_EXT = 'phtml';
 
@@ -23,6 +25,8 @@ namespace framework\mvc\template {
 namespace {
     
     class TPL {
+
+        const type = __CLASS__;
         
         private static $funcs = array();
 

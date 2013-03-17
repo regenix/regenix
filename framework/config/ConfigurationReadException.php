@@ -6,6 +6,8 @@ use framework\exceptions\CoreException;
 
 class ConfigurationReadException extends CoreException {
 
+    const type = __CLASS__;
+
     private $config;
 
     public function __construct(Configuration $config, $message){
