@@ -7,6 +7,8 @@ use framework\modules\AbstractModule;
 
 class Module extends AbstractModule {
 
+    const type = __CLASS__;
+
     public function getName() {
         return 'Console';
     }
