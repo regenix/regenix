@@ -5,6 +5,8 @@ namespace framework\utils;
 
 abstract class MIMETypes {
 
+    const type = __CLASS__;
+
     /**
      * @var array
      */

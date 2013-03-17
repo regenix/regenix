@@ -1,8 +1,8 @@
 <?php
 
-namespace framework\utils;
+namespace framework\lang;
 
-abstract class StringUtils {
+abstract class String {
 
     const type = __CLASS__;
 
@@ -30,6 +30,7 @@ abstract class StringUtils {
      * @return boolean
      */
     public static function endsWith($string, $with){
+
         return strpos($string, $with) === strlen($string) - strlen($with);
     }
 }
