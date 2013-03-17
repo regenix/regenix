@@ -9,8 +9,6 @@ abstract class SDK {
     static $afterHandlers  = array();
     static $finallyHandlers = array();
 
-    static $modelLoadHandlers = array();
-
     private static function setCallable($callback, array &$to, $prepend = false){
         
         if ( IS_DEV && !is_callable($callback) ){
@@ -44,7 +42,7 @@ abstract class SDK {
      * @param callable $callback
      */
     public static function addFinallyRequest($callback){
-        self::setCallable($callback, self::$finalyHandlers, false);
+        self::setCallable($callback, self::$finallyHandlers, false);
     }
 
 
@@ -72,12 +70,6 @@ abstract class SDK {
     public static function doFinallyRequest(mvc\Controller $controller){
         foreach(self::$finallyHandlers as $handle){
             call_user_func($handle, $controller);
-        }
-    }
-
-    public static function doAfterModelLoad($modelClass){
-        foreach(self::$modelLoadHandlers as $handle){
-            call_user_func($handle, $modelClass);
         }
     }
     
