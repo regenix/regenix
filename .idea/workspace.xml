@@ -45,7 +45,7 @@
     <file path="/Log.php" changelist="c0b17bb0-5ffe-4026-b63a-dd6ab201852f" time="1363529501612" ignored="false" />
     <file path="/AbstractModel.php" changelist="c0b17bb0-5ffe-4026-b63a-dd6ab201852f" time="1363537875930" ignored="false" />
     <file path="/AbstractService.php" changelist="c0b17bb0-5ffe-4026-b63a-dd6ab201852f" time="1363544228834" ignored="false" />
-    <file path="/.gitignore" changelist="c0b17bb0-5ffe-4026-b63a-dd6ab201852f" time="1364617344339" ignored="false" />
+    <file path="/.gitignore" changelist="c0b17bb0-5ffe-4026-b63a-dd6ab201852f" time="1364618091887" ignored="false" />
     <file path="/.htaccess" changelist="c0b17bb0-5ffe-4026-b63a-dd6ab201852f" time="1364617350973" ignored="false" />
     <file path="/README.md" changelist="c0b17bb0-5ffe-4026-b63a-dd6ab201852f" time="1364618010798" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -85,10 +85,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name=".gitignore" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name=".gitignore" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/.gitignore">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="0" column="5" selection-start="5" selection-end="5" vertical-scroll-proportion="0.0">
+            <state line="1" column="5" selection-start="25" selection-end="25" vertical-scroll-proportion="0.029616725">
               <folding />
             </state>
           </provider>
@@ -103,10 +103,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="README.md" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="README.md" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/README.md">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="35" column="63" selection-start="715" selection-end="715" vertical-scroll-proportion="0.029616725">
+            <state line="35" column="63" selection-start="715" selection-end="715" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -178,11 +178,11 @@
         <option value="$PROJECT_DIR$/framework/mvc/AbstractService.php" />
         <option value="$PROJECT_DIR$/modules/mongodb/Service.php" />
         <option value="$PROJECT_DIR$/src/project1/app/controllers/Application.php" />
-        <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/.htaccess" />
         <option value="$PROJECT_DIR$/framework/Project.php" />
         <option value="$PROJECT_DIR$/framework/mvc/template/TemplateLoader.php" />
         <option value="$PROJECT_DIR$/README.md" />
+        <option value="$PROJECT_DIR$/.gitignore" />
       </list>
     </option>
   </component>
@@ -500,20 +500,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/.gitignore">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="5" selection-start="5" selection-end="5" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.htaccess">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="13" column="21" selection-start="276" selection-end="276" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/framework/Project.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="266" column="79" selection-start="7246" selection-end="7246" vertical-scroll-proportion="-8.038462">
@@ -530,7 +516,21 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/README.md">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="35" column="63" selection-start="715" selection-end="715" vertical-scroll-proportion="0.029616725">
+        <state line="35" column="63" selection-start="715" selection-end="715" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.htaccess">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="13" column="21" selection-start="276" selection-end="276" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="1" column="5" selection-start="25" selection-end="25" vertical-scroll-proportion="0.029616725">
           <folding />
         </state>
       </provider>
