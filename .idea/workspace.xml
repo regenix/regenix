@@ -47,7 +47,7 @@
     <file path="/AbstractService.php" changelist="c0b17bb0-5ffe-4026-b63a-dd6ab201852f" time="1363544228834" ignored="false" />
     <file path="/.gitignore" changelist="c0b17bb0-5ffe-4026-b63a-dd6ab201852f" time="1364617344339" ignored="false" />
     <file path="/.htaccess" changelist="c0b17bb0-5ffe-4026-b63a-dd6ab201852f" time="1364617350973" ignored="false" />
-    <file path="/README.md" changelist="c0b17bb0-5ffe-4026-b63a-dd6ab201852f" time="1364617360415" ignored="false" />
+    <file path="/README.md" changelist="c0b17bb0-5ffe-4026-b63a-dd6ab201852f" time="1364618010798" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -103,10 +103,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="README.md" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="README.md" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/README.md">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="56" column="8" selection-start="1327" selection-end="1327" vertical-scroll-proportion="0.0">
+            <state line="35" column="63" selection-start="715" selection-end="715" vertical-scroll-proportion="0.029616725">
               <folding />
             </state>
           </provider>
@@ -121,10 +121,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="TemplateLoader.php" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="TemplateLoader.php" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/framework/mvc/template/TemplateLoader.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="57" column="4" selection-start="1460" selection-end="1460" vertical-scroll-proportion="0.6037383">
+            <state line="57" column="4" selection-start="1460" selection-end="1460" vertical-scroll-proportion="-12.423077">
               <folding />
             </state>
           </provider>
@@ -180,9 +180,9 @@
         <option value="$PROJECT_DIR$/src/project1/app/controllers/Application.php" />
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/.htaccess" />
-        <option value="$PROJECT_DIR$/README.md" />
         <option value="$PROJECT_DIR$/framework/Project.php" />
         <option value="$PROJECT_DIR$/framework/mvc/template/TemplateLoader.php" />
+        <option value="$PROJECT_DIR$/README.md" />
       </list>
     </option>
   </component>
@@ -514,13 +514,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="56" column="8" selection-start="1327" selection-end="1327" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/framework/Project.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="266" column="79" selection-start="7246" selection-end="7246" vertical-scroll-proportion="-8.038462">
@@ -530,7 +523,14 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/framework/mvc/template/TemplateLoader.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="57" column="4" selection-start="1460" selection-end="1460" vertical-scroll-proportion="0.6037383">
+        <state line="57" column="4" selection-start="1460" selection-end="1460" vertical-scroll-proportion="-12.423077">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="35" column="63" selection-start="715" selection-end="715" vertical-scroll-proportion="0.029616725">
           <folding />
         </state>
       </provider>

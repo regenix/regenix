@@ -33,7 +33,7 @@ Getting started
 
 ### Installation
 
-Copy all source from git, create the directory project in `src/<project_name>/`. 
+Copy all source from git, create the directory project in `apps/<project_name>/`.
 Project `project1` already exists in regenix source. 
 
 ### Project structure
