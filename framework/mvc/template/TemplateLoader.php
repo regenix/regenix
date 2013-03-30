@@ -43,19 +43,19 @@ class TemplateLoader {
             
             // current project
             $project = Project::current();
-            self::setAssetPath('/src/' . $project->getName() . '/assets/');        
+            self::setAssetPath('/apps/' . $project->getName() . '/assets/');
             
             $default = $project->config->getString('template.default', 'Smarty');
             $classTemplate = $default;
 
             self::switchEngine($classTemplate);
-            self::registerPath( $project->getViewsPath() );                      
+            self::registerPath( $project->getViewPath() );
         
             self::$lazyLoaded = true;
         }
     }
 
-        /**
+    /**
      * @param string $name
      * @return BaseTemplate
      */

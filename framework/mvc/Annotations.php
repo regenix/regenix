@@ -429,8 +429,8 @@ class Annotations {
             $scopes = array($scopes);
 
         foreach($scopes as $scope){
-            if ( self::$types[$scope][$type] )
-                throw CoreException::formated('Annotation @%s already registered in `%s` scope', $type, $scope);
+            /*if ( self::$types[$scope][$type] )
+                throw CoreException::formated('Annotation @%s already registered in `%s` scope', $type, $scope);*/
 
             self::$types[ $scope ][ $type ] = $info;
         }

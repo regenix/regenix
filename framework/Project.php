@@ -24,7 +24,7 @@ class Project {
     /** @var string */
     private $currentPath;
 
-    /** @var utils\ClassLoader */
+    /** @var ClassLoader */
     public $classLoader;
     
     /** @var string */
@@ -71,8 +71,12 @@ class Project {
         return self::getSrcDir() . '/' . $this->name . '/';
     }
     
-    public function getViewsPath(){
+    public function getViewPath(){
         return self::getPath() . 'app/views/';
+    }
+
+    public function getModelPath(){
+        return self::getPath() . 'app/models/';
     }
 
     /*
@@ -260,6 +264,6 @@ class Project {
     public static function getSrcDir(){
         if ( self::$srcDir ) return self::$srcDir;
 
-        return self::$srcDir = str_replace(DIRECTORY_SEPARATOR, '/', realpath('src/'));
+        return self::$srcDir = str_replace(DIRECTORY_SEPARATOR, '/', realpath('apps/'));
     }
 }

@@ -47,6 +47,24 @@ abstract class AbstractModule {
         return 'modules/' . $this->uid . '/';
     }
 
+    /**
+     * @return null|string
+     */
+    final public function getModelPath(){
+
+        $path = $this->getPath() . 'models/';
+        return is_dir($path) ? $path : null;
+    }
+
+    /**
+     * @return null|string
+     */
+    final public function getControllerPath(){
+
+        $path = $this->getPath() . 'controllers/';
+        return is_dir($path) ? $path : null;
+    }
+
 
     // statics
     

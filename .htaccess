@@ -11,7 +11,7 @@ Options +FollowSymlinks +Indexes
     RewriteRule ^public/([a-z0-9-_A-Z]+)/(.*)$ - [L]
 
     # ASSETS
-    RewriteRule ^src/([a-z0-9-_A-Z]+)/public/(.*)$ - [L]
+    RewriteRule ^apps/([a-z0-9-_A-Z]+)/public/(.*)$ - [L]
 
     # APPS
     RewriteRule ^(.*)$ index.php?/$1 [L]

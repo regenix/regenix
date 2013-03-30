@@ -45,12 +45,12 @@ class ClassLoader {
             $this->classPaths[] = $path;
     }
 
-    public function addNamespace($namespace, $path, $prepend = false) {
+    public function addNamespace($namespace, $path, $prepend = false, $callback = null) {
 
         if ($prepend) {
-            array_shift( $this->namespaces, array('namespace' => $namespace, 'path' => $path) );
+            array_shift( $this->namespaces, array('namespace' => $namespace, 'path' => $path, 'callback' => $callback) );
         } else {
-            $this->namespaces[] = array('namespace' => $namespace, 'path' => $path);
+            $this->namespaces[] = array('namespace' => $namespace, 'path' => $path, 'callback' => $callback);
         }
     }
 
@@ -97,6 +97,9 @@ class ClassLoader {
 
                     if (IS_DEV)
                         $this->checkCaseFilename($file, $class);
+
+                    if ( $item['callback'] )
+                        call_user_func($item['callback']);
 
                     return $file;
                 }

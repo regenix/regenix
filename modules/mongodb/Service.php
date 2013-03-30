@@ -2,147 +2,33 @@
 namespace modules\mongodb;
 
 use framework\exceptions\CoreException;
+use framework\lang\ArrayTyped;
 use framework\lang\ClassLoader;
 use framework\lang\String;
+use framework\mvc\AbstractModel;
+use framework\mvc\AbstractService;
+use framework\mvc\Annotations;
+use framework\mvc\IHandleAfterLoad;
+use framework\mvc\IHandleBeforeLoad;
 
-class Service {
-
-    /** @var string */
-    private $modelClass;
-
-    /** @var array */
-    protected $meta;
+class Service extends AbstractService {
 
     /** @var \MongoCollection */
     protected $collection;
 
     protected function __construct($modelClass){
-        $this->meta = Module::getModelInfo($modelClass);
+        parent::__construct($modelClass);
         $this->collection = Module::$db->selectCollection( $this->meta['collection'] );
-        $this->modelClass = $modelClass;
     }
 
     /**
+     * @param mixed $id
+     * @param array $fields
+     * @param bool $lazy
      * @return array
      */
-    public function getMeta(){
-        return $this->meta;
-    }
-
-    /**
-     * @var Service[]
-     */
-    private static $services = array();
-
-    /**
-     * @param $modelClass
-     * @return Service
-     */
-    public static function get($modelClass){
-        if ( $result = self::$services[$modelClass] )
-            return $result;
-
-        return self::$services[$modelClass] = new Service($modelClass);
-    }
-
-    protected function loadObject(Document $object, $data, $lazy = false){
-
-        if ( $object instanceof IHandleBeforeLoad ){
-            $object->onBeforeLoad($data);
-        }
-
-        foreach($data as $column => $value){
-            if ( $column === '_id' ){
-                self::setId($object, $value);
-            } else {
-                $field = $this->meta['fields_rev'][ $column ];
-                if ( $field ){
-                    self::__callSetter($object, $field, $value, $lazy);
-                }
-            }
-        }
-
-        if ( $object instanceof IHandleAfterLoad ){
-            $object->onAfterLoad();
-        }
-
-        return $object;
-    }
-
-    public function __callGetter(Document $object, $field){
-
-        $info = $this->meta['fields'][$field];
-        $value = $object->__data[$field];
-
-        if ( $info['ref'] && $info['ref']['lazy'] ){
-
-            if ( $info['is_array'] ){
-
-            } else {
-
-                $type = $info['type'];
-                ClassLoader::load($type);
-                $service = Service::get($type);
-
-                if ( is_scalar($value) || ($isRef = \MongoDBRef::isRef($value)) || ($value instanceof \MongoId) ){
-                    if ( $isRef )
-                        $value = $value['$id'];
-
-                    $value = $service->findById($value);
-                    $this->__callSetter($object, $field, $value);
-                }
-            }
-        }
-
-        return $value;
-    }
-
-    public function __callSetter(Document $object, $field, $value, $lazy = false){
-
-        $info = $this->meta['fields'][$field];
-
-        if ( $info['ref'] && !$info['ref']['lazy'] && $lazy === false){
-            ClassLoader::load($info['type']);
-            $service = Service::get($info['type']);
-            $value   = $service->findById($value['$id'] ? $value['$id'] : $value, array(), true);
-        }
-
-        if ($info['setter']){
-            $method = 'set' . $field;
-            $object->{$method}($value);
-        } else {
-            $object->__data[$field] = $value;
-        }
-    }
-
-    /**
-     * @param Document $object
-     * @param bool $typed
-     * @return mixed|null
-     */
-    public function getId(Document $object, $typed = true){
-        $idField = $this->meta['id_field']['field'];
-        if ( $idField ){
-
-            return $typed
-                ? self::typed($object->__data[$idField], $this->meta['id_field']['type'])
-                : $object->__data[$idField];
-        } else
-            return null;
-    }
-
-    /**
-     * @param Document $object
-     * @param $id
-     */
-    public function setId(Document $object, $id){
-
-        $idField = $this->meta['id_field'];
-        if ( $idField ){
-            $field = $idField['field'];
-            $object->__data[$field] = self::typed($id, $idField['type']);
-        } else
-            CoreException::formated('Document `%s` has no @id field', $this->meta['name']);
+    protected function findDataById($id, array $fields = array(), $lazy = false){
+        return $this->collection->findOne(array('_id' => $id), $fields);
     }
 
     /**
@@ -190,50 +76,12 @@ class Service {
     }
 
     /**
-     * @param mixed $id
-     * @param array $fields
-     * @return Document
-     */
-    public function findById($id, array $fields = array(), $lazy = false){
-
-        $idField = $this->meta['id_field'];
-        $data    = $this->collection->findOne(array('_id' => self::typed($id, $idField['type'])), $fields);
-
-        if ( $data === null )
-            return null;
-
-        $modelClass = $this->modelClass;
-        return $this->loadObject(new $modelClass(), $data, $lazy);
-    }
-
-    /**
-     * @param Document $document
-     * @param array $fields
-     * @param array $fields
-     * @throws \framework\exceptions\CoreException
-     * @return bool
-     */
-    public function reload(Document $document, array $fields = array()){
-
-        $id = $this->getId($document);
-        if ( !$id )
-            throw CoreException::formated('Can`t reload non-exist document');
-
-        $data = $this->collection->findOne(array('_id' => $id), $fields);
-        if ( $data ){
-            $this->loadObject($document, $data);
-            return true;
-        } else
-            return false;
-    }
-
-    /**
      * upsert operation in mongodb
-     * @param Document $document
+     * @param AbstractModel $document
      * @param array $options
      * @return array|bool
      */
-    public function save(Document $document, array $options = array()){
+    public function save(AbstractModel $document, array $options = array()){
 
         if ( $document->isNew() ){
 
@@ -262,91 +110,15 @@ class Service {
         return $result;
     }
 
-    public function saveAtomic(Document $document){
 
-        $data = $this->getData($document, '$set');
-        $atomicData = $data;
-        unset($data['$set']);
+    public function remove(AbstractModel $object, array $options = array()){
 
-        //$result = $this->collection->update(array())
-    }
-
-    /**
-     * only set fields, $set operation in mongodb
-     * @param Document $document
-     * @param array $options
-     * @throws \framework\exceptions\CoreException
-     * @return bool
-     */
-    public function set(Document $document, array $options = array()){
-
-        $id = $this->getId($document);
-        if ( $id === null )
-            throw CoreException::formated('Can\'t use set() method for not saved document');
-
-        $data   = $this->getData($document, '$set', true);
-        $result = $this->collection->update(array('_id' => $id), $data, $options);
-
-        if ($data['$inc'] || $data['$push'] || $data['$pushAll']){
-            $this->reload($document);
+        $id = $this->getId($object);
+        if ( $id !== null ){
+            $this->collection->remove(array('_id' => $id), $options);
+            $object->setId(null);
         }
-
-        return $result;
     }
-
-    /**
-     * @param Document $document
-     * @param array $options
-     * @return bool
-     * @throws \framework\exceptions\CoreException
-     */
-    public function setOnlyAtomic(Document $document, array $options = array()){
-
-        $id = $this->getId($document);
-        if ( $id === null )
-            throw CoreException::formated('Can\'t use setOnlyAtomic() method for not saved document');
-
-
-        $data   = $this->getData($document, '$set', true);
-        unset($data['$set']);
-
-        if ( sizeof($data) ){
-
-            $result = $this->collection->update(array('_id' => $id), $data, $options);
-            $this->reload($document);
-            return $result;
-        } else
-            return true;
-    }
-
-    /**
-     * @param Document[] $documents
-     * @param array $options
-     * @return array of bool
-     */
-    public function saveAll(array $documents, array $options = array()){
-
-        $result = array();
-        foreach($documents as $document){
-            $result[] = $this->save($document, $options);
-        }
-        return $result;
-    }
-
-    /**
-     * @param Document[] $documents
-     * @param array $options
-     * @return array of bool
-     */
-    public function setAll(array $documents, array $options = array()){
-
-        $result = array();
-        foreach($documents as $document){
-            $result[] = $this->set($document, $options);
-        }
-        return $result;
-    }
-
 
     /****** UTILS *******/
     public static function typed($value, $type, $ref = null){
@@ -415,27 +187,30 @@ class Service {
 
                     if ( $ref ){
 
-                        if ( $type !== get_class($value) && !is_subclass_of($value, $type) ){
-                            throw CoreException::formated('`%s` is not instance of %s class',
-                                is_scalar($value) ? (string)$value : get_class($value),
-                                $type);
-                        }
+                        if ( !is_a($value, $type) && !is_subclass_of($value, $type) ){
 
-                        ClassLoader::load($type);
-                        $info = Module::getModelInfo($type);
-                        if ( !$info ){
-                            throw CoreException::formated('`%s.class` is not document class for mongo $ref', $type);
-                        }
-
-                        if ( $ref['small'] ){
-                            return $value === null ? null : $value->getId();
+                            return $value;
+                            /*throw CoreException::formated('`%s` is not instance of %s class',
+                                is_scalar($value) || is_object($value) ? (string)$value : gettype($value),
+                                $type);*/
                         } else {
 
-                            $link = $value === null
-                                ? null
-                                : \MongoDBRef::create($info['collection'], $value->getId());
+                            ClassLoader::load($type);
+                            $info = Module::getModelInfo($type);
+                            if ( !$info ){
+                                throw CoreException::formated('`%s.class` is not document class for mongo $ref', $type);
+                            }
 
-                            return $link;
+                            if ( $ref['small'] ){
+                                return $value === null ? null : $value->getId();
+                            } else {
+
+                                $link = $value === null
+                                    ? null
+                                    : \MongoDBRef::create($info['collection'], $value->getId());
+
+                                return $link;
+                            }
                         }
                     }
                 }
@@ -443,5 +218,48 @@ class Service {
         }
 
         return $value;
+    }
+
+    /**
+     * @param $modelClass
+     * @return AbstractService
+     */
+    protected static function newInstance($modelClass){
+        return new Service($modelClass);
+    }
+
+    /**
+     * @param array $info
+     * @param Annotations $classInfo
+     * @param string $key
+     * @param ArrayTyped $indexed
+     */
+    protected static function registerModelMetaIndex(&$info, &$allInfo, Annotations $classInfo, $key, ArrayTyped $indexed){
+
+        if (in_array($info, array('$background', '$unique', '$dropDups', '$sparse'), true))
+            $info['options'][substr($key,1)] = true;
+        elseif ( $key === '$expire' ){
+            $info['options']['expireAfterSeconds'] = $indexed->getInteger($key, 0);
+        } elseif ( $key === '$w' ){
+            $val = $indexed->get($key);
+            if ( is_numeric($val) ) $val = (int)$val;
+
+            $info['options']['w'] = $val;
+        } else
+            parent::registerModelMetaIndex($info, $allInfo, $classInfo, $key, $indexed);
+    }
+
+    /**
+     * @param $propInfo
+     * @param $allInfo
+     * @param \ReflectionClass $class
+     * @param $name
+     * @param Annotations $property
+     */
+    protected static function registerModelMetaId(&$propInfo, &$allInfo,
+                                                  \ReflectionClass $class, $name, Annotations $property){
+
+        $propInfo['column'] = '_id';
+        parent::registerModelMetaId($propInfo, $allInfo, $class, $name, $property);
     }
 }

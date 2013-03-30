@@ -66,7 +66,10 @@ abstract class SDK {
             call_user_func($handle, $controller);
         }
     }
-    
+
+    /**
+     * @param mvc\Controller $controller
+     */
     public static function doFinallyRequest(mvc\Controller $controller){
         foreach(self::$finallyHandlers as $handle){
             call_user_func($handle, $controller);
