@@ -2,6 +2,12 @@
 namespace framework\libs\RegenixTPL;
 
 /**
+ * Class RegenixTemplate
+ * @package framework\libs\RegenixTPL
+ */
+use framework\mvc\template\TemplateLoader;
+
+/**
  *  ${var} - var
  *  {tag /} - tag
  *  {tag} #{/tag} - big tag
@@ -10,11 +16,6 @@ namespace framework\libs\RegenixTPL;
  *  {else} {/else}
  *  {tag arg, name: value, name: value /}
  *  @{Application.index} - route
- */
-
-/**
- * Class RegenixTemplate
- * @package framework\libs\RegenixTPL
  */
 class RegenixTemplate {
 
@@ -31,6 +32,9 @@ class RegenixTemplate {
 
     /** @var string */
     protected $file;
+
+    /** @var array */
+    protected $blocks;
 
     /** @var string */
     protected $compiledFile;
@@ -54,8 +58,13 @@ class RegenixTemplate {
         $this->tags[strtolower($tag->getName())] = $tag;
     }
 
-    protected function parse(){
+    public function __clone(){
+        $new = new RegenixTemplate();
+        $new->setTplDirs($this->tplDirs);
+        $new->setTempDir($this->tmpDir);
+        $new->tags = $this->tags;
 
+        return $new;
     }
 
     protected function _compile(){
@@ -71,10 +80,11 @@ class RegenixTemplate {
             $e    = strpos($source, '}', $p);
             $expr = substr($source, $p + 1, $e - $p - 1);
 
-            $prevSource = substr($source, $lastE + 1, $p - $lastE - 2);
+            $prevSource = $lastE === -2 ? '' : substr($source, $lastE + 1, $p - $lastE - 2);
             $lastE = $e;
 
             $result .= $prevSource;
+            $extends = false;
             switch($mod){
                 case '@': {
                     $result .= '<?php echo ' . $expr . '?>';
@@ -87,16 +97,22 @@ class RegenixTemplate {
                     else {
                         if ( $cmd === 'else' )
                             $result .= '<?php else:?>';
-                        else
+                        elseif ($cmd === 'extends'){
+                            $result .= '<?php echo $_TPL->_renderBlock("doLayout", ' . $tmp[1] . '); $__extends = true;?>';
+                            $extends = true;
+                        } elseif ($cmd === 'doLayout'){
+                            $result .= '%__BLOCK_doLayout__%';
+                        } else
                             $result .= '<?php ' .$cmd. '(' . $tmp[1] . '):?>';
                     }
                 } break;
                 default: {
-                    $result .= $mod . '<?php echo RegenixTemplate::renderVar(' . $expr . ')?>';
+                    $result .= $mod . '<?php echo $_TPL->_renderVar(' . $expr . ')?>';
                 } break;
             }
         }
         $result .= substr($source, $lastE + 1);
+        $result .= '<?php if($__extends){ $_TPL->_renderContent(); } ?>';
 
         $dir = dirname($this->compiledFile);
         if (!is_dir($dir))
@@ -123,14 +139,33 @@ class RegenixTemplate {
 
     public function render($args, $cached = true){
         $this->compile($cached);
-        $tags = $this->tags;
-        extract($args, EXTR_PREFIX_INVALID | EXTR_OVERWRITE, 'arg_');
-
+        $_tags = $this->tags;
+        $_TPL = $this;
+        if ($args)
+            extract($args, EXTR_PREFIX_INVALID | EXTR_OVERWRITE, 'arg_');
         include $this->compiledFile;
     }
 
-    public static function renderVar($var){
+    public function _renderVar($var){
         return htmlspecialchars($var);
+    }
+
+    public function _renderBlock($block, $file, array $args = null){
+        $tpl = clone $this;
+        $tpl->setFile( TemplateLoader::findFile(str_replace('.', '/',$file) . '.html') );
+        ob_start();
+            $tpl->render($args);
+            $str = ob_get_contents();
+        ob_end_clean();
+        $this->blocks[ $block ] = $str;
+        ob_start();
+    }
+
+    public function _renderContent(){
+        $content = ob_get_contents();
+        ob_end_clean();
+        $content = str_replace('%__BLOCK_doLayout__%', $content, $this->blocks['doLayout']);
+        echo $content;
     }
 }
 
