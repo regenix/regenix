@@ -449,8 +449,8 @@ abstract class RequestBindParams {
     }
 
     public static function current(){
-        $class   = new \ReflectionClass(get_called_class());
-        $_method = strtoupper($class->getConstant('method'));
+        $class   = get_called_class();
+        $_method = strtoupper($class::$method);
         switch($_method){
             case 'POST': {
                 $httpArgs = $_POST;
@@ -472,6 +472,6 @@ abstract class RequestBindParams {
                 $httpArgs = $_FILES;
             } break;
         }
-        return $class->newInstance( $httpArgs, $class->getConstant('prefix') );
+        return new $class( $httpArgs, $class::$prefix );
     }
 }
