@@ -21,7 +21,7 @@ class Module extends AbstractModule {
     public function onBeforeRequest(Controller $controller){
         
         // TEST handler
-        if ($controller->uri->get('redirect')){
+        if ($controller->query->get('redirect')){
             $controller->redirect('http://google.ru/');
         }
     }

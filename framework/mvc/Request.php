@@ -2,6 +2,8 @@
 
 namespace framework\mvc;
 
+use framework\exceptions\CoreException;
+use framework\lang\String;
 use framework\net\URL;
 use framework\utils\ArrayUtils;
 
@@ -195,7 +197,7 @@ class Request {
 }
 
 
-class RequestURI {
+class RequestQuery {
     
     /** @var Request */
     private $request;
@@ -206,6 +208,7 @@ class RequestURI {
 
     public function __construct() {
         $this->request = Request::current();
+        $this->args = URL::parseQuery( $this->request->getQuery() );
     }
     
     /**
@@ -213,12 +216,17 @@ class RequestURI {
      * @return array
      */
     public function getAll(){
-        if ( $this->args !== null )
-            return $this->args;
-        
-        return $this->args = URL::parseQuery( $this->request->getQuery() );
+        return $this->args;
     }
 
+    /**
+     * checks exists name arg
+     * @param $name
+     * @return bool
+     */
+    public function has($name){
+        return isset($this->args[$name]);
+    }
 
     /**
      * get one query argument
@@ -227,10 +235,19 @@ class RequestURI {
      * @return mixed
      */
     public function get($name, $def = null){
-        $args = $this->getAll();
-        $arg  = $args[$name];
-        
+        $arg  = $this->args[$name];
         return $arg === null ? $def : $arg;
+    }
+
+    /**
+     * get typed bind value
+     * @param $name
+     * @param $type
+     * @param null $def
+     * @return bool|float|RequestBindValue|int|string
+     */
+    public function getTyped($name, $type, $def = null){
+        return RequestBinder::getValue($this->get($name, $def), $type);
     }
     
     /**
@@ -323,4 +340,72 @@ class RequestURI {
         $arg = $this->getExplode($name, $delimiter, $def);
         return ArrayUtils::typed( $arg, $type );
     }
+}
+
+
+abstract class RequestBinder {
+
+    /**
+     * @param $value string
+     * @param $type string
+     */
+    public static function getValue($value, $type){
+        switch($type){
+            case 'int':
+            case 'integer':
+            case 'long': {
+                return (int)$value;
+            } break;
+
+            case 'double':
+            case 'float': {
+                return (double)$value;
+            } break;
+
+            case 'bool':
+            case 'boolean': {
+                return (boolean)$value;
+            } break;
+
+            case 'string':
+            case 'str': {
+                return (string)$value;
+            }
+
+            default: {
+                $type = str_replace('.', '\\', $type);
+                if ( class_exists($type) ){
+                    $instance = new $type;
+                    if ( $instance instanceof RequestBindValue ){
+                        $instance->onBindValue($value);
+                        return $instance;
+                    } else
+                        throw new BindValueInstanceException($type);
+                } else
+                    throw new BindValueException($value, $type);
+            }
+        }
+    }
+}
+
+class BindValueException extends CoreException {
+    public function __construct($value, $type){
+        parent::__construct(String::format('Can\'t bind `%s` value as `%s` type', (string)$value, $type));
+    }
+}
+
+class BindValueInstanceException extends CoreException {
+    public function __construct($type){
+        parent::__construct(String::format(
+            'Bind error: `%s` class must be implements \framework\mvc\RequestBindValue interface for bind value', $type
+        ));
+    }
+}
+
+interface RequestBindValue {
+    /**
+     * @param $value string
+     * @return null
+     */
+    public function onBindValue($value);
 }

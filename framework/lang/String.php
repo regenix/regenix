@@ -2,6 +2,7 @@
 
 namespace framework\lang;
 
+
 abstract class String {
 
     const type = __CLASS__;

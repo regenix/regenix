@@ -1,3 +1,5 @@
 
-*   /                               Application.index()
-*   /{method}/                      Application.{method}
+*   /                                                   Application.index()
+*   /{method}/                                          Application.{method}
+*   /api/{name}/                                        Application.index()
+*   /api/{name}/{id}/                                   Application.index()

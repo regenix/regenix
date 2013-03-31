@@ -204,13 +204,8 @@ class Project {
 
     private function _registerLoader(){
 
-        // register model class loader
-        /*$modelLoader = new ModelClassloader($this);
-        $modelLoader->register();*/
-
         $this->classLoader = new ClassLoader();
-        $this->classLoader->addNamespace('controllers', $this->getPath() . 'app/');
-        $this->classLoader->addNamespace('models', $this->getPath() . 'app/');
+        $this->classLoader->addNamespace('', $this->getPath() . 'app/');
         
         $this->classLoader->register();
     }

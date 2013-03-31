@@ -1,1 +1,1 @@
-# Current directory for static files and upploads, (!) not for assets
+# Current directory for static files and uploads, (!) not for assets

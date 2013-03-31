@@ -5,7 +5,9 @@ use framework\di\DI;
 use framework\mvc\results\Result;
 use framework\lang\FrameworkClassLoader;
 
-    class Core {
+class Core {
+
+    const type = __CLASS__;
     
     /** @var string */
     public static $tempDir = 'tmp/';
@@ -37,13 +39,8 @@ use framework\lang\FrameworkClassLoader;
         self::_registerLogger();
         self::_registerProjects();
         self::_registerCurrentProject();
-        self::_registerDatabases();
         
-        register_shutdown_function(array('\framework\Core','shutdown'), self::$__project);
-    }
-
-    private static function _registerDatabases(){
-
+        register_shutdown_function(array(Core::type, 'shutdown'), self::$__project);
     }
 
     private static function _registerLogger(){
@@ -78,7 +75,7 @@ use framework\lang\FrameworkClassLoader;
         throw new exceptions\CoreException("Can't find project for current request");
     }    
     
-    public static function proccessRoute(){
+    public static function processRoute(){
         
         $project = Project::current();
         $router  = $project->router;
@@ -112,7 +109,8 @@ use framework\lang\FrameworkClassLoader;
             SDK::doBeforeRequest($controller);
             
             $controller->callBefore();
-            $reflection->invoke($controller);
+            $router->invokeMethod($controller, $reflection);
+
             
         } catch (Result $result){
             $response = $result->getResponse();

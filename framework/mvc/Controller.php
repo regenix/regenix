@@ -16,8 +16,8 @@ abstract class Controller {
     /** @var Request */
     public $request;
     
-    /** @var RequestURI */
-    public $uri;
+    /** @var RequestQuery */
+    public $query;
 
     /** @var \framework\cache\AbstractCache */
     public $cache;
@@ -30,9 +30,10 @@ abstract class Controller {
     public function __construct() {
         $this->request  = Request::current();
         $this->response = new Response();
-        $this->uri      = new RequestURI();
+
+        $this->query    = new RequestQuery();
         $this->cache    = c('Cache');
-        
+
         $this->onBefore();
     }
 
@@ -173,7 +174,31 @@ abstract class Controller {
         
         if ( $xml instanceof \SimpleXMLElement ){
             /** @var \SimpleXMLElement */
-           
+            /// TODO
+        }
+    }
+
+    /**
+     * render print_r var if dev
+     * @param $var
+     */
+    public function renderVar($var){
+        if ( IS_DEV )
+            $this->renderHTML('<pre>' . print_r($var, true) . '</pre>');
+    }
+
+    /**
+     * render var_dump var if dev
+     * @param $var
+     */
+    public function renderDump($var){
+        if ( IS_DEV ){
+            ob_start();
+            dump($var);
+            $str = ob_get_contents();
+            ob_end_clean();
+
+            $this->renderHTML($str);
         }
     }
 }

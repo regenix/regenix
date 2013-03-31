@@ -88,8 +88,11 @@ class ClassLoader {
         }
 
         foreach ($this->namespaces as $item) {
+            if ( !$item['namespace'] )
+                $p = 1;
+            else
+                $p = strpos( $class, $item['namespace'] );
 
-            $p = strpos( $class, $item['namespace'] );
             if ($p !== false && $p < 2) {
 
                 $file = $item['path'] . $class_rev . '.php';
