@@ -14,7 +14,6 @@ class SmartyTemplate extends BaseTemplate {
     /** @var \Smarty */
     private static $smarty;
 
-
     private static $loaded = false;
 
     public function __construct($templateFile, $templateName) {

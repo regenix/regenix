@@ -34,7 +34,7 @@ class Request {
     public static function createFromGlobal(){
         
         $req = new Request();
-        $req->setMethod($_SERVER['METHOD']);
+        $req->setMethod($_SERVER['REQUEST_METHOD']);
         $req->setUri($_SERVER['REQUEST_URI']);
         $req->host = $_SERVER['HTTP_HOST'];
         $req->userAgent = $_SERVER['HTTP_USER_AGENT'];
@@ -448,9 +448,15 @@ abstract class RequestBindParams {
         }
     }
 
-    public static function current(){
+    /**
+     * @param null|string $prefix - if null default used
+     * @param null $method
+     * @param null|string $method - if null default used
+     * @return RequestBindParams
+     */
+    public static function current($prefix = null){
         $class   = get_called_class();
-        $_method = strtoupper($class::$method);
+        $_method = strtoupper($class::method);
         switch($_method){
             case 'POST': {
                 $httpArgs = $_POST;
@@ -472,6 +478,6 @@ abstract class RequestBindParams {
                 $httpArgs = $_FILES;
             } break;
         }
-        return new $class( $httpArgs, $class::$prefix );
+        return new $class( $httpArgs, $prefix ? $prefix : $class::prefix );
     }
 }

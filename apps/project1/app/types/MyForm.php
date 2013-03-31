@@ -8,8 +8,8 @@ use framework\mvc\RequestBindParams;
 class MyForm extends RequestBindParams {
 
     const type   = __CLASS__;
-    static $method = 'GET';
-    static $prefix = 'form_';
+    const method = 'GET';
+    const prefix = 'form_';
 
     /** @var Integer */
     public $id;

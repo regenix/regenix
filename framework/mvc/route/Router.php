@@ -179,9 +179,7 @@ class Router {
     }
     
     private static function routeMatches($route, $method, $path, $format, $domain){
-        
         if ( $method === null || $route['method'] == '*' || $method == $route['method'] ){
-            
             $args = array();
             $result = preg_match_all($route['pattern'], $path, $matches);
             if (!$result)
@@ -193,6 +191,7 @@ class Router {
                 
                 $args[ $route['args'][$i - 1] ] = $value[0];
             }
+            $args['_METHOD'] = $method;
             return $args;
         }
         return null;
