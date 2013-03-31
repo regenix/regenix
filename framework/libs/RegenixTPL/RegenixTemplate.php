@@ -5,6 +5,7 @@ namespace framework\libs\RegenixTPL;
  * Class RegenixTemplate
  * @package framework\libs\RegenixTPL
  */
+use framework\exceptions\CoreException;
 use framework\mvc\template\TemplateLoader;
 
 /**
@@ -246,6 +247,7 @@ class RegenixVariable {
 
     protected $var;
     protected static $instance;
+    protected static $modifiers = array();
 
     protected function __construct($var){
         $this->var = $var;
@@ -255,11 +257,30 @@ class RegenixVariable {
         return $this->var;
     }
 
+    public function format($format){
+        $this->var = date($format, $this->var);
+        return $this;
+    }
+
     public static function current($var){
         if (self::$instance){
             self::$instance->var = $var;
             return self::$instance;
         }
         return self::$instance = new RegenixVariable($var);
+    }
+
+    public function __toString(){
+        return (string)$this->var;
+    }
+
+    public function __call($name, $args){
+        $name = strtolower($name);
+        if ($callback = self::$modifiers[$name]){
+            array_unshift($args, $this->var);
+            $this->var = call_user_func_array($callback, $args);
+            return $this->var;
+        } else
+            throw CoreException::formated('Template `%s()` modifier not found', $name);
     }
 }

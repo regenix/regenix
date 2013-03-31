@@ -4,7 +4,7 @@
     <list default="true" id="c0b17bb0-5ffe-4026-b63a-dd6ab201852f" name="Default" comment="" />
     <ignored path="www.iws" />
     <ignored path=".idea/workspace.xml" />
-    <file path="/Application.php" changelist="c0b17bb0-5ffe-4026-b63a-dd6ab201852f" time="1364743190609" ignored="false" />
+    <file path="/Application.php" changelist="c0b17bb0-5ffe-4026-b63a-dd6ab201852f" time="1364749369981" ignored="false" />
     <file path="/ModelClassloader.php" changelist="c0b17bb0-5ffe-4026-b63a-dd6ab201852f" time="1363259287831" ignored="false" />
     <file path="/Project.php" changelist="c0b17bb0-5ffe-4026-b63a-dd6ab201852f" time="1364718255223" ignored="false" />
     <file path="/SDK.php" changelist="c0b17bb0-5ffe-4026-b63a-dd6ab201852f" time="1363505584634" ignored="false" />
@@ -51,8 +51,8 @@
     <file path="/Buffer.php" changelist="c0b17bb0-5ffe-4026-b63a-dd6ab201852f" time="1364719660268" ignored="false" />
     <file path="/HTTPParams.php" changelist="c0b17bb0-5ffe-4026-b63a-dd6ab201852f" time="1364722006190" ignored="false" />
     <file path="/MyForm.php" changelist="c0b17bb0-5ffe-4026-b63a-dd6ab201852f" time="1364729091144" ignored="false" />
-    <file path="/RegenixTemplate.php" changelist="c0b17bb0-5ffe-4026-b63a-dd6ab201852f" time="1364749154867" ignored="false" />
-    <file path="/index.html" changelist="c0b17bb0-5ffe-4026-b63a-dd6ab201852f" time="1364749224987" ignored="false" />
+    <file path="/RegenixTemplate.php" changelist="c0b17bb0-5ffe-4026-b63a-dd6ab201852f" time="1364749818188" ignored="false" />
+    <file path="/index.html" changelist="c0b17bb0-5ffe-4026-b63a-dd6ab201852f" time="1364749986062" ignored="false" />
     <file path="/index.phtml" changelist="c0b17bb0-5ffe-4026-b63a-dd6ab201852f" time="1364740316048" ignored="false" />
     <file path="/index.twig" changelist="c0b17bb0-5ffe-4026-b63a-dd6ab201852f" time="1364740702363" ignored="false" />
     <file path="/main.html" changelist="c0b17bb0-5ffe-4026-b63a-dd6ab201852f" time="1364747269307" ignored="false" />
@@ -79,7 +79,7 @@
       <file leaf-file-name="Application.php" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/apps/project1/app/controllers/Application.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="1" column="22" selection-start="28" selection-end="28" vertical-scroll-proportion="-0.65384614">
+            <state line="4" column="17" selection-start="77" selection-end="77" vertical-scroll-proportion="-2.6153846">
               <folding>
                 <element signature="e#30#59#0" expanded="true" />
               </folding>
@@ -87,37 +87,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="index.html" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/apps/project1/app/views/Application/index.html">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="5" column="10" selection-start="91" selection-end="91" vertical-scroll-proportion="0.1539855">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="main.html" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/apps/project1/app/views/main.html">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="5" column="6" selection-start="78" selection-end="78" vertical-scroll-proportion="-3.2692308">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="root.html" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="root.html" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/apps/project1/app/views/root.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="0" column="17" selection-start="17" selection-end="17" vertical-scroll-proportion="-0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="base.tpl" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/apps/project1/app/views/base.tpl">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="1" column="6" selection-start="22" selection-end="22" vertical-scroll-proportion="-0.65384614">
+            <state line="0" column="17" selection-start="17" selection-end="17" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -137,8 +110,10 @@
       <file leaf-file-name="RegenixTemplate.php" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/framework/libs/RegenixTPL/RegenixTemplate.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="177" column="24" selection-start="5407" selection-end="5407" vertical-scroll-proportion="-3.0769231">
-              <folding />
+            <state line="276" column="41" selection-start="7838" selection-end="7838" vertical-scroll-proportion="-10.923077">
+              <folding>
+                <element signature="e#115#154#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -147,15 +122,6 @@
         <entry file="file://$PROJECT_DIR$/apps/project1/app/views/Application/index.phtml">
           <provider selected="true" editor-type-id="text-editor">
             <state line="0" column="21" selection-start="21" selection-end="21" vertical-scroll-proportion="-0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="application.conf" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/apps/project1/conf/application.conf">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="20" column="0" selection-start="445" selection-end="445" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -190,12 +156,12 @@
         <option value="$PROJECT_DIR$/apps/project1/app/views/Application/index.phtml" />
         <option value="$PROJECT_DIR$/index.php" />
         <option value="$PROJECT_DIR$/apps/project1/app/views/Application/index.twig" />
-        <option value="$PROJECT_DIR$/apps/project1/app/controllers/Application.php" />
         <option value="$PROJECT_DIR$/apps/project1/app/views/root.html" />
         <option value="$PROJECT_DIR$/apps/project1/app/views/main.html" />
         <option value="$PROJECT_DIR$/apps/project1/conf/application.conf" />
         <option value="$PROJECT_DIR$/framework/libs/RegenixTPL/RegenixTemplate.php" />
         <option value="$PROJECT_DIR$/apps/project1/app/views/Application/index.html" />
+        <option value="$PROJECT_DIR$/apps/project1/app/controllers/Application.php" />
       </list>
     </option>
   </component>
@@ -634,25 +600,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/apps/project1/app/controllers/Application.php">
+    <entry file="file://$PROJECT_DIR$/framework/mvc/template/TemplateLoader.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="1" column="22" selection-start="28" selection-end="28" vertical-scroll-proportion="-0.65384614">
-          <folding>
-            <element signature="e#30#59#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/apps/project1/app/views/base.tpl">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="1" column="6" selection-start="22" selection-end="22" vertical-scroll-proportion="-0.65384614">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/apps/project1/app/views/root.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="17" selection-start="17" selection-end="17" vertical-scroll-proportion="-0.0">
+        <state line="39" column="8" selection-start="851" selection-end="851" vertical-scroll-proportion="-3.9615386">
           <folding />
         </state>
       </provider>
@@ -666,16 +616,18 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/framework/mvc/template/TemplateLoader.php">
+    <entry file="file://$PROJECT_DIR$/framework/libs/RegenixTPL/RegenixTemplate.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="39" column="8" selection-start="851" selection-end="851" vertical-scroll-proportion="-3.9615386">
-          <folding />
+        <state line="276" column="41" selection-start="7838" selection-end="7838" vertical-scroll-proportion="-10.923077">
+          <folding>
+            <element signature="e#115#154#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/apps/project1/conf/application.conf">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="20" column="0" selection-start="445" selection-end="445" vertical-scroll-proportion="0.0">
+        <state line="20" column="0" selection-start="445" selection-end="445" vertical-scroll-proportion="0.5882353">
           <folding />
         </state>
       </provider>
@@ -687,23 +639,39 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/framework/libs/RegenixTPL/RegenixTemplate.php">
+    <entry file="file://$PROJECT_DIR$/apps/project1/app/views/base.tpl">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="177" column="24" selection-start="5407" selection-end="5407" vertical-scroll-proportion="-3.0769231">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/apps/project1/app/views/main.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="5" column="6" selection-start="78" selection-end="78" vertical-scroll-proportion="-3.2692308">
+        <state line="1" column="6" selection-start="22" selection-end="22" vertical-scroll-proportion="0.030797102">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/apps/project1/app/views/Application/index.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="5" column="10" selection-start="91" selection-end="91" vertical-scroll-proportion="0.1539855">
+        <state line="5" column="0" selection-start="128" selection-end="128" vertical-scroll-proportion="0.1539855">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/apps/project1/app/views/main.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="5" column="6" selection-start="78" selection-end="78" vertical-scroll-proportion="0.1539855">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/apps/project1/app/controllers/Application.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="4" column="17" selection-start="77" selection-end="77" vertical-scroll-proportion="-2.6153846">
+          <folding>
+            <element signature="e#30#59#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/apps/project1/app/views/root.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="17" selection-start="17" selection-end="17" vertical-scroll-proportion="-0.0">
           <folding />
         </state>
       </provider>
