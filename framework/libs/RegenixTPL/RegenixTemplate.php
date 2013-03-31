@@ -34,12 +34,15 @@ class RegenixTemplate {
     protected $file;
 
     /** @var array */
-    protected $blocks;
+    public $blocks;
 
     /** @var string */
     protected $compiledFile;
 
     public function __construct(){
+
+        $this->registerTag(new RegenixGetTag());
+        $this->registerTag(new RegenixSetTag());
     }
 
     public function setFile($file){
@@ -62,9 +65,25 @@ class RegenixTemplate {
         $new = new RegenixTemplate();
         $new->setTplDirs($this->tplDirs);
         $new->setTempDir($this->tmpDir);
-        $new->tags = $this->tags;
+        $new->tags   = $this->tags;
+        $new->blocks =& $this->blocks;
 
         return $new;
+    }
+
+    protected function _makeArgs($str){
+        if ( strpos($str, ':') === false ){
+            return 'array("_arg" => ' . $str . ')';
+        } else {
+            $result = 'array(';
+            $args = explode(',', $str, 100);
+            foreach($args as $arg){
+                $tmp = explode(':', $arg);
+                $key = trim($tmp[0]);
+                $result .= "'" . $key . "' => (" . $tmp[1] . '), ';
+            }
+            return $result . ')';
+        }
     }
 
     protected function _compile(){
@@ -102,6 +121,8 @@ class RegenixTemplate {
                             $extends = true;
                         } elseif ($cmd === 'doLayout'){
                             $result .= '%__BLOCK_doLayout__%';
+                        } elseif ($this->tags[$cmd]){
+                            $result .= '<?php $_TPL->_renderTag("' . $cmd . '", '.$this->_makeArgs($tmp[1]).');?>';
                         } else
                             $result .= '<?php ' .$cmd. '(' . $tmp[1] . '):?>';
                     }
@@ -150,6 +171,10 @@ class RegenixTemplate {
         return htmlspecialchars($var);
     }
 
+    public function _renderTag($tag, array $args = array()){
+        $this->tags[$tag]->call($args, $this);
+    }
+
     public function _renderBlock($block, $file, array $args = null){
         $tpl = clone $this;
         $tpl->setFile( TemplateLoader::findFile(str_replace('.', '/',$file) . '.html') );
@@ -165,6 +190,12 @@ class RegenixTemplate {
         $content = ob_get_contents();
         ob_end_clean();
         $content = str_replace('%__BLOCK_doLayout__%', $content, $this->blocks['doLayout']);
+        foreach($this->blocks as $name => $block){
+            if ($name != 'doLayout'){
+                $content = str_replace('%__BLOCK_'.$name.'__%', $block, $content);
+            }
+        }
+
         echo $content;
     }
 }
@@ -172,4 +203,28 @@ class RegenixTemplate {
 abstract class RegenixTemplateTag {
 
     abstract function getName();
+    abstract public function call($args, RegenixTemplate $ctx);
+}
+
+class RegenixGetTag extends RegenixTemplateTag {
+
+    function getName(){
+        return 'get';
+    }
+
+    public function call($args, RegenixTemplate $ctx){
+        echo '%__BLOCK_' . $args['_arg'] . '__%';
+    }
+}
+
+class RegenixSetTag extends RegenixTemplateTag {
+
+    function getName(){
+        return 'set';
+    }
+
+    public function call($args, RegenixTemplate $ctx){
+        list($key, $value) = each($args);
+        $ctx->blocks[$key] = $value;
+    }
 }
