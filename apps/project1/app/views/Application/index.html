@@ -1,1 +1,11 @@
-YES !! ${var} WORKS!!!
+YES !! {$var} WORKS!!! @{$var}
+
+#{if $var}
+   111
+#{else}
+   222
+#{/if}
+
+#{foreach $list as $el}
+     <li>{$el}</li>
+#{/foreach}

@@ -64,23 +64,35 @@ class RegenixTemplate {
 
         $result .= "\n" . '?>';
         $p = -1;
-        $lastE = 0;
+        $lastE = -1;
         while(($p = strpos($source, '{', $p + 1)) !== false){
 
             $mod  = $source[$p - 1];
             $e    = strpos($source, '}', $p);
             $expr = substr($source, $p + 1, $e - $p - 1);
 
-            $prevSource = substr($source, $lastE, $p - $lastE - 1);
+            $prevSource = substr($source, $lastE + 1, $p - $lastE - 2);
             $lastE = $e;
 
             $result .= $prevSource;
             switch($mod){
-                case '$': {
-                    $result .= '<?php echo $args[\'' . $expr . '\']?>';
-                } break;
                 case '@': {
-                    $result .= '<?="' . $expr . '"?>';
+                    $result .= '<?php echo ' . $expr . '?>';
+                } break;
+                case '#': {
+                    $tmp = explode(' ', $expr, 2);
+                    $cmd = $tmp[0];
+                    if ($cmd[0] == '/')
+                        $result .= '<?php end'.substr($cmd,1).'?>';
+                    else {
+                        if ( $cmd === 'else' )
+                            $result .= '<?php else:?>';
+                        else
+                            $result .= '<?php ' .$cmd. '(' . $tmp[1] . '):?>';
+                    }
+                } break;
+                default: {
+                    $result .= $mod . '<?php echo RegenixTemplate::renderVar(' . $expr . ')?>';
                 } break;
             }
         }
@@ -112,7 +124,13 @@ class RegenixTemplate {
     public function render($args, $cached = true){
         $this->compile($cached);
         $tags = $this->tags;
+        extract($args, EXTR_PREFIX_INVALID | EXTR_OVERWRITE, 'arg_');
+
         include $this->compiledFile;
+    }
+
+    public static function renderVar($var){
+        return htmlspecialchars($var);
     }
 }
 
