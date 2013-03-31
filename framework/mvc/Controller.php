@@ -2,9 +2,11 @@
 
 namespace framework\mvc;
 
+use framework\exceptions\CoreException;
 use framework\mvc\Response;
 use framework\mvc\template\TemplateLoader;
 use framework\lang\String;
+use framework\utils\MIMETypes;
 
 abstract class Controller {
 
@@ -39,7 +41,7 @@ abstract class Controller {
 
     protected function onBefore(){}
     protected function onAfter(){}
-    protected function onFinaly(){} 
+    protected function onFinally(){}
     protected function onException(\Exception $e){}
     
     public function callBefore(){
@@ -50,8 +52,8 @@ abstract class Controller {
         $this->onAfter();
     }
     
-    final public function callFinaly(){
-        $this->onFinaly();
+    final public function callFinally(){
+        $this->onFinally();
     }
     
     final public function callException(\Exception $e){
@@ -68,10 +70,6 @@ abstract class Controller {
         $this->renderArgs[ $varName ] = $value;
         return $this;
     }
-    
-    public function has($varName){
-        return isset($this->renderArgs[$varName]);
-    }
 
     /**
      * put a variables for template
@@ -86,16 +84,13 @@ abstract class Controller {
     }
     
     protected function send(){
-        
         throw new results\Result($this->response);
     }
 
     public function redirect($url, $permanent = false){
-        
         $this->response
                 ->setStatus($permanent ? 301 : 302)
                 ->setHeader('Location', $url);
-        
         $this->send();
     }
 
@@ -107,10 +102,10 @@ abstract class Controller {
         TemplateLoader::switchEngine($templateEngine);
     }
 
-     /**
+    /**
      * render template by action method name or template name
-     * @param [string $template] default controller action method
-     * @param [array $args] add vars to template
+     * @param bool $template
+     * @param array $args
      */
     public function render($template = false, array $args = null){
         
@@ -150,7 +145,7 @@ abstract class Controller {
     public function renderHTML($html){
         
         $this->response
-                ->setContentType(\framework\utils\MIMETypes::getByExt('html'))
+                ->setContentType(MIMETypes::getByExt('html'))
                 ->setEntity($html);
         
         $this->send();
@@ -159,12 +154,12 @@ abstract class Controller {
     public function renderJSON($object){
         
         $this->response
-                ->setContentType( \framework\utils\MIMETypes::getByExt('json') )
+                ->setContentType(MIMETypes::getByExt('json'))
                 ->setEntity( json_encode($object) );
         
         $error = json_last_error();
         if ( $error > 0 ){
-            throw new \framework\exceptions\CoreException('Error json encode, ' . $error);
+            throw new CoreException('Error json encode, ' . $error);
         }
         
         $this->send();

@@ -5,6 +5,7 @@ namespace framework\mvc\route;
 use framework\cache\SystemCache;
 use framework\mvc\Controller;
 use framework\mvc\Request;
+use framework\mvc\RequestBindParams;
 use framework\mvc\RequestBinder;
 
 class Router {
@@ -110,8 +111,13 @@ class Router {
                 }
                 $args[$name] = $value;
             } else {
-                if ( $controller->query->has($name) ){
-                    $class = $param->getClass();
+                $class = $param->getClass();
+                if ( $class->isSubclassOf(RequestBindParams::type) ){
+                    $cls_name = $class->getName();
+                    $value    = $cls_name::current();
+                    $args[$name] = $value;
+                } else if ( $controller->query->has($name) ){
+                    // получаем данные из GET
                     if ( $class !== null )
                         $value = $controller->query->getTyped($name, $class->getName());
                     else

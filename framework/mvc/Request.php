@@ -307,9 +307,11 @@ class RequestQuery {
      * @return array
      */
     public function getArrayTyped($name, $type = 'string', array $def = array()){
-        
         $arg = $this->getArray($name, $def);
-        return ArrayUtils::typed($arg, $type);
+        foreach($arg as &$v){
+            $v = RequestBinder::getValue($v, $type);
+        }
+        return $arg;
     }
     
     /**
@@ -338,7 +340,10 @@ class RequestQuery {
     public function getExplodeTyped($name, $type = 'string', $delimiter = ',', array $def = array()){
         
         $arg = $this->getExplode($name, $delimiter, $def);
-        return ArrayUtils::typed( $arg, $type );
+        foreach($arg as &$v){
+            $v = RequestBinder::getValue($v, $type);
+        }
+        return $arg;
     }
 }
 
@@ -408,4 +413,65 @@ interface RequestBindValue {
      * @return null
      */
     public function onBindValue($value);
+}
+
+abstract class RequestBindParams {
+
+    const type     = __CLASS__;
+
+    static $method = 'GET';
+    static $prefix = '';
+
+    public function __construct(array $args, $prefix = ''){
+        foreach($args as $key => $value){
+            if ( $prefix ) {
+                if (($p = strpos($key, $prefix)) === 0){
+                    $key = substr($key, strlen($prefix));
+                } else
+                    continue;
+            }
+
+            if ( method_exists($this, 'set' . $key) ){
+                $reflect = new \ReflectionMethod(get_class($this), 'set' . $key);
+                $a       = array();
+                foreach($reflect->getParameters() as $param){
+                    if($class = $param->getClass()){
+                        $a[] = RequestBinder::getValue($value, $class->getName());
+                    } else
+                        $a[] = $value;
+                }
+                $reflect->setAccessible(true);
+                $reflect->invokeArgs($this, $a);
+            } else if ( property_exists($this, $key) ) {
+                $this->{$key} = $value;
+            }
+        }
+    }
+
+    public static function current(){
+        $class   = new \ReflectionClass(get_called_class());
+        $_method = strtoupper($class->getConstant('method'));
+        switch($_method){
+            case 'POST': {
+                $httpArgs = $_POST;
+            } break;
+            case 'GET': {
+                $tmp = new RequestQuery();
+                $httpArgs = $tmp->getAll();
+            } break;
+            case 'REQUEST': {
+                $httpArgs = $_REQUEST;
+            } break;
+            case 'COOKIE': {
+                $httpArgs = $_COOKIE;
+            } break;
+            case 'SESSION': {
+                $httpArgs = $_SESSION;
+            } break;
+            case 'FILES': {
+                $httpArgs = $_FILES;
+            } break;
+        }
+        return $class->newInstance( $httpArgs, $class->getConstant('prefix') );
+    }
 }

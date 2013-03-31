@@ -5,10 +5,11 @@ use framework\mvc\Controller;
 use framework\mvc\Annotations;
 use types\Buffer;
 use types\Integer;
+use types\MyForm;
 
 class Application extends Controller {
 
-    public function index(Buffer $name, Integer $id = null){
-        $this->renderDump($id);
+    public function index(MyForm $form){
+        $this->renderDump($form);
     }
 }

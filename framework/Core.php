@@ -141,7 +141,7 @@ class Core {
         }
         
         $response->send();
-        $controller->callFinaly();
+        $controller->callFinally();
         SDK::doFinallyRequest($controller);
     }
     
