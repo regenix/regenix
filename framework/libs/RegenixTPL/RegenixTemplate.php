@@ -128,7 +128,13 @@ class RegenixTemplate {
                     }
                 } break;
                 default: {
-                    $result .= $mod . '<?php echo $_TPL->_renderVar(' . $expr . ')?>';
+                    $result .= $mod;
+                    if ( ($xp = strpos($expr, '->')) !== false ){
+                        $result .= '<?php echo $_TPL->_makeObjectVar(' . substr($expr, 0, $xp) . ')'
+                            . substr($expr, $xp) . '?>';
+                    } else {
+                        $result .= '<?php echo $_TPL->_renderVar(' . $expr . ')?>';
+                    }
                 } break;
             }
         }
@@ -168,7 +174,14 @@ class RegenixTemplate {
     }
 
     public function _renderVar($var){
-        return htmlspecialchars($var);
+        if (is_object($var)){
+            return (string)$var;
+        } else
+            return htmlspecialchars($var);
+    }
+
+    public function _makeObjectVar($var){
+        return RegenixVariable::current($var);
     }
 
     public function _renderTag($tag, array $args = array()){
@@ -226,5 +239,27 @@ class RegenixSetTag extends RegenixTemplateTag {
     public function call($args, RegenixTemplate $ctx){
         list($key, $value) = each($args);
         $ctx->blocks[$key] = $value;
+    }
+}
+
+class RegenixVariable {
+
+    protected $var;
+    protected static $instance;
+
+    protected function __construct($var){
+        $this->var = $var;
+    }
+
+    public function raw(){
+        return $this->var;
+    }
+
+    public static function current($var){
+        if (self::$instance){
+            self::$instance->var = $var;
+            return self::$instance;
+        }
+        return self::$instance = new RegenixVariable($var);
     }
 }

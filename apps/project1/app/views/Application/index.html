@@ -1,7 +1,7 @@
 #{extends 'root'}
 #{set title: 'Block works!'}
 
-YES !! {$var} WORKS!!! @{$var}
+YES !! {$var -> raw()} WORKS!!!
 
 #{if $var}
    111
