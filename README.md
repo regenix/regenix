@@ -11,14 +11,18 @@ Features
 * Route for url
 * Multiple projects on a single core 
 * RESTfull services
+* Easy form binding
 * Dependency injection
 * Validation based on tests
-* Twig, PHP or Smarty templates
+* Regenix, Twig, PHP or Smarty templates
 * Lazy class loading
 * Session, Flash, etc.
 * More utils classes
 * Powerful modules, easy to write modules
 
+Current Versions
+----------------
+* version 0.1 - start project
 
 Requires
 --------
