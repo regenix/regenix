@@ -22,7 +22,7 @@ Features
 
 Current Versions
 ----------------
-* version 0.1 - start project
+* version 0.1 - start regenix project
 
 Requires
 --------
