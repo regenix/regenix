@@ -2,10 +2,13 @@
 namespace framework {
 
 use framework\di\DI;
-use framework\mvc\results\Result;
+    use framework\exceptions\CoreException;
+    use framework\mvc\Response;
+    use framework\mvc\results\Result;
 use framework\lang\FrameworkClassLoader;
+    use framework\mvc\template\TemplateLoader;
 
-class Core {
+    class Core {
 
     const type = __CLASS__;
     
@@ -76,7 +79,6 @@ class Core {
     }    
     
     public static function processRoute(){
-        
         $project = Project::current();
         $router  = $project->router;
         
@@ -86,7 +88,6 @@ class Core {
         $router->route($request);
 
         try {
-                
             if (!$router->action){
                 throw new exceptions\CoreException('404 Not found');
             }
@@ -110,7 +111,6 @@ class Core {
             
             $controller->callBefore();
             $router->invokeMethod($controller, $reflection);
-
             
         } catch (Result $result){
             $response = $result->getResponse();
@@ -144,10 +144,37 @@ class Core {
         $controller->callFinally();
         SDK::doFinallyRequest($controller);
     }
-    
-    
+
+    public static function catchCoreException(CoreException $e){
+        $stack = CoreException::findProjectStack($e);
+        $info  = new \ReflectionClass($e);
+
+        $file = str_replace('\\', '/', $stack['file']);
+        $file = str_replace(str_replace('\\', '/', ROOT), '', $file);
+
+        $source = file($stack['file']);
+        $source = array_slice($source, $stack['line'] - 7, $stack['line'] + 7);
+
+        $template = TemplateLoader::load('system/errors/exception.html');
+        $template->putArgs(array('exception' => $e,
+            'stack' => $stack, 'info' => $info,
+            'desc' => $e->getMessage(), 'file' => $file, 'source' => $source
+        ));
+
+        $response = new Response();
+        $response->setEntity($template);
+        $response->send();
+    }
+
+    public static function catchErrorException(\ErrorException $e){
+
+    }
+
+    public static function catchException(\Exception $e){
+
+    }
+
     public static function getFrameworkPath(){
-        
         return ROOT . 'framework/';
     }
     

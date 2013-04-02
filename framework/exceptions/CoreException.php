@@ -1,6 +1,7 @@
 <?php
 namespace framework\exceptions;
 
+use framework\Project;
 use framework\lang\String;
 
 class CoreException extends \Exception {
@@ -29,5 +30,17 @@ class CoreException extends \Exception {
 
     public function getSourceFile(){
         return $this->getFile();
+    }
+
+    public static function findProjectStack(\Exception $e){
+        $project    = Project::current();
+        $projectDir = str_replace('\\', '/', $project->getPath());
+        foreach($e->getTrace() as $stack){
+            $dir = str_replace('\\', '/', dirname($stack['file']));
+            if ( strpos($dir, $projectDir) === 0 ){
+                return $stack;
+            }
+        }
+        return current($e->getTrace());
     }
 }

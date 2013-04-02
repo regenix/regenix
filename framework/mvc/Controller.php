@@ -124,7 +124,6 @@ abstract class Controller {
     }
     
     public function renderTemplate($template, array $args = null){
-        
         if ( $args )
             $this->putAll($args);
         
@@ -137,7 +136,6 @@ abstract class Controller {
 
 
     public function renderText($text){
-        
         $this->response->setEntity( $text );
         $this->send();
     }

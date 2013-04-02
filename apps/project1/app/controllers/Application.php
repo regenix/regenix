@@ -9,6 +9,7 @@ class Application extends Controller {
     public function index(){
         $this->put('var', time());
         $this->put('list', array('a', 'b', 'c', 'd'));
-        $this->render();
+
+        $this->render('test.html');
     }
 }

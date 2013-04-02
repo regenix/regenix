@@ -119,7 +119,7 @@ class RegenixTemplate {
                             $result .= '<?php else:?>';
                         elseif ($cmd === 'extends'){
                             $result .= '<?php echo $_TPL->_renderBlock("doLayout", ' . $tmp[1] . '); $__extends = true;?>';
-                            $extends = true;
+
                         } elseif ($cmd === 'doLayout'){
                             $result .= '%__BLOCK_doLayout__%';
                         } elseif ($this->tags[$cmd]){
@@ -128,15 +128,18 @@ class RegenixTemplate {
                             $result .= '<?php ' .$cmd. '(' . $tmp[1] . '):?>';
                     }
                 } break;
-                default: {
-                    $result .= $mod;
+                case '$': {
+                    //$result .= $mod;
                     if ( ($xp = strpos($expr, '->')) !== false ){
-                        $result .= '<?php echo $_TPL->_makeObjectVar(' . substr($expr, 0, $xp) . ')'
+                        $result .= '<?php echo $_TPL->_makeObjectVar($' . substr($expr, 0, $xp) . ')'
                             . substr($expr, $xp) . '?>';
                     } else {
-                        $result .= '<?php echo $_TPL->_renderVar(' . $expr . ')?>';
+                        $result .= '<?php echo $_TPL->_renderVar($' . $expr . ')?>';
                     }
                 } break;
+                default: {
+                    $result .= $mod .'{'. $expr . '}';
+                }
             }
         }
         $result .= substr($source, $lastE + 1);
@@ -182,7 +185,10 @@ class RegenixTemplate {
     }
 
     public function _makeObjectVar($var){
-        return RegenixVariable::current($var);
+        if ( is_object($var) )
+            return $var;
+        else
+            return RegenixVariable::current($var);
     }
 
     public function _renderTag($tag, array $args = array()){
