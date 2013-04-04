@@ -10,7 +10,6 @@ abstract class SDK {
     static $finallyHandlers = array();
 
     private static function setCallable($callback, array &$to, $prepend = false){
-        
         if ( IS_DEV && !is_callable($callback) ){
             throw new TypeException('callback', 'callable');
         }

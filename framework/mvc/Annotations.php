@@ -55,7 +55,6 @@ class Annotations {
      * @return ArrayTyped
      */
     public function get($annotation){
-
         if ( IS_DEV ) $this->checkAnnotation($annotation);
 
         $value = $this->data[$annotation];
@@ -72,7 +71,6 @@ class Annotations {
      * @return bool
      */
     public function has($annotation){
-
         if ( IS_DEV ) $this->checkAnnotation($annotation);
 
         return isset($this->data[$annotation]);
@@ -83,7 +81,6 @@ class Annotations {
      * @return ArrayTyped[]
      */
     public function getAsArray($annotation){
-
         if ( IS_DEV ) $this->checkAnnotation($annotation);
 
         $result = array();
@@ -109,7 +106,6 @@ class Annotations {
      * Validate structure of annotation
      */
     public function validate(){
-
         if ( $this->isEmpty() )
             return;
 
@@ -126,7 +122,6 @@ class Annotations {
 
 
     private function validateItem($name, $item){
-
         if (in_array($name, self::$ignories, true))
             return;
 
@@ -146,7 +141,6 @@ class Annotations {
     }
 
     private function validateItemOne($item, $name, $meta){
-
         if ( !is_array($item) )
             $item = array('_arg' => $item);
 
@@ -162,7 +156,6 @@ class Annotations {
 
         // check names
         if ( !$meta['any'] ){
-
             foreach($item as $nm => $value){
                 if ( !$meta['fields'][$nm] ){
                     throw new AnnotationException($this, $name, String::format('field `%s` not defined', $nm));
@@ -245,7 +238,6 @@ class Annotations {
     private static $cached = array();
 
     private static function getAnnotation($comments, $cacheCode, $fileName, $line, $scope){
-
         if (IS_PROD !== true){
 
             if ( self::$cached[ $cacheCode ] ){
@@ -267,7 +259,6 @@ class Annotations {
             return $result;
 
         } else {
-
 
             // aggressive cache
             if ( self::$cached[ $cacheCode ] ){
@@ -294,7 +285,6 @@ class Annotations {
      * @return Annotations
      */
     public static function getClassAnnotation($class){
-
         if ( !($class instanceof \ReflectionClass) )
             $class = new \ReflectionClass($class);
 
@@ -311,7 +301,6 @@ class Annotations {
      * @return Annotations|mixed|null
      */
     public static function getPropertyAnnotation(\ReflectionProperty $property){
-
         $class = $property->getDeclaringClass();
         return self::getAnnotation(
                     $property->getDocComment(),
@@ -328,7 +317,6 @@ class Annotations {
      * @return Annotations
      */
     public static function getMethodAnnotation(\ReflectionMethod $method){
-
         $class = $method->getDeclaringClass();
         return self::getAnnotation(
             $method->getDocComment(),
@@ -349,7 +337,6 @@ class Annotations {
      * @return array
      */
     private static function parseAnnotation($line){
-
         $tmp = explode('@', $line);
         if ( sizeof($tmp) < 2 ) return null;
 
@@ -383,7 +370,6 @@ class Annotations {
     }
 
     private static function parseAnnotations($comment){
-
         if ( !$comment ) return null;
         if (strpos( $comment, '/**') !== 0)
             return null;

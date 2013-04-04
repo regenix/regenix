@@ -43,9 +43,7 @@ class URL {
      * @param string|URL $url
      */
     public function __construct($url) {
-        
         if ( $url != null ){
-            
             if (is_string( $url )){
                 
                 $info = parse_url($url);
@@ -83,7 +81,6 @@ class URL {
      * @return boolean
      */
     public function constaints(URL $url){
-        
         return $this->port === $url->port 
                 && $this->protocol === $url->protocol
                 && (!$url->host || $this->host === $url->host)
@@ -92,7 +89,6 @@ class URL {
     
     
     public static function build($host, $path, $query = '', $protocol = 'http', $port = 80){
-        
         $url = new URL(null);
         $url->host = $host;
         $url->path = $path;
@@ -110,7 +106,6 @@ class URL {
     }
     
     public static function buildFromUri($host, $uri, $protocol = 'http', $port = 80){
-        
         $tmp = explode('?', $uri, 2);
         return self::build( $host, $tmp[0], $tmp[1], $protocol, $port );
     }

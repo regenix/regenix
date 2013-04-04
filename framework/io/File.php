@@ -17,7 +17,6 @@ class File {
      * @param \framework\io\File $parent
      */
     public function __construct($path, File $parent = null){
-
         if ( $parent != null )
             $this->path = $parent->getPath() . $path;
         else
@@ -53,7 +52,6 @@ class File {
      * @return string file ext
      */
     public function getExtension(){
-        
         if ( $this->extension !== null)
             return $this->extension;
         
@@ -69,7 +67,6 @@ class File {
      * @return string
      */
     public function getMimeType(){
-        
         return MIMETypes::getByExt( $this->getExtension() );
     }
 
@@ -100,7 +97,6 @@ class File {
      * @return boolean - create dir
      */
     public function mkdirs(){
-
         if ( !$this->exists() )
             return false;
 
@@ -112,7 +108,6 @@ class File {
      * @return boolean
      */
     public function mkdir(){
-
         if ( !$this->exists() )
             return false;
 
@@ -134,11 +129,9 @@ class File {
      * @return int unix time
      */
     public function lastModified(){
-        
         return filemtime($this->path);
     }
-    
-    
+
     public function __toString() {
         return sprintf( 'io\\File("%s")', $this->path );
     }

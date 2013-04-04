@@ -16,7 +16,6 @@ class AnnotationException extends CoreException {
     protected $file;
 
     public function __construct(Annotations $annotations, $name, $message){
-
         $this->file = $annotations->getFile();
         $this->line = $annotations->getLine();
 

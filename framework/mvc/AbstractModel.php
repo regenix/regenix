@@ -16,7 +16,6 @@ abstract class AbstractModel implements IClassInitialization {
      * @return mixed
      */
     public function getId(){
-
         $service = static::getService();
         if ( $service ){
             return $service->getId($this);
@@ -28,7 +27,6 @@ abstract class AbstractModel implements IClassInitialization {
      * @param mixed $value
      */
     public function setId($value){
-
         $service = static::getService();
         if ( $service ){
             $service->setId($this, $value);

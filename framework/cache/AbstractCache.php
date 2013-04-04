@@ -61,7 +61,6 @@ abstract class AbstractCache {
     }
 
     public function set($name, $value, $lifetime = '1h'){
-        
         if ( $this->toClear )
             flush();
         
@@ -87,7 +86,6 @@ abstract class AbstractCache {
 
 
     public function get($name, $def = null){
-        
         if (count($this->remove))
             $this->flush();
         
@@ -115,7 +113,6 @@ abstract class AbstractCache {
     }
     
     public function removeByTag($tag){
-        
         $tagName = '$.tags.' . $tag;
         $names = $this->get($tagName);
         if ( $names !== null ){
@@ -127,14 +124,12 @@ abstract class AbstractCache {
     }
 
     public function removeByTags(array $tags){
-        
         foreach($tags as $tag){
             $this->removeByTag($tag);
         }
     }
 
     public function clear(){
-        
         $this->set    = array();
         $this->remove = array();
         $this->toClear = true;

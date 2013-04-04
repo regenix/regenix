@@ -41,7 +41,6 @@ class RegenixTemplate {
     protected $compiledFile;
 
     public function __construct(){
-
         $this->registerTag(new RegenixGetTag());
         $this->registerTag(new RegenixSetTag());
     }

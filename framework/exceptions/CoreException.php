@@ -15,7 +15,6 @@ class CoreException extends \Exception {
     }
     
     public static function formated($message){
-        
         $args = array();
         if (func_num_args() > 1){
             $args = array_slice(func_get_args(), 1);

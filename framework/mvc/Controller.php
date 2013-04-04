@@ -108,7 +108,6 @@ abstract class Controller {
      * @param array $args
      */
     public function render($template = false, array $args = null){
-        
         if ( $template === false ) {
             $trace      = debug_backtrace();
             $current    = $trace[1];
@@ -141,7 +140,6 @@ abstract class Controller {
     }
     
     public function renderHTML($html){
-        
         $this->response
                 ->setContentType(MIMETypes::getByExt('html'))
                 ->setEntity($html);
@@ -150,7 +148,6 @@ abstract class Controller {
     }
 
     public function renderJSON($object){
-        
         $this->response
                 ->setContentType(MIMETypes::getByExt('json'))
                 ->setEntity( json_encode($object) );
@@ -164,7 +161,6 @@ abstract class Controller {
     }
     
     public function renderXML($xml){
-        
         if ( $xml instanceof \SimpleXMLElement ){
             /** @var \SimpleXMLElement */
             /// TODO

@@ -16,9 +16,7 @@ class Response {
     
     private $headers = array();
 
-
     public function __construct() {
-        
         $this
              ->setStatus( 200 )
              ->setContentType( 'text/plain' )
@@ -47,7 +45,6 @@ class Response {
     }
     
     public function setHttpVersion($version){
-        
         $this->httpVersion = $version;
         return $this;
     }
@@ -73,8 +70,6 @@ class Response {
     }
 
     public function sendHeaders(){
-        
-        
         header('HTTP/' . $this->httpVersion . ' ' . (int)$this->status);
         header('Content-type: '. $this->contentType . '; charset=' . $this->charset);
         

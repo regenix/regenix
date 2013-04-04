@@ -27,7 +27,6 @@ abstract class ModuleController extends Controller {
 
 
     public function render($template = false, array $args = null) {
-        
         if ( $template === false ) {
             $trace      = debug_backtrace();
             $current    = $trace[1];
@@ -42,11 +41,10 @@ abstract class ModuleController extends Controller {
     }
     
     public function renderTemplate($template, array $args = null) {
-        
         if ( $template[0] != '@' ){            
             $template = $this->module . '/views/' . $template;
         } else {
-            
+            // ...
         }
         
         parent::renderTemplate( $template, $args );

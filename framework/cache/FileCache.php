@@ -37,12 +37,10 @@ class FileCache extends AbstractCache {
     }
     
     protected function getFile($name){
-        
         return $this->cacheDir . sha1($name) . '.cache';
     }
     
     public function flush($full = false) {
-        
         /*
         if ( $full ){
             $resouce = new \SplFileInfo($this->cacheDir . 'index.json');
@@ -70,7 +68,7 @@ class FileCache extends AbstractCache {
         foreach ($this->remove as $name => $val){
             
             $fileName = $this->getFile($name);
-            if (file_exists($filename))
+            if (file_exists($fileName))
                 unlink($fileName);
         }
         
@@ -80,7 +78,6 @@ class FileCache extends AbstractCache {
     }
 
     protected function getCache($name) {
-        
         $fileName = $this->getFile($name);
         $time = file_exists($fileName) ? filemtime($fileName) : 0;
         if ( $time === 0 )

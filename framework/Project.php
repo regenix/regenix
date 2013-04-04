@@ -98,7 +98,6 @@ class Project {
      * @param Configuration $config
      */
     public function applyConfig(Configuration $config){
-
         $paths = $config->getArray("app.paths", array('/'));
         $this->setPaths( $paths );
     }
@@ -108,7 +107,6 @@ class Project {
      * @return boolean
      */
     public function findCurrentPath(){
-        
         $request = mvc\Request::current();
         
         foreach ($this->paths as $url){
@@ -142,7 +140,6 @@ class Project {
 
 
     public function register(){
-        
         // config
         $this->mode   = strtolower($this->config->getString('app.mode', 'dev'));
         define('IS_PROD', $this->isProd());
@@ -195,7 +192,6 @@ class Project {
     }
     
     private function _registerModules(){
-        
         $modules = $this->config->getArray('app.modules');
         foreach ($modules as $module){
             modules\AbstractModule::register($module);
@@ -203,7 +199,6 @@ class Project {
     }
 
     private function _registerLoader(){
-
         $this->classLoader = new ClassLoader();
         $this->classLoader->addNamespace('', $this->getPath() . 'app/');
         
@@ -211,7 +206,6 @@ class Project {
     }
 
     private function _registerRoute(){
-     
         // routes
         $cache     = c('Cache');
         $isCached  = IS_PROD && $cache->isFast();
@@ -251,7 +245,6 @@ class Project {
      * @return Project
      */
     public static function current(){
-        
         return Core::$__project;
     }
 

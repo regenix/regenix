@@ -13,7 +13,6 @@ class SystemCache {
     const type = __CLASS__;
 
     public static function get($name){
-
         return SYSTEM_CACHED === true ?
             (FAST_SERIALIZE_ENABLE ? igbinary_unserialize(apc_fetch('$.fsys.' . $name)) :
                 apc_fetch('$.sys.' . $name)) :
@@ -21,7 +20,6 @@ class SystemCache {
     }
     
     public static function set($name, $value, $lifetime = 3600){
-        
         if ( SYSTEM_CACHED === true ){
             if ( FAST_SERIALIZE_ENABLE )
                 apc_store('$.fsys.' . $name, igbinary_serialize($value), $lifetime);
@@ -31,7 +29,6 @@ class SystemCache {
     }
     
     public static function getWithCheckFile($name, $filePath){
-
         if ( !SYSTEM_CACHED )
             return null;
 
@@ -49,7 +46,6 @@ class SystemCache {
     }
     
     public static function setWithCheckFile($name, $value, $filePath, $lifetime = 3600){
-
         if ( !SYSTEM_CACHED )
             return;
 

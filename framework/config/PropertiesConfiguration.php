@@ -9,7 +9,6 @@ class PropertiesConfiguration extends Configuration {
     private $env = false;
 
     public function loadData(){
-
         $files = $this->files;
         if ( !$files )
             $files = array($this->file);
@@ -49,7 +48,6 @@ class PropertiesConfiguration extends Configuration {
     }
 
     public function get($key, $default = null){
-
         if ($this->env && isset($this->data[ $tmp = $this->env . '.' . $key ]) )
             $value = $this->data[ $tmp ];
         else if ( $this->containsKey($key) )
@@ -89,7 +87,6 @@ class PropertiesConfiguration extends Configuration {
     }
 
     public function getArray($key, $default = array()){
-
         if ( !$this->containsKey($key) )
             $result = $default;
         else
@@ -112,16 +109,16 @@ class PropertiesConfiguration extends Configuration {
     }
 
     /**
+     * @deprecated
      * @param $prefix
      * @return Configuration
      */
     public function subset($prefix){
-
-        $result = new Configuration();
+        $result = new Configuration(null);
         foreach($this->data as $key => $value){
             if ( strpos($key, $prefix) === 0 ){
                 $newKey = substr($key, strlen($prefix));
-                $result->addProperty( $newKey, $value );
+                //$result->addProperty( $newKey, $value );
             }
         }
 

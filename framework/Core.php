@@ -5,10 +5,10 @@ use framework\di\DI;
     use framework\exceptions\CoreException;
     use framework\mvc\Response;
     use framework\mvc\results\Result;
-use framework\lang\FrameworkClassLoader;
+    use framework\lang\FrameworkClassLoader;
     use framework\mvc\template\TemplateLoader;
 
-    class Core {
+class Core {
 
     const type = __CLASS__;
     
@@ -51,7 +51,6 @@ use framework\lang\FrameworkClassLoader;
     }
 
     private static function _registerProjects(){
-
         $dirs = scandir(Project::getSrcDir());
         foreach ($dirs as $dir){
             if ($dir == '.' || $dir == '..') continue;
@@ -60,7 +59,6 @@ use framework\lang\FrameworkClassLoader;
     }
 
     private static function _registerCurrentProject(){
-        
         /** 
          * @var Project $project
          */
@@ -179,7 +177,6 @@ use framework\lang\FrameworkClassLoader;
     }
     
     public static function shutdown(Project $project){
-        
         ignore_user_abort(true);   
         
         ob_end_flush();

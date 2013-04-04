@@ -1,7 +1,12 @@
 <?php
 
 namespace framework\di {
-    
+
+    /**
+     * Class DI
+     * @deprecated
+     * @package framework\di
+     */
     class DI {
 
         const type = __CLASS__;
@@ -10,7 +15,6 @@ namespace framework\di {
         static $singletons   = array();
 
         public static function define($component, $class, $asSingleton = false){
-
             if ( self::$singletons[ $component ] ){
                 unset( self::$singletons[ $component ] );
             }
@@ -20,7 +24,6 @@ namespace framework\di {
 
 
         public static function get($class){
-
             return c( $class );
         }
     }
@@ -31,7 +34,14 @@ namespace {
     
     use framework\di\DI;
     use framework\di\exceptions\DIBindClassNotFound;
-    
+
+    /**
+     * @param $class
+     * @param bool $onlySingletonInit
+     * @return null
+     * @throws framework\di\exceptions\DIBindClassNotFound
+     * @deprecated
+     */
     function c($class, $onlySingletonInit = false){
     
         if ( ($singleton = DI::$singletons[ $class ]) !== null ){
@@ -42,9 +52,9 @@ namespace {
             
         $binding = DI::$dependencies[ $class ];
         if ( !$binding ){
-            if ( $ignory )
+            /*if ( $ignory )
                 return null;
-            else
+            else*/
                 throw new DIBindClassNotFound($class);
         }
             

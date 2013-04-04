@@ -12,7 +12,6 @@ class Time {
      * @return int - the number of seconds
      */
     public static function parseDuration($duration){
-        
         if (is_int($duration))
             return $duration;
         

@@ -68,7 +68,6 @@ class MemcacheCache extends AbstractCache {
     
 
     protected function getCache($name) {
-        
         $data = $this->server->get(array($name));
         if ( $data === false )
             return null;
@@ -78,7 +77,6 @@ class MemcacheCache extends AbstractCache {
     
 
     public function flush($full = false) {
-        
         if ( $this->toClear ){
             
             $this->server->flush();

@@ -8,7 +8,6 @@ abstract class String {
     const type = __CLASS__;
 
     public static function format($string){
-
         $args = func_get_args();
         return vsprintf($string, array_slice($args, 1));
     }
@@ -20,7 +19,6 @@ abstract class String {
      * @return boolean
      */
     public static function startsWith($string, $with){
-        
         return strpos($string, $with) === 0;
     }
     
@@ -31,7 +29,6 @@ abstract class String {
      * @return boolean
      */
     public static function endsWith($string, $with){
-
         return strpos($string, $with) === strlen($string) - strlen($with);
     }
 }

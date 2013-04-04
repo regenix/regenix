@@ -15,7 +15,6 @@ class FileIOException extends \framework\exceptions\CoreException {
     protected $path;
 
     public function __construct(File $file){
-       
         $this->path = $file->getPath();
         parent::__construct( String::format('File "%s" can\'t read', $file->getPath()) );
     }

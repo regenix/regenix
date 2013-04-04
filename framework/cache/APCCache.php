@@ -14,7 +14,6 @@ class APCCache extends AbstractCache {
     }
     
     public function flush($full = false) {
-
         if ( $this->toClear )
             apc_clear_cache();
         else {
@@ -34,7 +33,6 @@ class APCCache extends AbstractCache {
     }
 
     public static function canUse() {
-        
         return extension_loaded('apc');
     }
 }

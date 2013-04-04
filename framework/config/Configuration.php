@@ -32,7 +32,6 @@ class Configuration {
      * @param \framework\io\File $file|array files
      */
     public function __construct($file){
-
         if (is_array($file)){
             
             $this->file = null;
@@ -52,7 +51,6 @@ class Configuration {
     }
 
     public function load(){
-
         $this->clear();
         if ( $this->files ){
             $this->loadData();
@@ -64,7 +62,6 @@ class Configuration {
                 $this->loadData();
         }
     }
-
 
     public function clear(){
         $this->data = array();

@@ -30,7 +30,6 @@ class ClassLoader {
      * @throws \framework\exceptions\CoreException
      */
     protected function checkCaseFilename($fileName, $class){
-
         $class = str_replace('\\', DIRECTORY_SEPARATOR, $class);
 
         if ( !String::endsWith(realpath($fileName), $class . '.php') )
@@ -38,7 +37,6 @@ class ClassLoader {
     }
 
     public function addClassPath($path, $prepend = false) {
-
         if ($prepend)
             array_unshift( $this->classPaths, $path );
         else
@@ -46,7 +44,6 @@ class ClassLoader {
     }
 
     public function addNamespace($namespace, $path, $prepend = false, $callback = null) {
-
         if ($prepend) {
             array_shift( $this->namespaces, array('namespace' => $namespace, 'path' => $path, 'callback' => $callback) );
         } else {
@@ -55,7 +52,6 @@ class ClassLoader {
     }
 
     public function loadClass($class) {
-
         $file = $this->findFile( $class );
 
         if ($file != null) {
@@ -74,7 +70,6 @@ class ClassLoader {
     }
 
     public function findFile($class) {
-
         $class_rev = str_replace( '\\', DIRECTORY_SEPARATOR, $class );
         if (strpos( $class_rev, DIRECTORY_SEPARATOR ) === 0)
             $class_rev = substr( $class, 1 );
@@ -136,7 +131,6 @@ class FrameworkClassLoader extends ClassLoader {
     static $classes = array();
 
     public function loadClass($class) {
-
         // optimize
         $tmp = explode( '\\', $class, 3 );
         $isModule = $tmp[0] == 'modules';

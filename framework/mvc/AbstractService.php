@@ -28,7 +28,6 @@ abstract class AbstractService {
      * @param $modelClass string
      */
     protected function __construct($modelClass){
-
         $this->meta = self::$modelInfo[$modelClass];
         $this->modelClass = $modelClass;
     }
@@ -73,7 +72,6 @@ abstract class AbstractService {
      * @return array of bool
      */
     public function saveAll(array $documents, array $options = array()){
-
         $result = array();
         foreach($documents as $document){
             $result[] = $this->save($document, $options);
@@ -87,7 +85,6 @@ abstract class AbstractService {
      * @return array
      */
     public function removeAll(array $objects, array $options = array()){
-
         $result = array();
         foreach($objects as $document){
             $result[] = $this->remove($document, $options);
@@ -96,7 +93,6 @@ abstract class AbstractService {
     }
 
     protected function fetch(AbstractModel $object, $data, $lazyNeed = false){
-
         if ( $object instanceof IHandleBeforeLoad ){
             $object->onBeforeLoad($data);
         }
@@ -154,7 +150,6 @@ abstract class AbstractService {
      * @return AbstractModel
      */
     public function findById($id, array $fields = array(), $lazy = false){
-
         $idField = $this->meta['id_field'];
         $data  = $this->findDataById(static::typed($id, $idField['type']));
         if ( $data === null )
@@ -181,7 +176,6 @@ abstract class AbstractService {
      * @throws \framework\exceptions\CoreException
      */
     public function reload(AbstractModel $object, array $fields = array()){
-
         $id = $this->getId($object);
         if ( !$id )
             throw CoreException::formated('Can`t reload non-exist document');
@@ -195,7 +189,6 @@ abstract class AbstractService {
     }
 
     public function __callGetter(AbstractModel $object, $field){
-
         $info  = $this->meta['fields'][$field];
         $value = $object->__data[$field];
 
@@ -221,7 +214,6 @@ abstract class AbstractService {
     }
 
     public function __callSetter(AbstractModel $object, $field, $value, $lazy = false){
-
         $info = $this->meta['fields'][$field];
 
         if ( $info['ref'] && !$info['ref']['lazy'] && $lazy === false){
@@ -246,7 +238,6 @@ abstract class AbstractService {
      * @param $id
      */
     public function setId(AbstractModel $object, $id){
-
         $idField = $this->meta['id_field'];
         if ( $idField ){
             $field = $idField['field'];
@@ -256,7 +247,6 @@ abstract class AbstractService {
     }
 
     protected static function registerModelMetaClass(&$info, \ReflectionClass $class, Annotations $classInfo){
-
         $name = $class->getName();
         $anCollection = $classInfo->get('collection');
 
@@ -265,14 +255,12 @@ abstract class AbstractService {
 
     protected static function registerModelMetaId(&$propInfo, &$allInfo,
                                                   \ReflectionClass $class, $name, Annotations $property){
-
         $allInfo['id_field'] = array(
             'column' => $propInfo['column'], 'field' => $propInfo['name'], 'type' => $propInfo['type']
         );
     }
 
     protected static function registerModelMetaProperty(&$cur, \ReflectionClass $class, $name, Annotations $property){
-
         $cur['name']   = $name;
         $cur['column'] = $property->get('column')->getDefault( $name );
         $cur['type']   = $property->get('var')->getDefault('mixed');
@@ -311,7 +299,6 @@ abstract class AbstractService {
      * @throws \framework\exceptions\AnnotationException
      */
     protected static function registerModelMetaIndex(&$infoIndex, &$allInfo, Annotations $classInfo, $key, ArrayTyped $indexed){
-
         if ( $key[0] === '$' ) return;
 
         $column = $allInfo['fields'][ $key ];
@@ -329,7 +316,6 @@ abstract class AbstractService {
      * @throws \framework\exceptions\AnnotationException
      */
     protected static function registerModelMeta(\ReflectionClass $class, Annotations $classInfo, $propertiesInfo){
-
         $info = array();
         $info['fields']     = array();
         $info['fields_rev'] = array();
@@ -391,7 +377,6 @@ abstract class AbstractService {
      * @param string $className
      */
     public static function registerModel($className){
-
         if ( $className === AbstractModel::type ) return;
 
         /** @var $annotation Annotations */

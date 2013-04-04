@@ -32,7 +32,6 @@ class Request {
     }
     
     public static function createFromGlobal(){
-        
         $req = new Request();
         $req->setMethod($_SERVER['REQUEST_METHOD']);
         $req->setUri($_SERVER['REQUEST_URI']);
@@ -51,7 +50,6 @@ class Request {
      * @return string calc hash of request
      */
     public function getHash(){
-        
         return sha1(
                 $this->method. '|' . 
                 $this->protocol . '|' . 
@@ -88,7 +86,6 @@ class Request {
      * @param string $url
      */
     public function setUri($url){
-        
         $this->uri = $url;
         
         if ( $this->basePath ){
@@ -174,7 +171,6 @@ class Request {
      * @return boolean
      */
     public function isBase($baseUrl){
-        
         if ( !($baseUrl instanceof URL) )
             $baseUrl = new URL($baseUrl);
         
@@ -188,7 +184,6 @@ class Request {
      * @return Request
      */
     public static function current(){
-        
         if ( self::$instance )
             return self::$instance;
         
@@ -257,7 +252,6 @@ class RequestQuery {
      * @return integer
      */
     public function getNumber($name, $def = 0){
-        
         return (int)$this->get($name, (int)$def);
     }
     
@@ -268,7 +262,6 @@ class RequestQuery {
      * @return string
      */
     public function getString($name, $def = ''){
-        
         return (string)$this->get( $name, (string)$def );
     }
     
@@ -280,7 +273,6 @@ class RequestQuery {
      * @return boolean
      */
     public function getBoolean($name, $def = false){
-        
         return (boolean)$this->get($name, (boolean)$def);
     }
     
@@ -291,7 +283,6 @@ class RequestQuery {
      * @return array
      */
     public function getArray($name, array $def = array()){
-        
         $arg = $this->get($name, (array)$def);
         if (is_array( $arg ))
             return $arg;
