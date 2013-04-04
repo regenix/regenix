@@ -21,18 +21,38 @@ class Request {
     
     protected $basePath = "";
 
-
     /**
      * @var URL
      */
     protected $currentUrl;
 
-    public function __construct() {
-        // TODO
+    /**
+     * @var array
+     */
+    protected $headers;
+
+    public function __construct($headers = null) {
+        $this->headers = $headers;
     }
-    
+
     public static function createFromGlobal(){
-        $req = new Request();
+
+        $headers = array();
+        if ( function_exists('getallheaders') ){
+            $headers = getallheaders();
+        } else if ( function_exists('apache_request_headers') ){
+            $headers = apache_request_headers();
+        } else {
+            foreach($_SERVER as $key=>$value) {
+                if (substr($key,0,5)=="HTTP_") {
+                    $key = str_replace(" ", "-", str_replace("_"," ",substr($key,5)));
+                    $headers[$key] = $value;
+                }
+            }
+        }
+        $headers = array_change_key_case($headers, CASE_LOWER);
+
+        $req = new Request($headers);
         $req->setMethod($_SERVER['REQUEST_METHOD']);
         $req->setUri($_SERVER['REQUEST_URI']);
         $req->host = $_SERVER['HTTP_HOST'];
@@ -62,6 +82,24 @@ class Request {
      */
     public function getUri(){
         return $this->uri;
+    }
+
+    /**
+     * @param $name
+     * @param null $def
+     * @return array|null
+     */
+    public function getHeader($name, $def = null){
+        $name = strtolower($name);
+        return isset($this->headers[$name]) ? $this->headers : $def;
+    }
+
+    /**
+     * @param $name
+     * @return bool
+     */
+    public function hasHeader($name){
+        return isset($this->headers[strtolower($name)]);
     }
     
     /**
@@ -191,6 +229,212 @@ class Request {
     }
 }
 
+/**
+ * TODO: DI
+ * Class Session
+ * @package framework\mvc
+ */
+class Session {
+
+    protected function __construct(){
+        session_start();
+    }
+
+    /**
+     * @return string
+     */
+    public function getId(){
+        return session_id();
+    }
+
+    /**
+     * @return array
+     */
+    public function all(){
+        return $_SESSION;
+    }
+
+    /**
+     * @param string $name
+     * @param mixed $def
+     * @return null|scalar
+     */
+    public function get($name, $def = null){
+        return $this->has($name) ? $_SESSION[$name] : $def;
+    }
+
+    /**
+     * @param $name string
+     * @param $value string|int|float|null
+     */
+    public function put($name, $value){
+        $_SESSION[$name] = $value;
+    }
+
+    /**
+     * @param array $values
+     */
+    public function putAll(array $values){
+        foreach($values as $name => $value){
+            $this->put($name, $value);
+        }
+    }
+
+    /**
+     * @param string $name
+     * @return bool
+     */
+    public function has($name){
+        return isset($_SESSION[$name]);
+    }
+
+    /**
+     * @param string $name
+     */
+    public function remove($name){
+        unset($_SESSION[$name]);
+    }
+
+    /**
+     * clear all session values
+     */
+    public function clear(){
+        session_unset();
+    }
+
+    private static $current;
+    /**
+     * @return Session
+     */
+    public static function current(){
+        if ( self::$current )
+            return self::$current;
+        return self::$current = new Session();
+    }
+}
+
+
+class Flash {
+
+    /** @var Session */
+    private $session;
+
+    protected function __construct(){
+        $this->session = Session::current();
+    }
+
+    /**
+     * @param null $value
+     * @return $this|scalar|null
+     */
+    public function success($value = null){
+        if ( $value === null )
+            return $this->get("success");
+        else
+            return $this->put("success", $value);
+    }
+
+    /**
+     * @param null $value
+     * @return $this|scalar|null
+     */
+    public function error($value = null){
+        if ( $value === null )
+            return $this->get("error");
+        else
+            return $this->put("error", $value);
+    }
+
+    /**
+     * @param null $value
+     * @return $this|scalar|null
+     */
+    public function warning($value = null){
+        if ( $value === null )
+            return $this->get("warning");
+        else
+            return $this->put("warning", $value);
+    }
+
+    /**
+     * @param string $name
+     * @param scalar $value
+     * @return $this
+     */
+    public function put($name, $value){
+        $this->session->put($name . '$$flash', $value);
+        $this->session->put($name . '$$flash_i', 1);
+        return $this;
+    }
+
+    /**
+     * keep flash value
+     * @param string $name
+     * @param int $inc
+     * @return $this
+     */
+    public function keep($name, $inc = 1){
+        $i = $this->session->get($name . '$$flash_i');
+        if ( $i !== null ){
+            $i = (int)$i + $inc;
+            if ( $i < 0 ){
+                $this->remove($name);
+            } else {
+                $this->session->put($name . '$$flash_i', $i);
+            }
+        }
+        return $this;
+    }
+
+    public function touch($name){
+        return $this->keep($name, -1);
+    }
+
+    public function touchAll(){
+        $all = $this->session->all();
+        foreach($all as $key => $value){
+            if ( String::endsWith($key, '$$flash') ){
+                $this->touch(substr($key, 0, -7));
+            }
+        }
+        return $this;
+    }
+
+    public function get($name, $def = null){
+        return $this->session->get($name . '$$flash', $def);
+    }
+
+    /**
+     * exists flash value
+     * @param string $name
+     * @return bool
+     */
+    public function has($name){
+        return $this->session->has($name . '$$flash');
+    }
+
+    /**
+     * hard remove flash value
+     * @param $name
+     * @return $this
+     */
+    public function remove($name){
+        $this->session->remove($name . '$$flash');
+        $this->session->remove($name . '$$flash_i');
+        return $this;
+    }
+
+    private static $current;
+    /**
+     * Current flash object
+     * @return Flash
+     */
+    public static function current(){
+        if ( self::$current )
+            return self::$current;
+        return self::$current = new Flash();
+    }
+}
 
 class RequestQuery {
     

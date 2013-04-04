@@ -7,9 +7,11 @@ use types\MyForm;
 class Application extends Controller {
 
     public function index(){
-        $this->put('var', time());
-        $this->put('list', array('a', 'b', 'c', 'd'));
+        $this->flash->success("Прошло успешно");
+        $this->redirect("/test/");
+    }
 
-        $this->render('test.html');
+    public function test(){
+        $this->renderTemplate("Application/index.html");
     }
 }

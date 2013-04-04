@@ -4,12 +4,4 @@
     YES !! {$var->format('d.m.Y')->raw()} WORKS!!!
 </div>
 
-#{if $var}
-   111
-#{else}
-   222
-#{/if}
-
-#{foreach $list as $el}
-     <li>{$el}</li>
-#{/foreach}
+${flash->success()}

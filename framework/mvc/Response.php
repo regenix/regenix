@@ -2,6 +2,7 @@
 
 namespace framework\mvc;
 
+use framework\libs\Time;
 use framework\mvc\providers\ResponseProvider;
 
 class Response {
@@ -69,6 +70,19 @@ class Response {
         return $this;
     }
 
+    public function cacheFor($duration){
+        $maxAge = Time::parseDuration($duration);
+        $this->setHeader("Cache-Control", "max-age=" . $maxAge);
+        return $this;
+    }
+
+    public function cacheForETag($etag, $duration, $lastModified = null){
+        $this->cacheFor($duration);
+        $this->setHeader("Last-Modified", gmdate("D, d M Y H:i:s ", $lastModified));
+        $this->setHeader("Etag", $etag);
+        return $this;
+    }
+
     public function sendHeaders(){
         header('HTTP/' . $this->httpVersion . ' ' . (int)$this->status);
         header('Content-type: '. $this->contentType . '; charset=' . $this->charset);
@@ -79,7 +93,6 @@ class Response {
     }
 
     public function send($headers = true){
-        
         if ( is_object($this->entity) ){
             
             $providerClass = ResponseProvider::get(get_class($this->entity)); 
@@ -98,7 +111,6 @@ class Response {
         } else {
             if ( $headers )
                 $this->sendHeaders();
-            
             $content = (string)$this->entity;
         }
         

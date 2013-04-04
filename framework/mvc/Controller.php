@@ -3,6 +3,7 @@
 namespace framework\mvc;
 
 use framework\exceptions\CoreException;
+use framework\io\File;
 use framework\mvc\Response;
 use framework\mvc\template\TemplateLoader;
 use framework\lang\String;
@@ -17,26 +18,42 @@ abstract class Controller {
 
     /** @var Request */
     public $request;
+
+    /** @var Session */
+    public $session;
+
+    /** @var Flash */
+    public $flash;
     
     /** @var RequestQuery */
     public $query;
 
-    /** @var \framework\cache\AbstractCache */
-    public $cache;
+    /**
+     * method name of invoke in request
+     * @var string
+     */
+    public $actionMethod;
 
-
-    /** @var array */
+    /**
+     * template arguments
+     * @var array[string, any]
+     **/
     private $renderArgs = array();
+
+    /**
+     * get current route arguments
+     * @var array[string, any]
+     */
+    public $routeArgs = array();
 
 
     public function __construct() {
         $this->request  = Request::current();
+        $this->session  = Session::current();
+        $this->flash    = Flash::current();
+
         $this->response = new Response();
-
         $this->query    = new RequestQuery();
-        $this->cache    = c('Cache');
-
-        $this->onBefore();
     }
 
     protected function onBefore(){}
@@ -54,6 +71,7 @@ abstract class Controller {
     
     final public function callFinally(){
         $this->onFinally();
+        $this->flash->touchAll();
     }
     
     final public function callException(\Exception $e){
@@ -82,9 +100,13 @@ abstract class Controller {
         }
         return $this;
     }
-    
-    protected function send(){
+
+    public function send(){
         throw new results\Result($this->response);
+    }
+
+    public function notFoundIfNull($value, $message = ''){
+        // TODO
     }
 
     public function redirect($url, $permanent = false){
@@ -102,29 +124,43 @@ abstract class Controller {
         TemplateLoader::switchEngine($templateEngine);
     }
 
+
     /**
+     * Work out the default template to load for the invoked action.
+     * E.g. "controllers\Pages\index" returns "views/Pages/index.html".
+     */
+    public function template(){
+        $controller = str_replace('\\', '/', get_class($this));
+
+        if ( String::startsWith($controller, 'controllers/') )
+            $controller = substr($controller, 12);
+
+        $template   = $controller . '/' . $this->actionMethod;
+        return $template;
+    }
+
+    /**
+     * Render the corresponding template
      * render template by action method name or template name
      * @param bool $template
      * @param array $args
      */
     public function render($template = false, array $args = null){
-        if ( $template === false ) {
-            $trace      = debug_backtrace();
-            $current    = $trace[1];
-            $controller = str_replace('\\', '/', $current['class']);
-            
-            if ( String::startsWith($controller, 'controllers/') )
-                $controller = substr($controller, 12);    
-            
-            $template   = $controller . '/' . $current['function'];
-        }
-        
-        $this->renderTemplate($template, $args);
+        $this->renderTemplate($template === false ? $this->template() : $template, $args);
     }
-    
+
+    /**
+     * Render a specific template.
+     * @param $template
+     * @param array $args
+     */
     public function renderTemplate($template, array $args = null){
         if ( $args )
             $this->putAll($args);
+
+        $this->put("flash", $this->flash);
+        $this->put("session", $this->session);
+        $this->put("request", $this->request);
         
         $template = template\TemplateLoader::load($template);
         $template->putArgs( $this->renderArgs );
@@ -133,6 +169,14 @@ abstract class Controller {
         $this->send();
     }
 
+    /**
+     * @param $template string
+     * @return bool
+     */
+    public function templateExists($template){
+        $template = TemplateLoader::load($template);
+        return !!$template;
+    }
 
     public function renderText($text){
         $this->response->setEntity( $text );
@@ -167,6 +211,11 @@ abstract class Controller {
         }
     }
 
+    public function renderFile(File $file){
+        $this->response->setEntity($file);
+        $this->send();
+    }
+
     /**
      * render print_r var if dev
      * @param $var
@@ -174,6 +223,8 @@ abstract class Controller {
     public function renderVar($var){
         if ( IS_DEV )
             $this->renderHTML('<pre>' . print_r($var, true) . '</pre>');
+        else
+            $this->send();
     }
 
     /**
@@ -188,6 +239,12 @@ abstract class Controller {
             ob_end_clean();
 
             $this->renderHTML($str);
-        }
+        } else
+            $this->send();
+    }
+
+    public function ok(){
+        $this->response->setStatus(200);
+        $this->send();
     }
 }

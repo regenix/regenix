@@ -404,10 +404,13 @@ class Annotations {
 
 
     private static $types = array();
+
     /**
-     * @param $canArgs array
-     * @param $name string
+     * @param $type
+     * @param array $info
      * @param $scopes array|string
+     * @internal param array $canArgs
+     * @internal param string $name
      */
     public static function registerAnnotation($type, array $info = array(),
                                               $scopes = array('class', 'method', 'property')){

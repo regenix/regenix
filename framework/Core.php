@@ -3,6 +3,7 @@ namespace framework {
 
 use framework\di\DI;
     use framework\exceptions\CoreException;
+    use framework\mvc\Controller;
     use framework\mvc\Response;
     use framework\mvc\results\Result;
     use framework\lang\FrameworkClassLoader;
@@ -94,15 +95,17 @@ class Core {
             $tmp = explode('.', $router->action);
             $controllerClass = implode('\\', array_slice($tmp, 0, -1));
             $actionMethod    = $tmp[ sizeof($tmp) - 1 ];
-            
+
+            /** @var $controller Controller */
             $controller = new $controllerClass;
+            $controller->actionMethod = $actionMethod;
+            $controller->routeArgs    = $router->args;
             $reflection = new \ReflectionMethod($controller, $actionMethod);
             
             $declClass = $reflection->getDeclaringClass();
             
             if ( $declClass->isAbstract() ){
-                throw new exceptions\CoreException(
-                        lang\String::format('Can\'t use "%s.%s()" as action method', $controllerClass, $actionMethod));
+                throw CoreException::formated('Can\'t use "%s.%s()" as action method', $controllerClass, $actionMethod);
             }
             
             SDK::doBeforeRequest($controller);
