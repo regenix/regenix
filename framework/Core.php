@@ -192,18 +192,6 @@ use framework\lang\FrameworkClassLoader;
 
 
     /*** utils ***/
-    public static function isDev(){
-        return Project::current()->isDev();
-    }
-    
-    public static function isProd(){
-        return Project::current()->isProd();
-    }
-    
-    public static function isMode($mode){
-        return Project::current()->isMode($mode);
-    }
-    
     public static function setTempDir($dir){
         if ( !is_dir($dir) ){
             if ( !mkdir($dir, 0777, true) ){
