@@ -1,7 +1,6 @@
 #{extends 'root'}
 #{set title: 'Block works!'}
-<div class="{$class}">
-    YES !! {$var->format('d.m.Y')->raw()} WORKS!!!
-</div>
 
-${flash->success()}
+#{if $flash->success()}
+    <h1>${flash->success()}</h1>
+#{/if}
