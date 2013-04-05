@@ -6,13 +6,13 @@ use framework\lang\IClassInitialization;
 use framework\lang\String;
 use framework\modules\AbstractModule;
 use framework\mvc\AbstractModel;
+use framework\mvc\ActiveRecord;
 
-abstract class Document extends AbstractModel {
+abstract class Document extends ActiveRecord {
 
     const type = __CLASS__;
 
     public function __construct(){
-
         $service = static::getService();
         $meta    = $service->getMeta();
 

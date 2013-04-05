@@ -14,7 +14,7 @@ class Module extends AbstractModule {
     }
     
     public function __construct() {
-        
+
         SDK::addBeforeRequest(array($this, 'onBeforeRequest'));
     }
     
