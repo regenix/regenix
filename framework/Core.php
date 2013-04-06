@@ -101,7 +101,7 @@ class Core {
             $controller->actionMethod = $actionMethod;
             $controller->routeArgs    = $router->args;
             $reflection = new \ReflectionMethod($controller, $actionMethod);
-            
+
             $declClass = $reflection->getDeclaringClass();
             
             if ( $declClass->isAbstract() ){

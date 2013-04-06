@@ -79,6 +79,10 @@ class Project {
         return self::getPath() . 'app/models/';
     }
 
+    public function getTestPath(){
+        return self::getPath() . 'app/tests/';
+    }
+
     /*
      * пути можно указывать с доменами и с портами
      * examples:
@@ -95,9 +99,9 @@ class Project {
 
     /**
      * replace part configuration
-     * @param Configuration $config
+     * @param \framework\config\Configuration|\framework\config\PropertiesConfiguration $config
      */
-    public function applyConfig(Configuration $config){
+    public function applyConfig(PropertiesConfiguration $config){
         $paths = $config->getArray("app.paths", array('/'));
         $this->setPaths( $paths );
     }
@@ -189,6 +193,13 @@ class Project {
         
         // route
         $this->_registerRoute();
+
+        if (IS_DEV)
+            $this->_registerTests();
+    }
+
+    private function _registerTests(){
+        $this->router->addRoute('*', '/@test', 'framework.test.Tester.run');
     }
     
     private function _registerModules(){

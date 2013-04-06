@@ -2,6 +2,7 @@
 namespace controllers;
 
 use framework\mvc\Controller;
+use tests\IntegerTest;
 use types\MyForm;
 
 class Application extends Controller {
@@ -12,6 +13,10 @@ class Application extends Controller {
     }
 
     public function test(){
-        $this->renderTemplate("Application/index.html");
+
+        $test = new IntegerTest();
+        $test->startTesting();
+
+        $this->renderDump($test->getResult());
     }
 }
