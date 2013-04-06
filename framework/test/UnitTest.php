@@ -7,6 +7,7 @@ namespace framework\test;
  */
 abstract class UnitTest {
 
+    /** @var UnitTest[] */
     public static $tested = array();
 
     /** @var array */

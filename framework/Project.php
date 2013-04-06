@@ -200,6 +200,7 @@ class Project {
 
     private function _registerTests(){
         $this->router->addRoute('*', '/@test', 'framework.test.Tester.run');
+        $this->router->addRoute('GET', '/@test.json', 'framework.test.Tester.runAsJson');
     }
     
     private function _registerModules(){

@@ -19,6 +19,6 @@ class IntegerTest extends UnitTest {
 
     public function testOne(){
         $val = new Integer();
-        $this->req($val->value);
+        $this->req($val);
     }
 }
