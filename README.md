@@ -2,6 +2,8 @@ Welcome to Regenix framework
 ============================
 
 Regenix easy to use and learn MVC framework.
+Regenix framework impacted on such projects as the [Play! Framework](http://playframework.com/),
+Ruby on Rails and Django.
 
 ![regenix](http://develstudio.ru/upload/medialibrary/cf8/cf88db498096a1eba21c75f7910a4ef4.png)
 
