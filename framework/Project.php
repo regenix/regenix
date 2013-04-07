@@ -7,11 +7,12 @@ use framework\io\File;
 use framework\config\Configuration;
 use framework\config\PropertiesConfiguration;
 use framework\mvc\ModelClassloader;
+use framework\mvc\Request;
+use framework\mvc\URL;
 use framework\mvc\route\RouterConfiguration;
 use framework\config\ConfigurationReadException;
 
 use framework\mvc\template\TemplateLoader;
-use framework\di\DI;
 
 use framework\cache\SystemCache;
 use framework\lang\ClassLoader;
@@ -43,6 +44,7 @@ class Project {
     * @param string $projectName root directory name of project
     */
     public function __construct($projectName){
+        Request::current();
         $this->name   = $projectName;
         
         $configFile   = $this->getPath() . 'conf/application.conf';
@@ -92,7 +94,7 @@ class Project {
      */
     public function setPaths(array $paths){
         foreach(array_unique($paths) as $path){
-            $this->paths[ $path ] = new net\URL( $path );
+            $this->paths[ $path ] = new URL( $path );
         }
     }
 
@@ -111,7 +113,7 @@ class Project {
      * @return boolean
      */
     public function findCurrentPath(){
-        $request = mvc\Request::current();
+        $request = Request::current();
         
         foreach ($this->paths as $url){
             if ( $request->isBase( $url ) )
@@ -122,7 +124,7 @@ class Project {
     }
 
 
-    public function setUriPath(net\URL $url){
+    public function setUriPath(URL $url){
         $this->currentPath = $url->getPath();
     }
 
@@ -206,7 +208,8 @@ class Project {
     private function _registerModules(){
         $modules = $this->config->getArray('app.modules');
         foreach ($modules as $module){
-            modules\AbstractModule::register($module);
+            if (trim($module))
+                modules\AbstractModule::register($module);
         }
     }
 

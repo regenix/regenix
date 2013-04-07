@@ -7,7 +7,7 @@ use framework\io\File;
 use framework\mvc\Response;
 use framework\mvc\template\TemplateLoader;
 use framework\lang\String;
-use framework\utils\MIMETypes;
+use framework\mvc\MIMETypes;
 
 abstract class Controller {
 

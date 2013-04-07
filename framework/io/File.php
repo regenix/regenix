@@ -2,7 +2,6 @@
 
 namespace framework\io;
 
-use framework\utils\MIMETypes;
 
 class File {
 
@@ -60,14 +59,6 @@ class File {
             return $this->extension = '';
         
         return $this->extension = (substr( $this->path, $p + 1 ));
-    }
-    
-    /**
-     * get http mime type
-     * @return string
-     */
-    public function getMimeType(){
-        return MIMETypes::getByExt( $this->getExtension() );
     }
 
     /**
