@@ -95,3 +95,11 @@ class Application extends Controller {
     }
 }
 ```
+
+and in route config:
+
+```
+GET     /                   Application.index
+POST    /json               Application.json
+*       /page/{id:int}/     Application.page
+```
