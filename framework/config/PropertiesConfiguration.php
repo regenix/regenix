@@ -47,6 +47,11 @@ class PropertiesConfiguration extends Configuration {
         return isset($this->data[$key]);
     }
 
+    /**
+     * @param $key
+     * @param null $default
+     * @return null|mixed
+     */
     public function get($key, $default = null){
         if ($this->env && isset($this->data[ $tmp = $this->env . '.' . $key ]) )
             $value = $this->data[ $tmp ];
@@ -56,34 +61,41 @@ class PropertiesConfiguration extends Configuration {
         return $value && $value != '!default' ? $value : $default;
     }
 
+    /**
+     * @param $key
+     * @param int $default
+     * @return int
+     */
     public function getNumber($key, $default = 0){
-        if ( $this->containsKey($key) )
-            return (int)$this->data[ $key ];
-
-        return (int)$default;
+        return (int)$this->get($key, $default);
     }
 
+    /**
+     * @param $key
+     * @param float $default
+     * @return float
+     */
     public function getDouble($key, $default = 0.0){
-        if ( $this->containsKey($key) )
-            return (double)$this->data[ $key ];
-
-        return (double)$default;
+        return (double)$this->get($key, $default);
     }
 
+    /**
+     * @param $key
+     * @param bool $default
+     * @return bool
+     */
     public function getBoolean($key, $default = false){
-        if ( $this->containsKey($key) ){
-            $value = $this->data[$key];
-            return $value !== '' && $value !== '0' && $value !== 'off';
-        }
-
-        return $default !== false && $default !== '' && $default != 0;
+        $value = $this->get($key, $default);
+        return $value !== false && $value !== '' && $value !== '0' && $value !== 'off' && $value != 0;
     }
 
+    /**
+     * @param $key
+     * @param string $default
+     * @return string
+     */
     public function getString($key, $default = ""){
-        if ( $this->containsKey($key) )
-            return (string)$this->data[ $key ];
-
-        return (string)$default;
+        return (string)$this->get($key, $default);
     }
 
     public function getArray($key, $default = array()){
