@@ -14,7 +14,7 @@ Features
 * Easy form binding
 * Dependency injection
 * Validation based on tests
-* Regenix, Twig, PHP or Smarty templates
+* Quick and concise syntax template engine
 * Lazy class loading
 * Session, Flash, etc.
 * More utils classes
