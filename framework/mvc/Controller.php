@@ -1,6 +1,6 @@
 <?php
 
-namespace framework\mvc {
+namespace framework\mvc;
 
 use framework\exceptions\CoreException;
 use framework\exceptions\NotFoundException;
@@ -281,55 +281,5 @@ abstract class Controller {
      */
     public static function current(){
         return self::$current;
-    }
-}
-}
-
-namespace controllers {
-
-    use framework\mvc\Controller;
-
-    function render($template = false, array $args = array()){
-        Controller::current()->render($template, $args);
-    }
-
-    function renderTemplate($template, array $args = array()){
-        Controller::current()->renderTemplate($template, $args);
-    }
-
-    function renderText($text){
-        Controller::current()->renderText($text);
-    }
-
-    function renderHTML($html){
-        Controller::current()->renderHTML($html);
-    }
-
-    function renderJSON($object){
-        Controller::current()->renderJSON($object);
-    }
-
-    function notFound($message = ''){
-        Controller::current()->notFound($message);
-    }
-
-    function notFoundIfEmpty($what, $message = ''){
-        Controller::current()->notFoundIfEmpty($what, $message);
-    }
-
-    function todo($message = ''){
-        Controller::current()->todo($message);
-    }
-
-    function redirect($url, $permanent = false){
-        Controller::current()->redirect($url, $permanent);
-    }
-
-    function put($name, $arg){
-        Controller::current()->put($name, $arg);
-    }
-
-    function putAll(array $args){
-        Controller::current()->putAll($args);
     }
 }

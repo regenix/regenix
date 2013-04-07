@@ -1,4 +1,5 @@
 
-*       /                                                   Application.index()
+*       /                                                   Application.index
+*       /pages/                                             sub.Pages.index
 *       /{method}/                                          Application.{method}
 *       /api/{name}/                                        Application.index
