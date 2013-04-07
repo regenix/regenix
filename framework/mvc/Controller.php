@@ -1,8 +1,9 @@
 <?php
 
-namespace framework\mvc;
+namespace framework\mvc {
 
 use framework\exceptions\CoreException;
+use framework\exceptions\NotFoundException;
 use framework\io\File;
 use framework\mvc\Response;
 use framework\mvc\template\TemplateLoader;
@@ -46,8 +47,14 @@ abstract class Controller {
      */
     public $routeArgs = array();
 
+    /**
+     * @var Controller
+     */
+    private static $current;
 
     public function __construct() {
+        self::$current  = $this;
+
         $this->request  = Request::current();
         $this->session  = Session::current();
         $this->flash    = Flash::current();
@@ -103,10 +110,6 @@ abstract class Controller {
 
     public function send(){
         throw new results\Result($this->response);
-    }
-
-    public function notFoundIfNull($value, $message = ''){
-        // TODO
     }
 
     public function redirect($url, $permanent = false){
@@ -246,5 +249,87 @@ abstract class Controller {
     public function ok(){
         $this->response->setStatus(200);
         $this->send();
+    }
+
+    /**
+     * @param string $message
+     */
+    public function todo($message = ''){
+        $this->render('system/todo.html', array('message' => $message));
+    }
+
+    /**
+     * @param string $message
+     * @throws \framework\exceptions\NotFoundException
+     */
+    public function notFound($message = ''){
+        throw new NotFoundException($message);
+    }
+
+    /**
+     * @param $what
+     * @param string $message
+     */
+    public function notFoundIfEmpty($what, $message = ''){
+        if (empty($what))
+            $this->notFound($message);
+    }
+
+
+    /**
+     * @return Controller
+     */
+    public static function current(){
+        return self::$current;
+    }
+}
+}
+
+namespace controllers {
+
+    use framework\mvc\Controller;
+
+    function render($template = false, array $args = array()){
+        Controller::current()->render($template, $args);
+    }
+
+    function renderTemplate($template, array $args = array()){
+        Controller::current()->renderTemplate($template, $args);
+    }
+
+    function renderText($text){
+        Controller::current()->renderText($text);
+    }
+
+    function renderHTML($html){
+        Controller::current()->renderHTML($html);
+    }
+
+    function renderJSON($object){
+        Controller::current()->renderJSON($object);
+    }
+
+    function notFound($message = ''){
+        Controller::current()->notFound($message);
+    }
+
+    function notFoundIfEmpty($what, $message = ''){
+        Controller::current()->notFoundIfEmpty($what, $message);
+    }
+
+    function todo($message = ''){
+        Controller::current()->todo($message);
+    }
+
+    function redirect($url, $permanent = false){
+        Controller::current()->redirect($url, $permanent);
+    }
+
+    function put($name, $arg){
+        Controller::current()->put($name, $arg);
+    }
+
+    function putAll(array $args){
+        Controller::current()->putAll($args);
     }
 }
