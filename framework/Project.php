@@ -163,7 +163,7 @@ class Project {
         Core::setTempDir( $this->getPath() . 'tmp/' );
         
         // cache
-        if ( $this->config->getBoolean('cache.enable', true) ){
+        /*if ( $this->config->getBoolean('cache.enable', true) ){
             $done = false;
             $detect = $this->config->getArray('cache.detect');
             foreach ($detect as $el){
@@ -180,7 +180,7 @@ class Project {
             
         } else {
             DI::define('Cache', '\\framework\\cache\\DisableCache', true);
-        }
+        }*/
         
         // classloader
         $this->_registerLoader();
@@ -219,36 +219,20 @@ class Project {
 
     private function _registerRoute(){
         // routes
-        $cache     = c('Cache');
-        $isCached  = IS_PROD && $cache->isFast();
-        $routeFile = new File($this->getPath() . 'conf/route');
-        
-        if ( $isCached ){
-            $lastUpd      = $cache->get('$.system.route.upd', 0);
-            if ( $lastUpd === 0 || $lastUpd != $routeFile->lastModified() ){
-                $this->router = null;
-                $cache->remove('$.system.routes');
-                $cache->set('$.system.route.upd', $lastUpd);
-            } else {
-                $this->router = $cache->get('$.system.route');
-            }
-        }
-        
+        $routeFile = $this->getPath() . 'conf/route';
+        $this->router = SystemCache::getWithCheckFile('route', $routeFile);
+
         if ( $this->router === null ){
-            
             $routeFiles   = array();
             foreach (modules\AbstractModule::$modules as $name => $module){
                 $routeFiles['\\modules\\' . $name . '\\controllers\\'] = $module->getRouteFile();
             }
-            
-            $routeFiles[] = $routeFile;
+            $routeFiles[] = new File($routeFile);
             
             $routeConfig  = new RouterConfiguration($routeFiles);
             $this->router = new mvc\route\Router();
             $this->router->applyConfig($routeConfig);
-            
-            if ( $isCached )
-                $cache->set('$.system.route', $this->router, '2m');
+            SystemCache::setWithCheckFile('route', $this->router, $routeFile, 60 * 2);
         }
     }
 

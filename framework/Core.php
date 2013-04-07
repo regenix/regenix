@@ -1,7 +1,6 @@
 <?php
 namespace framework {
 
-use framework\di\DI;
     use framework\exceptions\CoreException;
     use framework\mvc\Controller;
     use framework\mvc\Response;
@@ -38,17 +37,11 @@ class Core {
         
         // register system
         require 'framework/cache/InternalCache.php';
-        require 'framework/di/DI.php';
-        
-        self::_registerLogger();
+
         self::_registerProjects();
         self::_registerCurrentProject();
         
         register_shutdown_function(array(Core::type, 'shutdown'), self::$__project);
-    }
-
-    private static function _registerLogger(){
-        DI::define('Logger', '\framework\logger\LoggerDefault', true);
     }
 
     private static function _registerProjects(){
@@ -185,9 +178,6 @@ class Core {
         ob_end_flush();
         ob_flush();
         flush();
-        
-        $cache = c('Cache');
-        $cache->flush(true);
     }
 
 
