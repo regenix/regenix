@@ -2,6 +2,8 @@
 namespace framework {
 
     use framework\exceptions\CoreException;
+    use framework\exceptions\NotFoundException;
+    use framework\exceptions\ResponseException;
     use framework\logger\Logger;
     use framework\mvc\Controller;
     use framework\mvc\Response;
@@ -12,6 +14,8 @@ namespace framework {
 abstract class Core {
 
     const type = __CLASS__;
+
+    const VERSION = '0.2';
     
     /** @var string */
     public static $tempDir = 'tmp/';
@@ -84,7 +88,7 @@ abstract class Core {
 
         try {
             if (!$router->action){
-                throw new exceptions\CoreException('404 Not found');
+                throw new NotFoundException('404 Not found');
             }
 
             // TODO optimize ?
@@ -96,7 +100,11 @@ abstract class Core {
             $controller = new $controllerClass;
             $controller->actionMethod = $actionMethod;
             $controller->routeArgs    = $router->args;
-            $reflection = new \ReflectionMethod($controller, $actionMethod);
+            try {
+                $reflection = new \ReflectionMethod($controller, $actionMethod);
+            } catch(\ReflectionException $e){
+                throw new NotFoundException($e->getMessage());
+            }
 
             $declClass = $reflection->getDeclaringClass();
             
@@ -134,7 +142,7 @@ abstract class Core {
         }
         
         if ( !$response ){
-            throw new exceptions\CoreException('Unknow type of controller result for response');
+            throw new CoreException('Unknown type of controller result for response');
         }
         
         $response->send();
@@ -188,25 +196,37 @@ abstract class Core {
     }
 
     private static function catchAny(\Exception $e){
+        if ( $e instanceof ResponseException ){
+            $template = TemplateLoader::load('errors/' . $e->getStatus() . '.html');
+            $template->putArgs(array('e' => $e));
+
+            $response = new Response();
+            $response->setStatus($e->getStatus());
+            $response->setEntity($template);
+            $response->send();
+            return;
+        }
 
         $stack = CoreException::findProjectStack($e);
         $info  = new \ReflectionClass($e);
 
-        $file = str_replace('\\', '/', $stack['file']);
-        $file = str_replace(str_replace('\\', '/', ROOT), '', $file);
+        if ($stack){
+            $file = str_replace('\\', '/', $stack['file']);
+            $file = str_replace(str_replace('\\', '/', ROOT), '', $file);
 
-        $source = null;
-        if (file_exists($stack['file']) && is_readable($stack['file']) ){
-            $fp = fopen($stack['file'], 'r');
-            $n  = 1;
-            $source = array();
-            while($line = fgets($fp, 4096)){
-                if ( $n > $stack['line'] - 7 && $n < $stack['line'] + 7 ){
-                    $source[$n] = $line;
+            $source = null;
+            if (file_exists($stack['file']) && is_readable($stack['file']) ){
+                $fp = fopen($stack['file'], 'r');
+                $n  = 1;
+                $source = array();
+                while($line = fgets($fp, 4096)){
+                    if ( $n > $stack['line'] - 7 && $n < $stack['line'] + 7 ){
+                        $source[$n] = $line;
+                    }
+                    if ( $n > $stack['line'] + 7 )
+                        break;
+                    $n++;
                 }
-                if ( $n > $stack['line'] + 7 )
-                    break;
-                $n++;
             }
         }
 
@@ -217,7 +237,7 @@ abstract class Core {
             'desc' => $e->getMessage(), 'file' => $file, 'source' => $source
         ));
 
-        Logger::error('%s, in file `%s(%s)`, id: %s', $e->getMessage(), $file, $stack['line'], $hash);
+        Logger::error('%s, in file `%s(%s)`, id: %s', $e->getMessage(), $file ? $file : "nofile", (int)$stack['line'], $hash);
 
         $response = new Response();
         $response->setStatus(500);

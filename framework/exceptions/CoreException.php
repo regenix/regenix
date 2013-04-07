@@ -40,6 +40,6 @@ class CoreException extends \Exception {
                 return $stack;
             }
         }
-        return current($e->getTrace());
+        return null; //current($e->getTrace());
     }
 }

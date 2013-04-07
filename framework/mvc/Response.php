@@ -2,6 +2,7 @@
 
 namespace framework\mvc;
 
+use framework\Core;
 use framework\libs\Time;
 use framework\mvc\providers\ResponseProvider;
 
@@ -90,11 +91,12 @@ class Response {
         foreach($this->headers as $name => $value){
             header($name . ': ' . $value);
         }
+
+        header('Powered-By: Regenix Framework v' . Core::VERSION);
     }
 
     public function send($headers = true){
         if ( is_object($this->entity) ){
-            
             $providerClass = ResponseProvider::get(get_class($this->entity)); 
             
             $provider = new $providerClass($this);

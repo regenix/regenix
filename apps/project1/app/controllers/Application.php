@@ -9,7 +9,7 @@ use framework\mvc\Controller;
 class Application extends Controller {
 
     public function index($id){
-
-        $this->render('ok.html');
+        $this->response->setHeader('by', 'regenix');
+        $this->render();
     }
 }

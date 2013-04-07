@@ -105,8 +105,10 @@
     <p id="detail">
         ${desc}
     </p>
-    #{if source}
-    <h2>In `/${file}` at line <b>${stack[line]}</b>.</h2>
+    #{if $source}
+        #{if $file}
+            <h2>In `/${file}` at line <b>${stack[line]}</b>.</h2>
+        #{/if}
     <div id="source-code">
         #{foreach $source as $i => $line}
             <pre class="${i == $stack[line] ? 'error':''}"><span class="line">${i}</span><span class="code">${line}</span></pre>
