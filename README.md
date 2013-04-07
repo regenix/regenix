@@ -44,10 +44,12 @@ Project `project1` already exists in regenix source.
 
 * conf/ - configuration directory
  * `conf/application.conf` - general config
-* public/ - directory for static content, images, javascript, css, etc.
+ * `conf/route` - url routing config
 * app/controllers/ - controller directory
 * app/models/ - models directory, ORM
 * app/views/ - directory for search templates
+* app/tests/ - unit and other tests
+* assets - assets static directory for images, js, css, etc.
 
 ### First controller
 
@@ -67,15 +69,29 @@ use framework\mvc\Controller;
 class Application extends Controller {
 
     public function index(){
-          
          /* add named variable to template */
          $this->put('var', 'Hello world');
 
-         /* Render template views/Application/index.{ext} and exit */
+         /* Render template views/Application/index.html and exit */
          $this->render();
 
          /* after, the code will not work ...
           ... */
+    }
+
+    public function json(){
+        /* render json answer */
+        $result = array('status' => 'ok', 'error' => null);
+        $this->renderJSON($result);
+    }
+
+    public function page($id){
+        /* using models & service */
+        $service = Page::getService();
+        $page    = $service->findById($id);
+
+        $this->put('page', $page);
+        $this->render();
     }
 }
 ```
