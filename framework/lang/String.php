@@ -11,6 +11,10 @@ abstract class String {
         $args = func_get_args();
         return vsprintf($string, array_slice($args, 1));
     }
+
+    public static function formatArgs($string, array $args = array()){
+        return vsprintf($string, $args);
+    }
     
     /**
      * return true if sting start with 

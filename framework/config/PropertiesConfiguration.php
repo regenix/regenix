@@ -86,7 +86,7 @@ class PropertiesConfiguration extends Configuration {
      */
     public function getBoolean($key, $default = false){
         $value = $this->get($key, $default);
-        return $value !== false && $value !== '' && $value !== '0' && $value !== 'off' && $value != 0;
+        return $value !== false && $value !== '' && $value !== '0' && $value !== 'off' && $value !== 0;
     }
 
     /**

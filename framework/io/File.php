@@ -88,7 +88,7 @@ class File {
      * @return boolean - create dir
      */
     public function mkdirs(){
-        if ( !$this->exists() )
+        if ( $this->exists() )
             return false;
 
         return mkdir($this->path, 0777, true);
@@ -99,7 +99,7 @@ class File {
      * @return boolean
      */
     public function mkdir(){
-        if ( !$this->exists() )
+        if ( $this->exists() )
             return false;
 
         return mkdir($this->path, 0777, false);

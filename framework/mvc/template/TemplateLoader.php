@@ -45,7 +45,7 @@ class TemplateLoader {
             $project = Project::current();
             self::setAssetPath('/apps/' . $project->getName() . '/assets/');
             
-            $default = $project->config->getString('template.default', 'Smarty');
+            $default = $project->config->getString('template.default', 'Regenix');
             $classTemplate = $default;
 
             self::switchEngine($classTemplate);
@@ -57,6 +57,8 @@ class TemplateLoader {
 
     /**
      * @param string $name
+     * @throws TemplateNotFoundException
+     * @throws TemplateEngineNotFoundException
      * @return BaseTemplate
      */
     public static function load($name){
