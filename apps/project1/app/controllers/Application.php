@@ -8,8 +8,7 @@ use framework\mvc\Controller;
 
 class Application extends Controller {
 
-    public function index(){
-        Logger::error('get id param = %s', $this->query->getNumber("id"));
-        $this->render();
+    public function index($id){
+        $this->renderText($id);
     }
 }

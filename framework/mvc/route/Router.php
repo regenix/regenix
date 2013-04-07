@@ -112,7 +112,7 @@ class Router {
                 $args[$name] = $value;
             } else {
                 $class = $param->getClass();
-                if ( $class->isSubclassOf(RequestBindParams::type) ){
+                if ( $class && $class->isSubclassOf(RequestBindParams::type) ){
                     $cls_name = $class->getName();
                     $value    = $cls_name::current();
                     $args[$name] = $value;
