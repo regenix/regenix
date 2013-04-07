@@ -30,6 +30,8 @@ namespace framework\mvc\template {
         public function putArgs(array $args = array()){
             $this->args = $args;
         }
+
+        public function onBeforeRender(){}
     }
 
 }
