@@ -129,7 +129,7 @@ class LoggerDefaultHandler extends LoggerHandler {
 
     public function writeLog($level, array $args){
         $message = String::formatArgs($args[0], array_slice($args, 1));
-        $time = @date("[M/d H:i:s]");
+        $time = @date("[Y/M/d H:i:s]");
         $lv = Logger::getLevelString($level);
         $out = "$time($lv): $message" . PHP_EOL;
         fwrite($this->fp, $out);

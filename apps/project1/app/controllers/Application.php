@@ -9,6 +9,7 @@ use framework\mvc\Controller;
 class Application extends Controller {
 
     public function index($id){
-        $this->renderText($id);
+
+        $this->render('ok.html');
     }
 }

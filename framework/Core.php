@@ -2,13 +2,14 @@
 namespace framework {
 
     use framework\exceptions\CoreException;
+    use framework\logger\Logger;
     use framework\mvc\Controller;
     use framework\mvc\Response;
     use framework\mvc\results\Result;
     use framework\lang\FrameworkClassLoader;
     use framework\mvc\template\TemplateLoader;
 
-class Core {
+abstract class Core {
 
     const type = __CLASS__;
     
@@ -28,8 +29,10 @@ class Core {
 
     static function init(){
         // TODO
+        ini_set('display_errors', 'Off');
         error_reporting(E_ALL ^ E_NOTICE);
-        
+        set_include_path(ROOT);
+
         // register class loader
         require 'framework/lang/ClassLoader.php';
         $loader = new FrameworkClassLoader();
@@ -139,33 +142,99 @@ class Core {
         SDK::doFinallyRequest($controller);
     }
 
-    public static function catchCoreException(CoreException $e){
+    private static function catchError($error, $logPath){
+
+        $title = 'Fatal Error';
+
+        switch($error['type']){
+            case E_PARSE: $title = 'Parse Error'; break;
+            case E_COMPILE_ERROR: $title = 'Compiler Error'; break;
+            case E_CORE_ERROR: $title = 'Core Error'; break;
+        }
+
+        $file = str_replace('\\', '/', $error['file']);
+        $file = str_replace(str_replace('\\', '/', ROOT), '', $file);
+
+        $source = null;
+        if (IS_DEV && file_exists($error['file']) && is_readable($error['file']) ){
+            $fp = fopen($error['file'], 'r');
+            $n  = 1;
+            $source = array();
+            while($line = fgets($fp, 4096)){
+                if ( $n > $error['line'] - 7 && $n < $error['line'] + 7 ){
+                    $source[$n] = $line;
+                }
+                if ( $n > $error['line'] + 7 )
+                    break;
+                $n++;
+            }
+        }
+
+        $hash = substr(md5(rand()), 12);
+        if ($logPath){
+            $can = true;
+            if (!is_dir($logPath))
+                $can = mkdir($logPath, 0777, true);
+
+            if ($can){
+                $fp = fopen($logPath . 'fail.log', 'a+');
+                $time = date("[Y/M/d H:i:s]");
+                    fwrite($fp,  "[$hash]$time" . PHP_EOL . "($title): $error[message]" . PHP_EOL);
+                    fwrite($fp, $file . ' (' . $error['line'] . ')'.PHP_EOL . PHP_EOL);
+                fclose($fp);
+            }
+        }
+        include ROOT . 'framework/views/system/errors/fatal.phtml';
+    }
+
+    private static function catchAny(\Exception $e){
+
         $stack = CoreException::findProjectStack($e);
         $info  = new \ReflectionClass($e);
 
         $file = str_replace('\\', '/', $stack['file']);
         $file = str_replace(str_replace('\\', '/', ROOT), '', $file);
 
-        $source = file($stack['file']);
-        $source = array_slice($source, $stack['line'] - 7, $stack['line'] + 7);
+        $source = null;
+        if (file_exists($stack['file']) && is_readable($stack['file']) ){
+            $fp = fopen($stack['file'], 'r');
+            $n  = 1;
+            $source = array();
+            while($line = fgets($fp, 4096)){
+                if ( $n > $stack['line'] - 7 && $n < $stack['line'] + 7 ){
+                    $source[$n] = $line;
+                }
+                if ( $n > $stack['line'] + 7 )
+                    break;
+                $n++;
+            }
+        }
 
+        $hash = substr(md5(rand()), 12);
         $template = TemplateLoader::load('system/errors/exception.html');
         $template->putArgs(array('exception' => $e,
-            'stack' => $stack, 'info' => $info,
+            'stack' => $stack, 'info' => $info, 'hash' => $hash,
             'desc' => $e->getMessage(), 'file' => $file, 'source' => $source
         ));
 
+        Logger::error('%s, in file `%s(%s)`, id: %s', $e->getMessage(), $file, $stack['line'], $hash);
+
         $response = new Response();
+        $response->setStatus(500);
         $response->setEntity($template);
         $response->send();
     }
 
-    public static function catchErrorException(\ErrorException $e){
+    public static function catchCoreException(CoreException $e){
+        self::catchAny($e);
+    }
 
+    public static function catchErrorException(\ErrorException $e){
+        self::catchAny($e);
     }
 
     public static function catchException(\Exception $e){
-
+        self::catchAny($e);
     }
 
     public static function getFrameworkPath(){
@@ -173,6 +242,26 @@ class Core {
     }
     
     public static function shutdown(Project $project){
+
+        $error = error_get_last();
+        if ($error){
+            switch($error['type']){
+                case E_ERROR:
+                case E_CORE_ERROR:
+                case E_COMPILE_ERROR:
+                case E_PARSE:
+                case E_USER_ERROR:
+                {
+                    self::catchError($error,
+                        $project->config->getBoolean('logger.fatal.enable',true)
+                            ? $project->getPath() . 'log/'
+                            : false);
+
+                    break;
+                }
+            }
+        }
+
         ignore_user_abort(true);   
         
         ob_end_flush();

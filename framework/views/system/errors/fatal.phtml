@@ -1,5 +1,9 @@
-#{extends 'system.base'}
-#{set title: 'Application exception'}
+<!DOCTYPE html>
+<html>
+<head>
+    <title><?php echo $title?></title>
+</head>
+<body>
 <style>
     html, body, pre {
         margin: 0;
@@ -99,33 +103,29 @@
     pre.stackTrace { padding: 20px; padding-top: 0; line-height: 18px; color: #6b6b6b; }
     b.stackTraceTitle { font-size: 12px; display: block; padding: 10px; border-top: 1px solid silver; }
 </style>
-#{if IS_DEV}
+<?php if(IS_DEV):?>
 <div class="error">
-    <h1>${info->getShortName()}</h1>
+    <h1><?php echo $title?></h1>
     <p id="detail">
-        ${desc}
+        <?php echo $error['message']?>
     </p>
-    #{if source}
-    <h2>In `/${file}` at line <b>${stack[line]}</b>.</h2>
+    <?php if($source): ?>
+    <h2>In `/<?php echo $file?>` at line <b><?php echo $error[line]?></b>.</h2>
     <div id="source-code">
-        #{foreach $source as $i => $line}
-            <pre class="${i == $stack[line] ? 'error':''}"><span class="line">${i}</span><span class="code">${line}</span></pre>
-        #{/foreach}
+        <?php foreach($source as $i => $line):?>
+        <pre class="<?php echo $i == $error[line] ? 'error':''?>"><span class="line"><?php echo $i?></span><span class="code"><?php echo $line?></span></pre>
+        <?php endforeach?>
     </div>
-    #{/if}
+    <?php endif?>
 </div>
-    #{if $stack}
-        <b class="stackTraceTitle">Stack Stace:</b>
-        <pre class="stackTrace">${exception -> getTraceAsString()}</pre>
-    #{/if}
-#{else}
+<?php else:?>
 <div class="error">
-    <h1>Application Error</h1>
-    <p id="detail">
-        Please contact with administration.
-    </p>
+    <h1><?php echo $title?></h1>
+    <p id="detail">Please contact with administration.</p>
     <div id="source-code">
-        <pre><span class="line">&#160;</span><span class="code">Error ID = <b>${hash}</b></span></pre>
+        <pre><span class="line">&#160;</span><span class="code">Error ID = <b><?php echo $hash?></b></span></pre>
     </div>
 </div>
-#{/if}
+<?php endif?>
+</body>
+</html>
