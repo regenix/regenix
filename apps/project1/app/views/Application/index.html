@@ -3,4 +3,6 @@
 
 #{if $flash->success()}
     <h1>${flash->success()}</h1>
+#{else}
+        ${var ? '111' : '222'}
 #{/if}

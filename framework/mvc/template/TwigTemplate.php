@@ -4,6 +4,11 @@ namespace framework\mvc\template;
 
 use framework\Core;
 
+/**
+ * Class TwigTemplate
+ * @package framework\mvc\template
+ * @deprecated
+ */
 class TwigTemplate extends BaseTemplate {
 
     const type = __CLASS__;

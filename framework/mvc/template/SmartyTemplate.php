@@ -4,6 +4,11 @@ namespace framework\mvc\template;
 
 use framework\Core;
 
+/**
+ * Class SmartyTemplate
+ * @package framework\mvc\template
+ * @deprecated
+ */
 class SmartyTemplate extends BaseTemplate {
 
     const type = __CLASS__;
