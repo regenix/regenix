@@ -6,8 +6,7 @@ namespace framework\mvc\template {
 
         const type = __CLASS__;
 
-        const TWIG = 'Twig';
-        const SMARTY = 'Smarty';
+        const REGENIX = 'Regenix';
         const PHP = 'PHP';
 
         protected $file;
@@ -17,7 +16,6 @@ namespace framework\mvc\template {
         const ENGINE_NAME = 'abstract';
         const FILE_EXT    = '???';
         
-        private static $initTemplate = false;
 
         public function __construct($templateFile, $templateName) {
             
@@ -25,28 +23,7 @@ namespace framework\mvc\template {
             $this->name = $templateName;
         }
         
-        /**
-         * @param TemplateFunctions $funcs
-         */
-        abstract function registerFunction($name, $callback, $className);
-
-        public function onBeforeRender(){
-            
-            foreach(TemplateLoader::$FUNCTIONS as $funcsClass){
-                
-                $reflect = new \ReflectionClass($funcsClass);
-                
-                foreach($reflect->getMethods() as $method){
-                    /** @var \ReflectionMethod $method */
-                    if ($method->isPublic() && $method->isFinal() && $method->isStatic()){
-                        $methodName = $method->getName();
-                        $this->registerFunction($methodName, $funcsClass . '::' . $methodName, $funcsClass);
-                    }
-                }
-            }
-        }
-
-        public function getContent(){ return null; } 
+        public function getContent(){ return null; }
         public function render(){}
 
 

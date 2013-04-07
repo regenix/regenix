@@ -14,30 +14,5 @@ namespace framework\mvc\template {
             extract($this->args, EXTR_PREFIX_INVALID | EXTR_OVERWRITE, 'arg_');
             include $this->file;
         }
-
-        public function registerFunction($name, $callback, $className) {
-            \TPL::__addFunction($name, $callback);
-               // nop
-        }
-    }
-}
-
-namespace {
-    
-    class TPL {
-
-        const type = __CLASS__;
-        
-        private static $funcs = array();
-
-        public static function __addFunction($name, $callback){
-            self::$funcs[ $name ] = $callback;
-        }
-        
-        public static function __callStatic($name, $arguments) {
-            
-            $callback = self::$funcs[ $name ];
-            return call_user_func_array($callback, $arguments);
-        }
     }
 }
