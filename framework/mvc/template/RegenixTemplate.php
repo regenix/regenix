@@ -19,7 +19,7 @@ namespace framework\mvc\template {
 
             if (!self::$loaded){
                 self::$tpl = new RegenixTPL();
-                self::$tpl->setTempDir( Core::$tempDir . '/regenixtpl/' );
+                self::$tpl->setTempDir( Core::$tempDir . 'regenixtpl/' );
                 self::$tpl->setTplDirs( TemplateLoader::getPaths() );
                 self::$loaded = true;
             }

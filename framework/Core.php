@@ -161,6 +161,8 @@ abstract class Core {
         }
 
         $file = str_replace('\\', '/', $error['file']);
+        $error['line'] += CoreException::getErrorOffsetLine($file);
+        $file = $error['file'] = CoreException::getErrorFile($file);
         $file = str_replace(str_replace('\\', '/', ROOT), '', $file);
 
         $source = null;
@@ -212,6 +214,9 @@ abstract class Core {
 
         if ($stack){
             $file = str_replace('\\', '/', $stack['file']);
+            $stack['line']        += CoreException::getErrorOffsetLine($file);
+            $file = $stack['file'] = CoreException::getErrorFile($file);
+
             $file = str_replace(str_replace('\\', '/', ROOT), '', $file);
 
             $source = null;

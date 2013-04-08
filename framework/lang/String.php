@@ -33,6 +33,7 @@ abstract class String {
      * @return boolean
      */
     public static function endsWith($string, $with){
-        return strpos($string, $with) === strlen($string) - strlen($with);
+        // TODO optimize ?
+        return substr($string, -strlen($with)) === $with;
     }
 }

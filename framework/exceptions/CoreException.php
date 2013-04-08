@@ -42,4 +42,50 @@ class CoreException extends \Exception {
         }
         return null; //current($e->getTrace());
     }
+
+    private static $files = array();
+    private static $offsets = array();
+
+    /**
+     * create error mirror file
+     * @param $original file path
+     * @param $file
+     */
+    public static function setMirrorFile($original, $file){
+        $original = str_replace('\\', '/', $original);
+        self::$files[$original] = $file;
+    }
+
+    /**
+     * @param string $original file path
+     * @param int $offset
+     */
+    public static function setMirrorOffsetLine($original, $offset){
+        $original = str_replace('\\', '/', $original);
+        self::$offsets[$original] = $offset;
+    }
+
+    /**
+     * @param $original file path
+     * @return string
+     */
+    public static function getErrorFile($original){
+        $original = str_replace('\\', '/', $original);
+        if ($file = self::$files[$original])
+            return $file;
+
+        return $original;
+    }
+
+    /**
+     * @param $original file path
+     * @return int
+     */
+    public static function getErrorOffsetLine($original){
+        $original = str_replace('\\', '/', $original);
+        if ($offset = self::$files[$original])
+            return (int)$offset;
+
+        return 0;
+    }
 }

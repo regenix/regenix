@@ -5,7 +5,8 @@ namespace framework\libs\RegenixTPL {
  * Class RegenixTemplate
  * @package framework\libs\RegenixTPL
  */
-use framework\exceptions\CoreException;
+    use framework\Core;
+    use framework\exceptions\CoreException;
     use framework\lang\String;
     use framework\mvc\template\TemplateLoader;
 
@@ -73,13 +74,14 @@ class RegenixTemplate {
     }
 
     protected function _makeArgs($str){
-        if ( strpos($str, ':') === false ){
+        $tmp = self::explodeMagic(':', $str);
+        if ( !$tmp[1] ){
             return 'array("_arg" => ' . $str . ')';
         } else {
+            $args = self::explodeMagic(',', $str, 100);
             $result = 'array(';
-            $args = explode(',', $str, 100);
             foreach($args as $arg){
-                $tmp = explode(':', $arg);
+                $tmp = self::explodeMagic(':', $arg);
                 $key = trim($tmp[0]);
                 $result .= "'" . $key . "' => (" . $tmp[1] . '), ';
             }
@@ -135,9 +137,8 @@ class RegenixTemplate {
 
     protected function _compile(){
         $source = file_get_contents($this->file);
-        $result = '<?php use ' . self::type . ';' . "\n";
+        $result = '';
 
-        $result .= "\n" . '?>';
         $p = -1;
         $lastE = -1;
         while(($p = strpos($source, '{', $p + 1)) !== false){
@@ -215,9 +216,9 @@ class RegenixTemplate {
 
     public function compile($cached = true){
         $sha = sha1($this->file);
-        $this->compiledFile = ($this->tmpDir . '/' . $sha . '.' . filemtime($this->file) . '.php');
+        $this->compiledFile = ($this->tmpDir . $sha . '.' . filemtime($this->file) . '.php');
         if ( IS_DEV ){
-            foreach(glob($this->tmpDir . '/' . $sha . '.*.php') as $file){
+            foreach(glob($this->tmpDir . $sha . '.*.php') as $file){
                 $file = realpath($file);
                 if ( $file == $this->compiledFile ) continue;
                 @unlink($file);
@@ -229,12 +230,14 @@ class RegenixTemplate {
         }
     }
 
-    public function render($args, $cached = true){
-        $this->compile($cached);
+    public function render($__args, $__cached = true){
+        $this->compile($__cached);
         $_tags = $this->tags;
         $_TPL = $this;
-        if ($args)
-            extract($args, EXTR_PREFIX_INVALID | EXTR_OVERWRITE, 'arg_');
+        if ($__args)
+            extract($__args, EXTR_PREFIX_INVALID | EXTR_OVERWRITE, 'arg_');
+
+        CoreException::setMirrorFile($this->compiledFile, $this->file);
         include $this->compiledFile;
     }
 
@@ -258,7 +261,11 @@ class RegenixTemplate {
 
     public function _renderBlock($block, $file, array $args = null){
         $tpl = clone $this;
-        $tpl->setFile( TemplateLoader::findFile(str_replace('.', '/',$file) . '.html') );
+        $file = str_replace('\\', '/', $file);
+        if (!String::endsWith($file, '.html'))
+            $file .= '.html';
+
+        $tpl->setFile( TemplateLoader::findFile($file) );
         ob_start();
             $tpl->render($args);
             $str = ob_get_contents();

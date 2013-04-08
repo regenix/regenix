@@ -113,7 +113,7 @@
     <h2>In `/<?php echo $file?>` at line <b><?php echo $error[line]?></b>.</h2>
     <div id="source-code">
         <?php foreach($source as $i => $line):?>
-        <pre class="<?php echo $i == $error[line] ? 'error':''?>"><span class="line"><?php echo $i?></span><span class="code"><?php echo $line?></span></pre>
+        <pre class="<?php echo $i == $error[line] ? 'error':''?>"><span class="line"><?php echo $i?></span><span class="code"><?php echo htmlspecialchars($line)?></span></pre>
         <?php endforeach?>
     </div>
     <?php endif?>
