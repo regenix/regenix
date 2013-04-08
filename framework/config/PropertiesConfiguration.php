@@ -48,6 +48,13 @@ class PropertiesConfiguration extends Configuration {
     }
 
     /**
+     * @return array
+     */
+    public function all(){
+        return $this->data;
+    }
+
+    /**
      * @param $key
      * @param null $default
      * @return null|mixed

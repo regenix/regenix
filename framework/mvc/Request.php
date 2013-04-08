@@ -60,7 +60,6 @@ class Request {
         $req->protocol  = 'http'; // TODO //$_SERVER['SERVER_PROTOCOL'];
         
         $req->currentUrl = URL::buildFromUri( $req->host, $req->uri, $req->protocol, $req->port );
-        
         return $req;
     }
     
@@ -162,6 +161,30 @@ class Request {
      */
     public function getMethod(){
         return $this->method;
+    }
+
+    /**
+     * get languages from accept-languages
+     * @return array
+     */
+    public function getLanguages(){
+        $langs = array();
+        $info  = $this->headers['accept-language'];
+        $types = explode(';', $info, 10);
+        foreach($types as $type){
+            $meta = explode(',', $type);
+            if ( $meta[1] )
+                $lang = $meta[1];
+            elseif ( $meta[0] && substr($meta, 0, 2) != 'q=' )
+                $lang = $meta[0];
+
+            if ( strpos('-', $lang) !== false ){
+                $lang = explode('-', $lang);
+                $lang = $lang[0];
+            }
+            $langs[] = $lang;
+        }
+        return $langs;
     }
     
     /**
@@ -577,6 +600,18 @@ class RequestQuery {
             $v = RequestBinder::getValue($v, $type);
         }
         return $arg;
+    }
+
+    private static $instance;
+
+    /**
+     * @return RequestQuery
+     */
+    public static function current(){
+        if (self::$instance)
+            return self::$instance;
+
+        return self::$instance = new RequestQuery();
     }
 }
 

@@ -1,5 +1,3 @@
 
 *       /                                                   Application.index
-*       /pages/                                             sub.Pages.index
-*       /{method}/                                          Application.{method}
-*       /api/{name}/                                        Application.index
+*       /{_lang}/                                           Application.index
