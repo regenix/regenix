@@ -25,6 +25,9 @@ abstract class Controller {
 
     /** @var Flash */
     public $flash;
+
+    /** @var Cookie */
+    public $cookie;
     
     /** @var RequestQuery */
     public $query;
@@ -56,6 +59,7 @@ abstract class Controller {
         self::$current  = $this;
 
         $this->request  = Request::current();
+        $this->cookie   = Cookie::current();
         $this->session  = Session::current();
         $this->flash    = Flash::current();
 
