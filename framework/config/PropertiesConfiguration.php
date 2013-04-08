@@ -19,9 +19,13 @@ class PropertiesConfiguration extends Configuration {
             $handle = fopen($file->getAbsolutePath(), "r+");
             while (($buffer = fgets($handle, 4096)) !== false) {
 
+                $buffer = str_replace('\\=', '@@11@@', $buffer);
                 $line = explode('=', $buffer, 2);
                 if ( sizeof($line) < 2 ) continue;
                 if ( strpos(ltrim($line[0]), '#') === 0) continue;
+
+                $line[0] = str_replace('@@11@@', '=', $line[0]);
+                $line[1] = str_replace('@@11@@', '=', $line[1]);
 
                 $this->addProperty( trim($line[0]), trim($line[1]) );
             }
