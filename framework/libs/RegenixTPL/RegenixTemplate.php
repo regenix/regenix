@@ -1,12 +1,13 @@
 <?php
-namespace framework\libs\RegenixTPL;
+namespace framework\libs\RegenixTPL {
 
 /**
  * Class RegenixTemplate
  * @package framework\libs\RegenixTPL
  */
 use framework\exceptions\CoreException;
-use framework\mvc\template\TemplateLoader;
+    use framework\lang\String;
+    use framework\mvc\template\TemplateLoader;
 
 /**
  *  ${var} - var
@@ -86,6 +87,52 @@ class RegenixTemplate {
         }
     }
 
+    private static function explodeMagic($delimiter, $string){
+        $result = array();
+
+        $i     = 0;
+        $sk    = 0;
+        $skA   = 0;
+        $quote = false;
+        $quoteT = false;
+        $str    = '';
+        while($ch = $string[$i]){
+            $i++;
+            $str .= $ch;
+
+            if ( $ch == '"' || $ch == "'" ){
+                if($quote){
+                    if ($string[$i-1] != '\\'){
+                        $quote  = false;
+                        $quoteT = false;
+                    }
+                } else {
+                    $quote  = true;
+                    $quoteT = $ch;
+                }
+                continue;
+            }
+            if ( $ch == '(') $sk += 1;
+            if ( $ch == ')' ) $sk -= 1;
+            if ( $ch == '[' ) $skA += 1;
+            if ( $ch == ']' ) $skA -= 1;
+
+            if ($quote || $sk || $skA)
+                continue;
+
+            if ( $ch === $delimiter ){
+                $result[] = substr($str, 0, -1);
+                $str      = '';
+                continue;
+            }
+
+        }
+        if ($str)
+            $result[] = $str;
+
+        return $result;
+    }
+
     protected function _compile(){
         $source = file_get_contents($this->file);
         $result = '<?php use ' . self::type . ';' . "\n";
@@ -118,7 +165,6 @@ class RegenixTemplate {
                             $result .= '<?php else:?>';
                         elseif ($cmd === 'extends'){
                             $result .= '<?php echo $_TPL->_renderBlock("doLayout", ' . $tmp[1] . '); $__extends = true;?>';
-
                         } elseif ($cmd === 'doLayout'){
                             $result .= '%__BLOCK_doLayout__%';
                         } elseif ($this->tags[$cmd]){
@@ -127,13 +173,29 @@ class RegenixTemplate {
                             $result .= '<?php ' .$cmd. '(' . $tmp[1] . '):?>';
                     }
                 } break;
+                case '&': {
+                    $result .= '<?php echo htmlspecialchars(\\framework\\libs\\I18n::get('. $expr .'))?>';
+                } break;
                 case '$': {
                     //$result .= $mod;
-                    if ( ($xp = strpos($expr, '->')) !== false ){
-                        $result .= '<?php echo $_TPL->_makeObjectVar($' . substr($expr, 0, $xp) . ')'
-                            . substr($expr, $xp) . '?>';
+                    $append = '';
+                    if (ctype_alpha($expr[0]))
+                        $append = '$';
+
+                    $data = self::explodeMagic('|', $expr);
+                    if ( $data[1] ){
+                        $mods = self::explodeMagic(',', $data[1]);
+                        foreach($mods as &$mod){
+                            $mod = trim($mod);
+                            if (substr($mod,-1) != ')')
+                                $mod .= '()';
+                        }
+
+                        $modsAppend = implode('->', $mods);
+                        $result .= '<?php echo $_TPL->_makeObjectVar('. $append . $data[0] . ')->'
+                            . $modsAppend . '?>';
                     } else {
-                        $result .= '<?php echo $_TPL->_renderVar($' . $expr . ')?>';
+                        $result .= '<?php echo htmlspecialchars((string)'. $append . $data[0] . ')?>';
                     }
                 } break;
                 default: {
@@ -259,11 +321,26 @@ class RegenixVariable {
     }
 
     public function raw(){
-        return $this->var;
+        return $this;
     }
 
     public function format($format){
         $this->var = date($format, $this->var);
+        return $this;
+    }
+
+    public function lowerCase(){
+        $this->var = strtolower($this->var);
+        return $this;
+    }
+
+    public function upperCase(){
+        $this->var = strtoupper($this->var);
+        return $this;
+    }
+
+    public function nl2br(){
+        $this->var = nl2br($this->var);
         return $this;
     }
 
@@ -287,5 +364,18 @@ class RegenixVariable {
             return $this->var;
         } else
             throw CoreException::formated('Template `%s()` modifier not found', $name);
+    }
+}
+}
+
+namespace {
+
+    use framework\libs\I18n;
+
+    function __($message, $args = ''){
+        if (is_array($args))
+            return I18n::get($message, $args);
+        else
+            return I18n::get($message, array_slice(func_get_args(), 1));
     }
 }

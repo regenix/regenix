@@ -13,7 +13,7 @@ class Application extends Controller {
             $this->notFound();
     }
 
-    public function index($id){
-        $this->renderText( I18n::get("Admin.Panel", 123, "YES") );
+    public function index(){
+        $this->render();
     }
 }

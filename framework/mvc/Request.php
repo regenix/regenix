@@ -472,7 +472,7 @@ class Cookie {
 
     /**
      * @param string $name
-     * @param scalar $value
+     * @param string|int|float|boolean $value
      * @param null|int|string $expires
      */
     public function put($name, $value, $expires = null){
