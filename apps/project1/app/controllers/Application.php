@@ -14,6 +14,6 @@ class Application extends Controller {
     }
 
     public function index($id){
-        $this->renderText( I18n::get("Admin Panel {0} - {1}", 123, "YES") );
+        $this->renderText( I18n::get("Admin.Panel", 123, "YES") );
     }
 }
