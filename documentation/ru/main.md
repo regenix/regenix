@@ -3,6 +3,10 @@
 > Добро пожаловать в документацию по фреймворку Regenix.
 
 - [Обзор фреймворка](readme.md)
+- [Основные концепции](concepts.md)
+    - [MVC архитектура](concepts.md#mvc)
+    - [Структура проектов](concepts.md#stucture)
+    - [Цикл разработки](concepts.md#develop)
 - [HTTP Роутинг (ЧПУ)](routes.md)
     - [О Rest архитектуре](routes.md#rest)
     - [Конфигурация роутинга (ЧПУ)](routes.md#syntax)
