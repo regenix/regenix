@@ -16,6 +16,7 @@
     - [Извлечение HTTP параметров](controllers.md#httpargs)
     - [Типизация параметров и HTTP данные](controllers.md#typed)
     - [Типы ответов](controllers.md#resulttypes)
+    - [Перехват событий, хуки](controllers.md#events)
 - [I18n Локализация](i18n.md)
     - [Файлы перевода](i18n.md#langfiles)
     - [Определение и хранение языка](i18n.md#detect)
