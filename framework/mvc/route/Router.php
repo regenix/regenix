@@ -7,6 +7,7 @@ use framework\mvc\Controller;
 use framework\mvc\Request;
 use framework\mvc\RequestBindParams;
 use framework\mvc\RequestBinder;
+use framework\mvc\RequestBody;
 
 class Router {
 
@@ -116,6 +117,8 @@ class Router {
                     $cls_name = $class->getName();
                     $value    = $cls_name::current();
                     $args[$name] = $value;
+                } else if ( $class && $class->isSubclassOf(RequestBody::type) ){
+                    $args[$name] = $class->newInstance();
                 } else if ( $controller->query->has($name) ){
                     // получаем данные из GET
                     if ( $class !== null )

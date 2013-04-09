@@ -779,6 +779,33 @@ interface RequestBindValue {
     public function onBindValue($value);
 }
 
+class RequestBody {
+
+    const type = __CLASS__;
+
+    protected $data = null;
+
+    public function __construct(){
+        $this->data = file_get_contents('php://input');
+    }
+
+    /**
+     * parse data as json
+     * @return array
+     */
+    public function asJSON(){
+        return json_decode($this->data, true);
+    }
+
+    /**
+     * get data as string
+     * @return string
+     */
+    public function asString(){
+        return (string)$this->data;
+    }
+}
+
 abstract class RequestBindParams {
 
     const type     = __CLASS__;
@@ -814,8 +841,8 @@ abstract class RequestBindParams {
 
     /**
      * @param null|string $prefix - if null default used
-     * @param null $method
-     * @param null|string $method - if null default used
+     * @internal param null $method
+     * @internal param null|string $method - if null default used
      * @return RequestBindParams
      */
     public static function current($prefix = null){
