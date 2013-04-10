@@ -3,6 +3,7 @@
 namespace framework\mvc\route;
 
 use framework\cache\SystemCache;
+use framework\lang\String;
 use framework\mvc\Controller;
 use framework\mvc\Request;
 use framework\mvc\RequestBindParams;
@@ -52,14 +53,17 @@ class Router {
         $args    = array();
         $pattern = '';
         $types   = array();
+        $patterns = array();
+        $tmpPattern = '';
+        $url     = '';
         foreach($_args as $i => $arg){
             if ( $arg[0] == '#' ){
                 if (($p = strpos($arg, '<')) !== false ){
                     $name  = substr($arg, 1, $p - 1);
-                    $pattern .= '(' . substr($arg, $p + 1, strpos($arg, '>') - $p - 1) . ')';
+                    $pattern .= ($tmpPattern = '(' . substr($arg, $p + 1, strpos($arg, '>') - $p - 1) . ')');
                 } else {
                     $name  = substr($arg, 1);
-                    $pattern .= '([a-zA-Z0-9\-\_\. \(\)\[\]\,\:\;\=\+\&\%\@]{1,})';
+                    $pattern .= ($tmpPattern = '([^/]+)');
                 }
 
                 if ( strpos($name, ':') === false ){
@@ -69,9 +73,12 @@ class Router {
                     $name = explode(':', $name, 3);
 
                     $types[$name[0]] = $name[1];
-                    $args[] = $name[0];
+                    $args[] = $name = $name[0];
                 }
+                $url .= '{' . $name . '}';
+                $patterns[$name] = $tmpPattern;
             } else {
+                $url     .= $arg;
                 $pattern .= $arg;
             }
         }
@@ -83,14 +90,60 @@ class Router {
                 'params'  => $params,
                 'types'   => $types,
                 'pattern' => '#^' . $pattern . '$#',
-                'args'    => $args
+                'args'    => $args,
+                'patterns' => $patterns,
+                'url'     => $url
         );
-        
+
         return $item;
+    }
+
+    public function reverse($action, array $args = array(), $method = '*'){
+        $action = strtolower($action);
+        if (!String::startsWith($action, '.controllers.'))
+            $action = '.controllers.' . $action;
+        $action = str_replace('\\', '.', $action);
+
+        foreach($this->routes as $route){
+            if ($method != '*' && strtoupper($method) != $route['method'])
+                continue;
+
+            $replace = array('_METHOD');
+            $to      = array($method == '*' ? 'GET' : strtoupper($method));
+            foreach($args as $key => $value){
+                if ($route['types'][$key]){
+                    $replace[] = '{' . $key . '}';
+                    $to[]      = $value;
+                }
+            }
+            $curAction = str_replace($replace, $to, $route['action']);
+            if ( $action === strtolower(str_replace('\\', '.', $curAction)) ){
+                $match = true;
+                foreach($route['patterns'] as $name => $pattern){
+                    if (!preg_match('#^'. $pattern . '$#', (string)$args[$name])){
+                        $match = false;
+                        break;
+                    }
+                }
+
+                if ($match){
+                    $url = str_replace($replace, $to, $route['url']);
+                    $i = 0;
+                    foreach($args as $key => $value){
+                        if (!$route['types'][$key]){
+                            $url .= ($i == 0 ? '?' : '&') . $key . '=' . urlencode($value);
+                            $i++;
+                        }
+                    }
+
+                    return $url;
+                }
+            }
+        }
+        return null;
     }
     
     public function addRoute($method, $path, $action, $params = ''){
-        
         $this->routes[] = $this->buildRoute($method, $path, $action, $params);
     }
 

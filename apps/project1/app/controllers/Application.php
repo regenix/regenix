@@ -1,6 +1,7 @@
 <?php
 namespace controllers;
 
+use framework\Project;
 use framework\lang\FrameworkClassLoader;
 use framework\libs\I18n;
 use framework\logger\Logger;
@@ -15,7 +16,8 @@ class Application extends Controller {
     }
 
     public function index(){
-        $this->render();
+        $project = Project::current();
+        var_dump( $project->router->reverse('Application.index', ['_lang' => 'ru']) );
     }
 
     public function post(RequestBody $body){
