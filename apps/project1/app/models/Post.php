@@ -5,39 +5,39 @@ namespace models;
 use modules\mongodb\Document;
 
 /**
- * @collection posts
- * @indexed name=1, desc=-1, $background
- * @indexed name=-1, desc=1, $background
+ * #collection posts
+ * #indexed name=1, desc=-1, $background
+ * #indexed name=-1, desc=1, $background
  */
 class Post extends Document {
 
     const type = __CLASS__;
 
     /** 
-     * @id
+     * #id
      * @var \MongoId
      */
     public $_id;
     
     /**
-     * @indexed $background
-     * @length 255
-     * @column nm
+     * #indexed $background
+     * #length 255
+     * #column nm
      * @var string
      */
     public $name;
     
     /** 
-     * @column ds
-     * @length 10000
+     * #column ds
+     * #length 10000
      * @var string 
      */
     public $desc;
 
     /**
-     * @indexed $background
-     * @column pr
-     * @ref $lazy
+     * #indexed $background
+     * #column pr
+     * #ref $lazy
      * @var Post
      */
     public $parent;
@@ -52,4 +52,3 @@ class Post extends Document {
      */
     public $groups = array();
 }
-
