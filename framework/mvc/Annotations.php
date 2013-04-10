@@ -11,10 +11,6 @@ class Annotations {
 
     const type = __CLASS__;
 
-    private static $ignories = array(
-        'var', 'param', 'return', 'internal', 'throws', 'inheritdoc', 'deprecated', 'link', 'see'
-    );
-
     /** @var string */
     private $file;
 
@@ -42,10 +38,6 @@ class Annotations {
     }
 
     private function checkAnnotation($annotation){
-
-        if (in_array($annotation, self::$ignories, true))
-            return;
-
         if ( self::$types[ $this->scope ][$annotation] === null )
             throw new AnnotationException($this, $annotation, ' is not defined');
     }
@@ -122,17 +114,14 @@ class Annotations {
 
 
     private function validateItem($name, $item){
-        if (in_array($name, self::$ignories, true))
-            return;
-
         $meta = self::$types[ $this->scope ][ $name ];
 
         if ( $meta === null )
-            throw CoreException::formated('@%s annotation is not defined', $name);
+            throw CoreException::formated('#%s annotation is not defined', $name);
 
         // check multi
         if ( isset($item[0]) && !$meta['multi'] )
-            throw CoreException::formated('@%s annotation can\'t multiple', $name);
+            throw CoreException::formated('#%s annotation can\'t multiple', $name);
 
         if ( is_array($item) )
             foreach($item as $one) self::validateItemOne($one, $name, $meta);
@@ -149,7 +138,7 @@ class Annotations {
             foreach($meta['require'] as $req){
 
                 if ( !isset($item[$req]) ){
-                    throw CoreException::formated('[@%s annotation]: `%s` field is required', $name, $req);
+                    throw CoreException::formated('[#%s annotation]: `%s` field is required', $name, $req);
                 }
             }
         }
@@ -337,7 +326,7 @@ class Annotations {
      * @return array
      */
     private static function parseAnnotation($line){
-        $tmp = explode('@', $line);
+        $tmp = explode('#', $line);
         if ( sizeof($tmp) < 2 ) return null;
 
         $result = array();
@@ -371,7 +360,7 @@ class Annotations {
 
     private static function parseAnnotations($comment){
         if ( !$comment ) return null;
-        if (strpos( $comment, '/**') !== 0)
+        if (strpos( $comment, '/*') !== 0)
             return null;
 
         $comment = trim(substr($comment, 3, -2));
