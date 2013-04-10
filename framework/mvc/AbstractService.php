@@ -7,13 +7,14 @@
 
 namespace framework\mvc;
 
+use framework\StrongObject;
 use framework\exceptions\AnnotationException;
 use framework\exceptions\CoreException;
 use framework\lang\ArrayTyped;
 use framework\lang\ClassLoader;
 use framework\lang\String;
 
-abstract class AbstractService {
+abstract class AbstractService extends StrongObject {
 
     /** @var array */
     protected static $modelInfo = array();

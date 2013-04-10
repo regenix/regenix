@@ -2,11 +2,12 @@
 
 namespace framework\config;
 
+use framework\StrongObject;
 use framework\io\FileIOException;
 use framework\lang\String;
 use framework\io\File;
 
-class Configuration {
+class Configuration extends StrongObject {
 
     const type = __CLASS__;
 

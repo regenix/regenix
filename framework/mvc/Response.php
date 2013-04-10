@@ -3,10 +3,11 @@
 namespace framework\mvc;
 
 use framework\Core;
+use framework\StrongObject;
 use framework\libs\Time;
 use framework\mvc\providers\ResponseProvider;
 
-class Response {
+class Response extends StrongObject {
 
     const type = __CLASS__;
 

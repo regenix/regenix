@@ -3,6 +3,7 @@
 namespace framework\mvc;
 
 use framework\Core;
+use framework\StrongObject;
 use framework\exceptions\CoreException;
 use framework\exceptions\NotFoundException;
 use framework\io\File;
@@ -11,7 +12,7 @@ use framework\mvc\template\TemplateLoader;
 use framework\lang\String;
 use framework\mvc\MIMETypes;
 
-abstract class Controller {
+abstract class Controller extends StrongObject {
 
     const type = __CLASS__;
 

@@ -4,6 +4,7 @@ namespace framework {
     use framework\exceptions\CoreException;
     use framework\exceptions\NotFoundException;
     use framework\exceptions\ResponseException;
+    use framework\lang\String;
     use framework\logger\Logger;
     use framework\mvc\Controller;
     use framework\mvc\Response;
@@ -47,7 +48,8 @@ abstract class Core {
 
         self::_registerProjects();
         self::_registerCurrentProject();
-        
+
+        set_error_handler(array(Core::type, 'errorHandler'));
         register_shutdown_function(array(Core::type, 'shutdown'), self::$__project);
     }
 
@@ -265,6 +267,10 @@ abstract class Core {
     public static function getFrameworkPath(){
         return ROOT . 'framework/';
     }
+
+    public static function errorHandler($errno, $errstr, $errfile, $errline){
+        // TODO ..
+    }
     
     public static function shutdown(Project $project){
 
@@ -307,6 +313,18 @@ abstract class Core {
         self::$tempDir = $dir;
     }
 }
+
+
+    abstract class StrongObject {
+
+        public function __set($name, $value){
+            throw CoreException::formated('Property `%s` not defined in `%s` class', $name, get_class($this));
+        }
+
+        public function __get($name){
+            throw CoreException::formated('Property `%s` not defined in `%s` class', $name, get_class($this));
+        }
+    }
 
 }
 

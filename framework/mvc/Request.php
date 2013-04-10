@@ -2,12 +2,13 @@
 
 namespace framework\mvc;
 
+use framework\StrongObject;
 use framework\exceptions\CoreException;
 use framework\lang\ArrayTyped;
 use framework\lang\String;
 use framework\libs\Time;
 
-class Request {
+class Request extends StrongObject {
 
     const type = __CLASS__;
 
@@ -257,7 +258,7 @@ class Request {
  * Class Session
  * @package framework\mvc
  */
-class Session {
+class Session extends StrongObject {
 
     protected function __construct(){
         session_start();
@@ -337,7 +338,7 @@ class Session {
 }
 
 
-class Flash {
+class Flash extends StrongObject {
 
     /** @var Session */
     private $session;
@@ -459,7 +460,7 @@ class Flash {
     }
 }
 
-class Cookie {
+class Cookie extends StrongObject {
 
     /**
      * @var ArrayTyped
@@ -553,7 +554,7 @@ class Cookie {
     }
 }
 
-class RequestQuery {
+class RequestQuery extends StrongObject {
     
     /** @var Request */
     private $request;
@@ -712,7 +713,7 @@ class RequestQuery {
 }
 
 
-abstract class RequestBinder {
+abstract class RequestBinder extends StrongObject {
 
     /**
      * @param $value string
@@ -783,7 +784,7 @@ interface RequestBindValue {
     public function onBindValue($value);
 }
 
-class RequestBody {
+class RequestBody extends StrongObject {
 
     const type = __CLASS__;
 
@@ -820,7 +821,7 @@ class RequestBody {
     }
 }
 
-abstract class RequestBindParams {
+abstract class RequestBindParams extends StrongObject {
 
     const type     = __CLASS__;
 
@@ -887,7 +888,7 @@ abstract class RequestBindParams {
     }
 }
 
-class URL {
+class URL extends StrongObject {
 
     const type = __CLASS__;
 
