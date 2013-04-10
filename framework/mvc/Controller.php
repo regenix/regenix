@@ -2,6 +2,7 @@
 
 namespace framework\mvc;
 
+use framework\Core;
 use framework\exceptions\CoreException;
 use framework\exceptions\NotFoundException;
 use framework\io\File;
@@ -13,6 +14,15 @@ use framework\mvc\MIMETypes;
 abstract class Controller {
 
     const type = __CLASS__;
+
+    private $__data = array(
+        'request' => null,
+        'session' => null,
+        'flash'   => null,
+        'cookie'  => null,
+        'query'   => null,
+        'body'    => null
+    );
 
     /** @var Response */
     public $response;
@@ -31,6 +41,9 @@ abstract class Controller {
     
     /** @var RequestQuery */
     public $query;
+
+    /** @var RequestBody */
+    public $body;
 
     /**
      * method name of invoke in request
@@ -57,14 +70,34 @@ abstract class Controller {
 
     public function __construct() {
         self::$current  = $this;
-
-        $this->request  = Request::current();
-        $this->cookie   = Cookie::current();
-        $this->session  = Session::current();
-        $this->flash    = Flash::current();
-
         $this->response = new Response();
-        $this->query    = new RequestQuery();
+
+        unset($this->body);
+        unset($this->request);
+        unset($this->cookie);
+        unset($this->session);
+        unset($this->flash);
+        unset($this->query);
+    }
+
+    public function __get($name){
+        if ($this->__data[$name])
+            return $this->__data[$name];
+
+        $value = null;
+        switch($name){
+            case 'body': $value = new RequestBody(); break;
+            case 'request': $value = Request::current(); break;
+            case 'cookie': $value = Cookie::current(); break;
+            case 'session': $value = Session::current(); break;
+            case 'flash': $value = Flash::current(); break;
+            case 'query': $value = new RequestQuery(); break;
+            default: {
+                throw CoreException::formated("Property %s no exists in %s class", $name, get_class($this));
+            }
+        }
+
+        return $this->__data[$name] = $value;
     }
 
     protected function onBefore(){}

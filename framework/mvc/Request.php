@@ -739,7 +739,11 @@ abstract class RequestBinder {
             case 'string':
             case 'str': {
                 return (string)$value;
-            }
+            } break;
+
+            case 'array': {
+                return array($value);
+            } break;
 
             default: {
                 $type = str_replace('.', '\\', $type);
@@ -795,6 +799,16 @@ class RequestBody {
      */
     public function asJSON(){
         return json_decode($this->data, true);
+    }
+
+    /**
+     * parse data as query string
+     * @return ArrayTyped
+     */
+    public function asQuery(){
+        $result = array();
+        parse_str((string)$this->data, $result);
+        return new ArrayTyped($result);
     }
 
     /**

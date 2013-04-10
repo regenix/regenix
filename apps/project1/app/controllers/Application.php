@@ -7,6 +7,7 @@ use framework\libs\I18n;
 use framework\logger\Logger;
 use framework\mvc\Controller;
 use framework\mvc\RequestBody;
+use framework\mvc\RequestQuery;
 
 class Application extends Controller {
 
@@ -16,8 +17,7 @@ class Application extends Controller {
     }
 
     public function index(){
-        $project = Project::current();
-        var_dump( $project->router->reverse('Application.index', ['_lang' => 'ru']) );
+        $this->renderVar($this->body);
     }
 
     public function post(RequestBody $body){

@@ -148,7 +148,6 @@ class Router {
     }
 
     public function invokeMethod(Controller $controller, \ReflectionMethod $method){
-
         $args = array();
         foreach($method->getParameters() as $param){
             $name = $param->getName();
@@ -159,6 +158,8 @@ class Router {
                         $class = $param->getClass();
                         if ( $class !== null ){
                             $value = RequestBinder::getValue($value, $class->getName());
+                        } else if ($param->isArray()){
+                            $value = array($value);
                         }
                     } else
                         $value = RequestBinder::getValue($value, $type);
@@ -166,12 +167,15 @@ class Router {
                 $args[$name] = $value;
             } else {
                 $class = $param->getClass();
+
                 if ( $class && $class->isSubclassOf(RequestBindParams::type) ){
                     $cls_name = $class->getName();
                     $value    = $cls_name::current();
                     $args[$name] = $value;
-                } else if ( $class && $class->isSubclassOf(RequestBody::type) ){
+                } else if ( $class && ($class->isSubclassOf(RequestBody::type) || $class->getName() == RequestBody::type) ){
                     $args[$name] = $class->newInstance();
+                } else if ( $param->isArray() ){
+                    $args[$name] = $controller->query->getArray($name);
                 } else if ( $controller->query->has($name) ){
                     // получаем данные из GET
                     if ( $class !== null )

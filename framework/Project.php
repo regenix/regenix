@@ -226,12 +226,13 @@ class Project {
         $this->router = SystemCache::getWithCheckFile('route', $routeFile);
 
         if ( $this->router === null ){
+
             $routeFiles   = array();
             foreach (modules\AbstractModule::$modules as $name => $module){
                 $routeFiles['\\modules\\' . $name . '\\controllers\\'] = $module->getRouteFile();
             }
             $routeFiles[] = new File($routeFile);
-            
+
             $routeConfig  = new RouterConfiguration($routeFiles);
             $this->router = new mvc\route\Router();
             $this->router->applyConfig($routeConfig);

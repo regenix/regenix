@@ -276,6 +276,7 @@ abstract class Core {
                 case E_COMPILE_ERROR:
                 case E_PARSE:
                 case E_USER_ERROR:
+                case 4096: // Catchable fatal error
                 {
                     self::catchError($error,
                         $project->config->getBoolean('logger.fatal.enable',true)
