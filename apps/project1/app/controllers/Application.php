@@ -18,8 +18,7 @@ class Application extends Controller {
     }
 
     public function index(){
-        $service = Post::getService();
-        $this->renderVar($this->body);
+        $this->renderDump($_POST);
     }
 
     public function post(RequestBody $body){

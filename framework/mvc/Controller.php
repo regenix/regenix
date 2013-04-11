@@ -262,10 +262,7 @@ abstract class Controller extends StrongObject {
      * @param $var
      */
     public function renderVar($var){
-        if ( IS_DEV )
-            $this->renderHTML('<pre>' . print_r($var, true) . '</pre>');
-        else
-            $this->send();
+        $this->renderHTML('<pre>' . print_r($var, true) . '</pre>');
     }
 
     /**
@@ -273,15 +270,12 @@ abstract class Controller extends StrongObject {
      * @param $var
      */
     public function renderDump($var){
-        if ( IS_DEV ){
-            ob_start();
-            dump($var);
-            $str = ob_get_contents();
-            ob_end_clean();
+        ob_start();
+        var_dump($var);
+        $str = ob_get_contents();
+        ob_end_clean();
 
-            $this->renderHTML($str);
-        } else
-            $this->send();
+        $this->renderHTML($str);
     }
 
     public function ok(){

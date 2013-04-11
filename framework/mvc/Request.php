@@ -865,7 +865,8 @@ abstract class RequestBindParams extends StrongObject {
         $_method = strtoupper($class::method);
         switch($_method){
             case 'POST': {
-                $httpArgs = $_POST;
+                $body = new RequestBody();
+                $httpArgs = $body->asQuery();
             } break;
             case 'GET': {
                 $tmp = new RequestQuery();

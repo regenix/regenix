@@ -38,6 +38,8 @@ abstract class Core {
         error_reporting(E_ALL ^ E_NOTICE);
         set_include_path(ROOT);
 
+        unset($_POST, $_GET, $_REQUEST);
+
         // register class loader
         require 'framework/lang/ClassLoader.php';
         $loader = new FrameworkClassLoader();
