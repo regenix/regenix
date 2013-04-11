@@ -8,6 +8,7 @@ namespace framework\libs\RegenixTPL {
     use framework\Core;
     use framework\exceptions\CoreException;
     use framework\lang\String;
+    use framework\libs\I18n;
     use framework\mvc\template\TemplateLoader;
 
 /**
@@ -23,6 +24,15 @@ namespace framework\libs\RegenixTPL {
 class RegenixTemplate {
 
     const type = __CLASS__;
+
+    private static $control = array(
+        'if' => 1,
+        'else' => 1,
+        'elseif' => 1,
+        'while' => 1,
+        'for' => 1,
+        'foreach' => 1
+    );
 
     /** @var string */
     protected $tmpDir;
@@ -139,79 +149,116 @@ class RegenixTemplate {
         $source = file_get_contents($this->file);
         $result = '<?php $__extends = false; ?>';
 
-        $p = -1;
+        $str = '';
+        $i = 0;
         $lastE = -1;
-        while(($p = strpos($source, '{', $p + 1)) !== false){
 
-            $mod  = $source[$p - 1];
-            $e    = strpos($source, '}', $p);
-            $expr = substr($source, $p + 1, $e - $p - 1);
+        $sk    = 0;
+        $quote = false;
+        $quoteT = false;
+        $expr   = '';
+        $mod    = false;
 
-            $prevSource = $lastE === -2 ? '' : substr($source, $lastE + 1, $p - $lastE - 2);
-            $lastE = $e;
+        while($ch = $source[$i]){
+            $i++;
+            if ($sk === 0)
+                $str .= $ch;
 
-            $result .= $prevSource;
-            $extends = false;
-            switch($mod){
-                case '@': {
-                    $result .= '<?php echo ' . $expr . '?>';
-                } break;
-                case '#': {
-                    $tmp = explode(' ', $expr, 2);
-                    $cmd = $tmp[0];
-                    if ($cmd[0] == '/')
-                        $result .= '<?php end'.substr($cmd,1).'?>';
-                    else {
-                        if ( $cmd === 'else' )
-                            $result .= '<?php else:?>';
-                        elseif ($cmd === 'extends'){
-                            $result .= '<?php echo $_TPL->_renderBlock("doLayout", ' . $tmp[1] . '); $__extends = true;?>';
-                        } elseif ($cmd === 'doLayout'){
-                            $result .= '%__BLOCK_doLayout__%';
-                        } elseif ($this->tags[$cmd]){
-                            $result .= '<?php $_TPL->_renderTag("' . $cmd . '", '.$this->_makeArgs($tmp[1]).');?>';
-                        } else
-                            $result .= '<?php ' .$cmd. '(' . $tmp[1] . '):?>';
+            if ( $ch == '"' || $ch == "'" ){
+                if($quote){
+                    if ($source[$i-1] != '\\'){
+                        $quote  = false;
+                        $quoteT = false;
                     }
-                } break;
-                case '&': {
-                    $result .= '<?php echo htmlspecialchars(\\framework\\libs\\I18n::get('. $expr .'))?>';
-                } break;
-                case '$': {
-                    //$result .= $mod;
-                    $append = '';
-                    if (ctype_alpha($expr[0]))
-                        $append = '$';
+                } else {
+                    $quote  = true;
+                    $quoteT = $ch;
+                }
+                continue;
+            }
 
-                    $data = self::explodeMagic('|', $expr);
-                    if ( $data[1] ){
-                        $mods = self::explodeMagic(',', $data[1]);
-                        foreach($mods as &$mod){
-                            $mod = trim($mod);
-                            if (substr($mod,-1) != ')')
-                                $mod .= '()';
+            if ( $ch == '{'){
+                if ($sk == 0){
+                    switch($source[$i-2]){
+                        case '#':
+                        case '_':
+                        case '@':
+                            $mod = $source[$i-2];
+                    }
+                    $lastE = $i;
+                }
+                $sk += 1;
+            }
+            if ( $ch == '}' ){
+                $sk -= 1;
+                if ($sk == 0){
+                    $expr = String::substring($source, $lastE, $i - 1);
+                    $str = substr($str, 0, $mod ? -2 : -1);
+
+                    switch($mod){
+                        case '@': {
+                            $str .= '<?php echo ' . $expr . '?>';
+                        } break;
+                        case '_': {
+                            if ( class_exists('\\framework\\libs\\I18n') )
+                                $str .= '<?php echo htmlspecialchars(\\framework\\libs\\I18n::get('. $expr .'))?>';
+                            else
+                                $str .= '<?php echo htmlspecialchars(' . $expr . ')?>';
+                        } break;
+                        default: {
+                            $tmp = explode(' ', $expr, 2);
+                            $cmd = $tmp[0];
+                            if ($cmd[0] == '/')
+                                $str .= '<?php end'.substr($cmd,1).'?>';
+                            else {
+                                if ( $cmd === 'else' ){
+                                    if (trim($tmp[1]))
+                                        $str .= '<?php elseif(' . $tmp[1] . '):?>';
+                                    else
+                                        $str .= '<?php else:?>';
+                                } elseif ($cmd === 'extends'){
+                                    $str .= '<?php echo $_TPL->_renderBlock("doLayout", ' . $tmp[1] . '); $__extends = true;?>';
+                                } elseif ($cmd === 'doLayout'){
+                                    $str .= '%__BLOCK_doLayout__%';
+                                } elseif (self::$control[$cmd]){
+                                    $str .= '<?php ' . $cmd . '(' . $tmp[1] . '):?>';
+                                } elseif ($this->tags[$cmd]){
+                                    $str .= '<?php $_TPL->_renderTag("' . $cmd . '", '.$this->_makeArgs($tmp[1]).');?>';
+                                } else {
+                                    $data = self::explodeMagic('|', $expr);
+                                    if ( $data[1] ){
+                                        $mods = self::explodeMagic(',', $data[1]);
+                                        foreach($mods as &$mod){
+                                            $mod = trim($mod);
+                                            if (substr($mod,-1) != ')')
+                                                $mod .= '()';
+                                        }
+
+                                        $modsAppend = implode('->', $mods);
+                                        $str .= '<?php echo $_TPL->_makeObjectVar('. $data[0] . ')->'
+                                            . $modsAppend . '?>';
+                                    } else {
+                                        $str .= '<?php echo htmlspecialchars((string)(' . $data[0] . '))?>';
+                                    }
+                                }
+
+                            }
                         }
-
-                        $modsAppend = implode('->', $mods);
-                        $result .= '<?php echo $_TPL->_makeObjectVar('. $append . $data[0] . ')->'
-                            . $modsAppend . '?>';
-                    } else {
-                        $result .= '<?php echo htmlspecialchars((string)'. $append . $data[0] . ')?>';
                     }
-                } break;
-                default: {
-                    $result .= $mod .'{'. $expr . '}';
+
+                    $lastE = 0;
+                    $mod   = false;
                 }
             }
         }
-        $result .= substr($source, $lastE + 1);
-        $result .= '<?php if($__extends){ $_TPL->_renderContent(); } ?>';
+
+        $str .= '<?php if($__extends){ $_TPL->_renderContent(); } ?>';
 
         $dir = dirname($this->compiledFile);
         if (!is_dir($dir))
             mkdir($dir, 0777, true);
 
-        file_put_contents($this->compiledFile, $result);
+        file_put_contents($this->compiledFile, $str);
     }
 
     public function compile($cached = true){

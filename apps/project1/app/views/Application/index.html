@@ -1,10 +1,12 @@
-#{extends 'root'}
-#{set title: 'Block works!'}
+{extends 'root'}
+{set title: 'Block works!'}
 
-${ split(",","My\nWorks") | lowerCase, nl2br}
+{ "My\nWorks" | lowerCase, nl2br }
 
-#{if $flash->success()}
-    <h1>${flash->success()}</h1>
-#{else}
-    ${var ? '111' : '222'}
-#{/if}
+{if $flash->success()}
+    <h1>{$flash->success()}</h1>
+{else false}
+    {'uuuu1'}
+{else}
+    _{'Admin.Panel'}
+{/if}

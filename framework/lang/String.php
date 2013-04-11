@@ -15,6 +15,19 @@ abstract class String {
     public static function formatArgs($string, array $args = array()){
         return vsprintf($string, $args);
     }
+
+    /**
+     * @param $string
+     * @param $from
+     * @param null $to
+     * @return string
+     */
+    public static function substring($string, $from, $to = null){
+        if ($to === null)
+            return substr($string, $from);
+        else
+            return substr($string, $from, $to - $from);
+    }
     
     /**
      * return true if sting start with 
