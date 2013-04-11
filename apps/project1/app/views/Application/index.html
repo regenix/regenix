@@ -1,12 +1,4 @@
 {extends 'root'}
 {set title: 'Block works!'}
 
-{ "My\nWorks" | lowerCase, nl2br }
-
-{if $flash->success()}
-    <h1>{$flash->success()}</h1>
-{else false}
-    {'uuuu1'}
-{else}
-    _{'Admin.Panel'}
-{/if}
+{public 'uploads/'}

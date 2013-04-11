@@ -132,7 +132,16 @@ class Router extends StrictObject {
                     $i = 0;
                     foreach($args as $key => $value){
                         if (!$route['types'][$key]){
-                            $url .= ($i == 0 ? '?' : '&') . $key . '=' . urlencode($value);
+                            $url .= ($i == 0 ? '?' : '&');
+                            if (is_array($value)){
+                                $kk = 0;
+                                foreach($value as $k => $el){
+                                    $kk += 1;
+                                    $url .= $key . '[' . $k . ']=' . urlencode($el) . ($kk < sizeof($value) ? '&' : '');
+                                }
+                            } else {
+                                $url .= $key . '=' . urlencode($value);
+                            }
                             $i++;
                         }
                     }

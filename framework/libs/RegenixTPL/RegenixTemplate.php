@@ -34,6 +34,11 @@ class RegenixTemplate {
         'foreach' => 1
     );
 
+    private static $ignoreTags = array(
+        'style' => 1,
+        'script' => 1
+    );
+
     /** @var string */
     protected $tmpDir;
 
@@ -84,19 +89,20 @@ class RegenixTemplate {
     }
 
     protected function _makeArgs($str){
-        $tmp = self::explodeMagic(':', $str);
-        if ( !$tmp[1] ){
-            return 'array("_arg" => ' . $str . ')';
-        } else {
-            $args = self::explodeMagic(',', $str, 100);
-            $result = 'array(';
-            foreach($args as $arg){
-                $tmp = self::explodeMagic(':', $arg);
+        $args = self::explodeMagic(',', $str, 100);
+        $result = 'array(';
+        $i = 0;
+        foreach($args as $arg){
+            $tmp = self::explodeMagic(':', $arg);
+            if ($tmp[1]){
                 $key = trim($tmp[0]);
-                $result .= "'" . $key . "' => (" . $tmp[1] . '), ';
+                $result .= "'" . $key . "' =>" . $tmp[1] . ', ';
+            } else {
+                $result .= "'_arg' => " . $tmp[0] . ', ';
+                $i += 1;
             }
-            return $result . ')';
         }
+        return $result . ')';
     }
 
     private static function explodeMagic($delimiter, $string){
@@ -108,7 +114,8 @@ class RegenixTemplate {
         $quote = false;
         $quoteT = false;
         $str    = '';
-        while($ch = $string[$i]){
+        while($i < strlen($string)){
+            $ch = $string[$i];
             $i++;
             $str .= $ch;
 
@@ -159,10 +166,18 @@ class RegenixTemplate {
         $expr   = '';
         $mod    = false;
 
-        while($ch = $source[$i]){
+        $openTag  = false;
+        $closeTag = false;
+        $inTag   = false;
+        $ignoreTag = false;
+
+        while($i < strlen($source)){
+            $ch = $source[$i];
             $i++;
-            if ($sk === 0)
+
+            if ($sk === 0){
                 $str .= $ch;
+            }
 
             if ( $ch == '"' || $ch == "'" ){
                 if($quote){
@@ -177,7 +192,21 @@ class RegenixTemplate {
                 continue;
             }
 
-            if ( $ch == '{'){
+            foreach(self::$ignoreTags as $tag => $k){
+                $len = strlen($tag) + 2;
+                $tmp = strtolower(substr($source, $i - $len, $len));
+                if ($tmp === '<' . $tag . ' ' || $tmp === '<' . $tag . '>'){
+                    $openTag = $tag;
+                    break;
+                }
+                if ($tmp === '</' . $tag){
+                    if ($openTag === $tag){
+                        $openTag = false;
+                    }
+                }
+            }
+
+            if ( ($ch == '{' && !$openTag) || ($ch == '{' && $source[$i] == '{' && $openTag) ){
                 if ($sk == 0){
                     switch($source[$i-2]){
                         case '#':
@@ -189,11 +218,19 @@ class RegenixTemplate {
                 }
                 $sk += 1;
             }
-            if ( $ch == '}' ){
+
+            if ( ($ch == '}' && !$openTag) || ($ch == '}' && $source[$i] == '}' && $openTag) ){
                 $sk -= 1;
+                if ($openTag)
+                    $i++;
+
                 if ($sk == 0){
-                    $expr = String::substring($source, $lastE, $i - 1);
-                    $str = substr($str, 0, $mod ? -2 : -1);
+                    if ($openTag){
+                        $expr = String::substring($source, $lastE + 1, $i - 2);
+                    } else
+                        $expr = String::substring($source, $lastE, $i - 1);
+
+                    $str  = substr($str, 0, $mod ? -2 : -1);
 
                     switch($mod){
                         case '@': {

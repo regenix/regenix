@@ -75,8 +75,9 @@ class TemplateLoader {
         $templateName = $name;
         
         $engine = self::$engines[ $ext ];
-        if ( !$engine )
+        if ( !$engine ){
             throw new TemplateEngineNotFoundException($ext);
+        }
         
         $templateFile = self::findFile($name);
         if ( $templateFile === false )

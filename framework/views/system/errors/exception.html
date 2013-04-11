@@ -1,6 +1,39 @@
-#{extends 'system/base'}
-#{set title: 'Application exception'}
-<style>
+{extends 'system/base'}
+{set title: 'Application exception'}
+
+{if IS_DEV}
+<div class="error">
+    <h1>{$info->getShortName()}</h1>
+    <p id="detail">
+        {$desc}
+    </p>
+    {if $source}
+        {if $file}
+            <h2>In `/{$file}` at line <b>{$stack[line]}</b>.</h2>
+        {/if}
+    <div id="source-code">
+        {foreach $source as $i => $line}
+            <pre class="{$i == $stack[line] ? 'error':''}"><span class="line">{$i}</span><span class="code">{$line}</span></pre>
+        {/foreach}
+    </div>
+    {/if}
+</div>
+    {if $stack}
+        <b class="stackTraceTitle">Stack Stace:</b>
+        <pre class="stackTrace">{$exception -> getTraceAsString()}</pre>
+    {/if}
+{else}
+<div class="error">
+    <h1>Application Error</h1>
+    <p id="detail">
+        Please contact with administration.
+    </p>
+    <div id="source-code">
+        <pre><span class="line"> </span><span class="code">Error ID = <b>{$hash}</b></span></pre>
+    </div>
+</div>
+{/if}
+<style type="text/css">
     html, body, pre {
         margin: 0;
         padding: 0;
@@ -99,35 +132,3 @@
     pre.stackTrace { padding: 20px; padding-top: 0; line-height: 18px; color: #6b6b6b; }
     b.stackTraceTitle { font-size: 12px; display: block; padding: 10px; border-top: 1px solid silver; }
 </style>
-#{if IS_DEV}
-<div class="error">
-    <h1>${info->getShortName()}</h1>
-    <p id="detail">
-        ${desc}
-    </p>
-    #{if $source}
-        #{if $file}
-            <h2>In `/${file}` at line <b>${stack[line]}</b>.</h2>
-        #{/if}
-    <div id="source-code">
-        #{foreach $source as $i => $line}
-            <pre class="${i == $stack[line] ? 'error':''}"><span class="line">${i}</span><span class="code">${line}</span></pre>
-        #{/foreach}
-    </div>
-    #{/if}
-</div>
-    #{if $stack}
-        <b class="stackTraceTitle">Stack Stace:</b>
-        <pre class="stackTrace">${exception -> getTraceAsString()}</pre>
-    #{/if}
-#{else}
-<div class="error">
-    <h1>Application Error</h1>
-    <p id="detail">
-        Please contact with administration.
-    </p>
-    <div id="source-code">
-        <pre><span class="line">&#160;</span><span class="code">Error ID = <b>${hash}</b></span></pre>
-    </div>
-</div>
-#{/if}

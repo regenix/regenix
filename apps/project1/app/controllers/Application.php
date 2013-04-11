@@ -17,6 +17,7 @@ class Application extends Controller {
     }
 
     public function index(){
+        $this->put("my", 12345);
         $this->render();
     }
 

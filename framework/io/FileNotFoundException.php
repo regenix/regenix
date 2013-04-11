@@ -11,7 +11,7 @@ class FileNotFoundException extends \framework\exceptions\CoreException {
     public $file;
 
     public function __construct(File $file){
-        parent::__construct( String::format('File "%s" not found', $file->getAbsolutePath()) );
+        parent::__construct( String::format('File "%s" not found', $file->getPath()) );
         $this->file = $file;
     }
 }
