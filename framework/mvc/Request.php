@@ -2,13 +2,13 @@
 
 namespace framework\mvc;
 
-use framework\StrongObject;
+use framework\StrictObject;
 use framework\exceptions\CoreException;
 use framework\lang\ArrayTyped;
 use framework\lang\String;
 use framework\libs\Time;
 
-class Request extends StrongObject {
+class Request extends StrictObject {
 
     const type = __CLASS__;
 
@@ -258,7 +258,7 @@ class Request extends StrongObject {
  * Class Session
  * @package framework\mvc
  */
-class Session extends StrongObject {
+class Session extends StrictObject {
 
     protected function __construct(){
         session_start();
@@ -338,7 +338,7 @@ class Session extends StrongObject {
 }
 
 
-class Flash extends StrongObject {
+class Flash extends StrictObject {
 
     /** @var Session */
     private $session;
@@ -460,7 +460,7 @@ class Flash extends StrongObject {
     }
 }
 
-class Cookie extends StrongObject {
+class Cookie extends StrictObject {
 
     /**
      * @var ArrayTyped
@@ -554,7 +554,7 @@ class Cookie extends StrongObject {
     }
 }
 
-class RequestQuery extends StrongObject {
+class RequestQuery extends StrictObject {
     
     /** @var Request */
     private $request;
@@ -713,7 +713,7 @@ class RequestQuery extends StrongObject {
 }
 
 
-abstract class RequestBinder extends StrongObject {
+abstract class RequestBinder extends StrictObject {
 
     /**
      * @param $value string
@@ -784,7 +784,7 @@ interface RequestBindValue {
     public function onBindValue($value);
 }
 
-class RequestBody extends StrongObject {
+class RequestBody extends StrictObject {
 
     const type = __CLASS__;
 
@@ -821,7 +821,7 @@ class RequestBody extends StrongObject {
     }
 }
 
-abstract class RequestBindParams extends StrongObject {
+abstract class RequestBindParams extends StrictObject {
 
     const type     = __CLASS__;
 
@@ -889,7 +889,7 @@ abstract class RequestBindParams extends StrongObject {
     }
 }
 
-class URL extends StrongObject {
+class URL extends StrictObject {
 
     const type = __CLASS__;
 

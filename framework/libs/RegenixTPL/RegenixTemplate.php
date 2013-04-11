@@ -137,7 +137,7 @@ class RegenixTemplate {
 
     protected function _compile(){
         $source = file_get_contents($this->file);
-        $result = '';
+        $result = '<?php $__extends = false; ?>';
 
         $p = -1;
         $lastE = -1;

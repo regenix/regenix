@@ -8,7 +8,6 @@ use framework\logger\Logger;
 use framework\mvc\Controller;
 use framework\mvc\RequestBody;
 use framework\mvc\RequestQuery;
-use models\Post;
 
 class Application extends Controller {
 
@@ -18,7 +17,7 @@ class Application extends Controller {
     }
 
     public function index(){
-        $this->renderDump($_POST);
+        $this->render();
     }
 
     public function post(RequestBody $body){

@@ -1,7 +1,7 @@
 #{extends 'root'}
 #{set title: 'Block works!'}
 
-${"My\nWorks" | lowerCase, nl2br(}
+${ split(",","My\nWorks") | lowerCase, nl2br}
 
 #{if $flash->success()}
     <h1>${flash->success()}</h1>

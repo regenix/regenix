@@ -3,10 +3,10 @@
 namespace framework\mvc;
 
 
-use framework\StrongObject;
+use framework\StrictObject;
 use framework\lang\IClassInitialization;
 
-abstract class AbstractModel extends StrongObject implements IClassInitialization {
+abstract class AbstractModel extends StrictObject implements IClassInitialization {
 
     const type = __CLASS__;
 

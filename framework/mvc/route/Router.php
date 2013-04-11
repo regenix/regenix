@@ -2,7 +2,7 @@
 
 namespace framework\mvc\route;
 
-use framework\StrongObject;
+use framework\StrictObject;
 use framework\cache\SystemCache;
 use framework\lang\String;
 use framework\mvc\Controller;
@@ -11,7 +11,7 @@ use framework\mvc\RequestBindParams;
 use framework\mvc\RequestBinder;
 use framework\mvc\RequestBody;
 
-class Router extends StrongObject {
+class Router extends StrictObject {
 
     const type = __CLASS__;
 

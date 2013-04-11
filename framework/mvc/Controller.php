@@ -3,7 +3,7 @@
 namespace framework\mvc;
 
 use framework\Core;
-use framework\StrongObject;
+use framework\StrictObject;
 use framework\exceptions\CoreException;
 use framework\exceptions\NotFoundException;
 use framework\io\File;
@@ -12,7 +12,7 @@ use framework\mvc\template\TemplateLoader;
 use framework\lang\String;
 use framework\mvc\MIMETypes;
 
-abstract class Controller extends StrongObject {
+abstract class Controller extends StrictObject {
 
     const type = __CLASS__;
 
@@ -94,7 +94,7 @@ abstract class Controller extends StrongObject {
             case 'flash': $value = Flash::current(); break;
             case 'query': $value = new RequestQuery(); break;
             default: {
-                throw CoreException::formated("Property %s no exists in %s class", $name, get_class($this));
+                return parent::__get($name);
             }
         }
 

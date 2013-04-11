@@ -51,7 +51,9 @@ abstract class Core {
         self::_registerProjects();
         self::_registerCurrentProject();
 
-        set_error_handler(array(Core::type, 'errorHandler'));
+        if ( APP_MODE_STRICT )
+            set_error_handler(array(Core::type, 'errorHandler'));
+
         register_shutdown_function(array(Core::type, 'shutdown'), self::$__project);
     }
 
@@ -271,7 +273,28 @@ abstract class Core {
     }
 
     public static function errorHandler($errno, $errstr, $errfile, $errline){
-        // TODO ..
+        if ( APP_MODE_STRICT ){
+            $project = Project::current();
+            $errfile = str_replace('\\', '/', $errfile);
+
+            // only for project sources
+            if (String::startsWith($errfile, $project->getPath())){
+                if ( $errno === E_DEPRECATED
+                    || $errno === E_USER_DEPRECATED
+                    || $errno === E_WARNING ){
+                    throw CoreException::formated($errstr . ' {app.mode.strict = on}');
+                }
+
+                // ignore tmp dir
+                if ( String::startsWith($errfile, $project->getPath() . 'tmp/') )
+                    return false;
+
+                if (String::startsWith($errstr, 'Undefined variable:')
+                        || String::startsWith($errstr, 'Use of undefined constant')){
+                    throw CoreException::formated($errstr . ' {app.mode.strict = on}');
+                }
+            }
+        }
     }
     
     public static function shutdown(Project $project){
@@ -317,7 +340,7 @@ abstract class Core {
 }
 
 
-    abstract class StrongObject {
+    abstract class StrictObject {
 
         public function __set($name, $value){
             throw CoreException::formated('Property `%s` not defined in `%s` class', $name, get_class($this));

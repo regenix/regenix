@@ -151,6 +151,7 @@ class Project {
         define('IS_PROD', $this->isProd());
         define('IS_DEV', $this->isDev());
         define('IS_CORE_DEBUG', $this->config->getBoolean('core.debug'));
+        define('APP_MODE_STRICT', $this->config->getBoolean('app.mode.strict', IS_DEV));
 
         define('APP_MODE', $this->mode);     
         $this->config->setEnv( $this->mode );

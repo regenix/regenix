@@ -1,7 +1,7 @@
 <?php
 require 'framework/Core.php';
 use framework\Core;
-define('ROOT', realpath(dirname(__FILE__)) . '/');
+define('ROOT', str_replace(DIRECTORY_SEPARATOR, '/', realpath(dirname(__FILE__))) . '/');
 
 Core::init();
 try {

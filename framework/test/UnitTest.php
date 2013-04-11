@@ -1,13 +1,13 @@
 <?php
 namespace framework\test;
 
-use framework\StrongObject;
+use framework\StrictObject;
 
 /**
  * Class UnitTest
  * @package framework\test
  */
-abstract class UnitTest extends StrongObject {
+abstract class UnitTest extends StrictObject {
 
     /** @var UnitTest[] */
     public static $tested = array();
