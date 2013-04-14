@@ -8,6 +8,7 @@ use framework\exceptions\CoreException;
 use framework\exceptions\NotFoundException;
 use framework\io\File;
 use framework\mvc\Response;
+use framework\mvc\route\Router;
 use framework\mvc\template\TemplateLoader;
 use framework\lang\String;
 use framework\mvc\MIMETypes;
@@ -150,11 +151,33 @@ abstract class Controller extends StrictObject {
         throw new results\Result($this->response);
     }
 
-    public function redirect($url, $permanent = false){
+    /**
+     * @param $url
+     * @param bool $permanent
+     */
+    public function redirectUrl($url, $permanent = false){
         $this->response
                 ->setStatus($permanent ? 301 : 302)
                 ->setHeader('Location', $url);
         $this->send();
+    }
+
+    /**
+     * @param $action
+     * @param array $args
+     * @param bool $permanent
+     * @throws \framework\exceptions\CoreException
+     */
+    public function redirect($action, array $args = array(), $permanent = false){
+        if (strpos($action, '.') === false)
+            $action = get_class($this) . '.' . $action;
+
+        $url = Router::path($action, $args, 'GET');
+        if ($url === null)
+            throw CoreException::formated('Can`t reverse url for action "%s(%s)"',
+                $action, implode(', ', array_keys($args)));
+
+        $this->redirectUrl($url, $permanent);
     }
 
     /**
