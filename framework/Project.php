@@ -85,6 +85,14 @@ class Project {
         return self::getPath() . 'app/tests/';
     }
 
+    /**
+     * get public upload directory
+     * @return string
+     */
+    public function getPublicPath(){
+        return ROOT . 'public/' . $this->name . '/';
+    }
+
     /*
      * пути можно указывать с доменами и с портами
      * examples:
@@ -216,7 +224,9 @@ class Project {
 
     private function _registerLoader(){
         $this->classLoader = new ClassLoader();
-        $this->classLoader->addNamespace('', $this->getPath() . 'app/');
+        $this->classLoader->addClassPath(ROOT . 'vendor/');
+        $this->classLoader->addClassPath($this->getPath() . 'app/');
+
         
         $this->classLoader->register();
     }

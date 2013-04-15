@@ -33,7 +33,6 @@ abstract class ResponseProvider {
      * @throws CoreException
      */
     public static function get($className){
-        
         if ( $className[0] !== '\\' )
             $className = '\\' . $className;
         
@@ -57,13 +56,14 @@ abstract class ResponseProvider {
     }
 
     public static function register($providerClass, $type = false){
-        
         ClassLoader::load($providerClass);
         ClassLoader::load($type);
-        
+
         if ( !$type ){
             $reflect = new \ReflectionClass($providerClass);
             $type = $reflect->getConstant('CLASS_TYPE');
+            if ( $type[0] !== '\\' )
+                $type = '\\' . $type;
         }
         self::$providers[ $type ] = $providerClass;
     }

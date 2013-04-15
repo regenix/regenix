@@ -9,6 +9,7 @@ use framework\io\FileNotFoundException;
 use framework\lang\ClassLoader;
 use framework\libs\RegenixTPL\RegenixTemplate as RegenixTPL;
 use framework\libs\RegenixTPL\RegenixTemplateTag;
+use framework\libs\Image;
 
 ClassLoader::load(RegenixTPL::type);
 
@@ -30,6 +31,9 @@ class RegenixTemplate extends BaseTemplate {
             self::$tpl->registerTag(new RegenixAssetTag());
             self::$tpl->registerTag(new RegenixPathTag());
             self::$tpl->registerTag(new RegenixPublicTag());
+
+            self::$tpl->registerTag(new RegenixImageCropTag());
+            self::$tpl->registerTag(new RegenixImageResizeTag());
 
             self::$tpl->setTempDir( Core::$tempDir . 'regenixtpl/' );
             self::$tpl->setTplDirs( TemplateLoader::getPaths() );
@@ -100,6 +104,37 @@ class RegenixPathTag extends RegenixTemplateTag {
         }
     }
 
+    class RegenixImageCropTag extends RegenixTemplateTag {
+
+        function getName(){
+            return 'image.crop';
+        }
+
+        public function call($args, RegenixTPL $ctx){
+            $file = $args['_arg'];
+            if(!file_exists($file))
+                $file = ROOT . $file;
+
+            $file = Image::crop($file, $args['w'], $args['h']);
+            echo str_replace(ROOT, '/', $file);
+        }
+    }
+
+    class RegenixImageResizeTag extends RegenixTemplateTag {
+
+        function getName(){
+            return 'image.resize';
+        }
+
+        public function call($args, RegenixTPL $ctx){
+            $file = $args['_arg'];
+            if(!file_exists($file))
+                $file = ROOT . $file;
+
+            $file = Image::resize($file, $args['w'], $args['h']);
+            echo str_replace(ROOT, '/', $file);
+        }
+    }
 }
 
 namespace {

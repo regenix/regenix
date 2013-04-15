@@ -2,12 +2,14 @@
 namespace controllers;
 
 use framework\Project;
+use framework\io\File;
 use framework\lang\FrameworkClassLoader;
 use framework\libs\I18n;
 use framework\logger\Logger;
 use framework\mvc\Controller;
 use framework\mvc\RequestBody;
 use framework\mvc\RequestQuery;
+use framework\libs\Image;
 
 class Application extends Controller {
 
@@ -17,11 +19,10 @@ class Application extends Controller {
     }
 
     public function index(){
-        $this->put("my", 12345);
         $this->render();
     }
 
-    public function post(RequestBody $body){
-        $data = $body->asJSON();
+    public function crop($w, $h){
+        $this->renderFile(Image::crop(ROOT . 'logo.png', $w, $h), false);
     }
 }

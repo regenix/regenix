@@ -8,6 +8,9 @@ use framework\exceptions\CoreException;
 use framework\exceptions\NotFoundException;
 use framework\io\File;
 use framework\mvc\Response;
+use framework\mvc\providers\FileResponse;
+use framework\mvc\providers\ResponseFileProvider;
+use framework\mvc\providers\ResponseProvider;
 use framework\mvc\route\Router;
 use framework\mvc\template\TemplateLoader;
 use framework\lang\String;
@@ -275,8 +278,15 @@ abstract class Controller extends StrictObject {
         }
     }
 
-    public function renderFile(File $file){
-        $this->response->setEntity($file);
+    /**
+     * @param File|string $file
+     * @param bool $attach
+     */
+    public function renderFile($file, $attach = true){
+        // TODO optimize ?
+        ResponseProvider::register(ResponseFileProvider::type);
+
+        $this->response->setEntity(new FileResponse($file, $attach));
         $this->send();
     }
 

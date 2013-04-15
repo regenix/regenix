@@ -55,15 +55,13 @@ class ClassLoader {
         $file = $this->findFile( $class );
 
         if ($file != null) {
-
             require $file;
 
-            if (!class_exists( $class, false ))
+            if (!class_exists( $class, false ) && !interface_exists( $class, false ))
                 throw new ClassNotFoundException( $class );
 
             $implements = class_implements($class);
             if ( $implements[IClassInitialization::_type] ){
-                //call_user_func(array($class, 'initialize'), $class);
                 $class::initialize();
             }
         }
@@ -75,7 +73,6 @@ class ClassLoader {
             $class_rev = substr( $class, 1 );
 
         foreach ($this->classPaths as $path) {
-
             $file = $path . $class_rev . '.php';
             if (file_exists( $file )) {
                 return $file;
