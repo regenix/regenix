@@ -39,7 +39,6 @@ class Image implements ImageInterface
 
     /**
      * Constructs Image with Gmagick and Imagine instances
-     *
      * @param \Gmagick $gmagick
      */
     public function __construct(\Gmagick $gmagick)

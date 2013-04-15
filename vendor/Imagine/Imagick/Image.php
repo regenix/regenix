@@ -25,7 +25,11 @@ use Imagine\Image\PointInterface;
 use Imagine\Image\ImageInterface;
 
 /**
+<<<<<<< HEAD
  * Image implementation using the Imagick PHP extension
+=======
+ * ImageUtils implementation using the Imagick PHP extension
+>>>>>>> Add imagine library, image crop & resize future
  */
 final class Image implements ImageInterface
 {
@@ -39,7 +43,11 @@ final class Image implements ImageInterface
     private $layers;
 
     /**
+<<<<<<< HEAD
      * Constructs Image with Imagick and Imagine instances
+=======
+     * Constructs ImageUtils with Imagick and Imagine instances
+>>>>>>> Add imagine library, image crop & resize future
      *
      * @param \Imagick $imagick
      */

@@ -9,7 +9,7 @@ use framework\io\FileNotFoundException;
 use framework\lang\ClassLoader;
 use framework\libs\RegenixTPL\RegenixTemplate as RegenixTPL;
 use framework\libs\RegenixTPL\RegenixTemplateTag;
-use framework\libs\Image;
+use framework\libs\ImageUtils;
 
 ClassLoader::load(RegenixTPL::type);
 
@@ -115,7 +115,7 @@ class RegenixPathTag extends RegenixTemplateTag {
             if(!file_exists($file))
                 $file = ROOT . $file;
 
-            $file = Image::crop($file, $args['w'], $args['h']);
+            $file = ImageUtils::crop($file, $args['w'], $args['h']);
             echo str_replace(ROOT, '/', $file);
         }
     }
@@ -131,7 +131,7 @@ class RegenixPathTag extends RegenixTemplateTag {
             if(!file_exists($file))
                 $file = ROOT . $file;
 
-            $file = Image::resize($file, $args['w'], $args['h']);
+            $file = ImageUtils::resize($file, $args['w'], $args['h']);
             echo str_replace(ROOT, '/', $file);
         }
     }
