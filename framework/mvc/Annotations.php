@@ -117,11 +117,11 @@ class Annotations {
         $meta = self::$types[ $this->scope ][ $name ];
 
         if ( $meta === null )
-            throw CoreException::formated('#%s annotation is not defined', $name);
+            throw CoreException::formated('@%s annotation is not defined', $name);
 
         // check multi
         if ( isset($item[0]) && !$meta['multi'] )
-            throw CoreException::formated('#%s annotation can\'t multiple', $name);
+            throw CoreException::formated('@%s annotation can\'t multiple', $name);
 
         if ( is_array($item) )
             foreach($item as $one) self::validateItemOne($one, $name, $meta);
@@ -138,7 +138,7 @@ class Annotations {
             foreach($meta['require'] as $req){
 
                 if ( !isset($item[$req]) ){
-                    throw CoreException::formated('[#%s annotation]: `%s` field is required', $name, $req);
+                    throw CoreException::formated('[@%s annotation]: `%s` field is required', $name, $req);
                 }
             }
         }
@@ -326,7 +326,7 @@ class Annotations {
      * @return array
      */
     private static function parseAnnotation($line){
-        $tmp = explode('#', $line);
+        $tmp = explode('@', $line);
         if ( sizeof($tmp) < 2 ) return null;
 
         $result = array();
@@ -414,6 +414,10 @@ class Annotations {
         }
     }
 }
+
+Annotations::registerAnnotation('var', array(
+    'fields' => '_arg'
+), 'property');
 
 if ( extension_loaded('eaccelerator') && (bool)ini_get('eaccelerator.enable') )
     throw CoreException::formated('Can`t use annotations with eAccelerator, Rerflections::getDocComments() not supports :(');

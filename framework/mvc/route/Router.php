@@ -2,6 +2,7 @@
 
 namespace framework\mvc\route;
 
+use framework\Project;
 use framework\StrictObject;
 use framework\cache\SystemCache;
 use framework\lang\String;
@@ -101,12 +102,15 @@ class Router extends StrictObject {
 
     public function reverse($action, array $args = array(), $method = '*'){
         $action = strtolower($action);
+        $action = str_replace('\\', '.', $action);
+        if ($action[0] != '.')
+            $action = '.' . $action;
+
         if (!String::startsWith($action, '.controllers.'))
             $action = '.controllers.' . $action;
-        $action = str_replace('\\', '.', $action);
 
         foreach($this->routes as $route){
-            if ($method != '*' && strtoupper($method) != $route['method'])
+            if ($method != '*' && $route['method'] != '*' && strtoupper($method) != $route['method'])
                 continue;
 
             $replace = array('_METHOD');
@@ -265,5 +269,15 @@ class Router extends StrictObject {
             return $args;
         }
         return null;
+    }
+
+    /**
+     * @param string $action
+     * @param array $args
+     * @param string $method
+     * @return null|string URL of action
+     */
+    public static function path($action, array $args = array(), $method = '*'){
+        return Project::current()->router->reverse($action, $args, $method);
     }
 }
