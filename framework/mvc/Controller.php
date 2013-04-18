@@ -362,8 +362,3 @@ abstract class Controller extends StrictObject {
         return self::$current;
     }
 }
-
-/** register trigger types */
-SDK::registerTrigger('beforeRequest');
-SDK::registerTrigger('afterRequest');
-SDK::registerTrigger('finallyRequest');

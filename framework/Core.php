@@ -48,6 +48,7 @@ abstract class Core {
         // register system
         require 'framework/cache/InternalCache.php';
 
+        self::_registerTriggers();
         self::_registerProjects();
         self::_registerCurrentProject();
 
@@ -55,6 +56,12 @@ abstract class Core {
             set_error_handler(array(Core::type, 'errorHandler'));
 
         register_shutdown_function(array(Core::type, 'shutdown'), self::$__project);
+    }
+
+    private static function _registerTriggers(){
+        SDK::registerTrigger('beforeRequest');
+        SDK::registerTrigger('afterRequest');
+        SDK::registerTrigger('finallyRequest');
     }
 
     private static function _registerProjects(){
