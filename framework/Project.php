@@ -225,8 +225,8 @@ class Project {
     private function _registerLoader(){
         $this->classLoader = new ClassLoader();
         $this->classLoader->addClassPath(ROOT . 'vendor/');
+        $this->classLoader->addClassLibPath(ROOT . 'vendor/');
         $this->classLoader->addClassPath($this->getPath() . 'app/');
-
         
         $this->classLoader->register();
     }
