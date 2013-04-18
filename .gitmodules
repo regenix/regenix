@@ -1,3 +1,3 @@
-[submodule "vendor"]
-	path = vendor
+[submodule "vendor/Imagine"]
+	path = vendor/Imagine
 	url = git://github.com/avalanche123/Imagine.git
