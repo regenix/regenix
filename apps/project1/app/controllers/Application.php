@@ -18,15 +18,15 @@ class Application extends Controller {
     }
 
     public function index(){
-
+        $flash = $this->flash;
         $this->put("USER", "Admin");
 
         if ($this->request->isMethod('POST')){
             $form = $this->body->asQuery();
             if (Captcha::isValid($form->get('captcha'))){
-                $this->flash->success('Captcha is Valid.');
+                $flash->success('Captcha is Valid.');
             } else {
-                $this->flash->error('Captcha is Invalid!!!');
+                $flash->error('Captcha is Invalid!!!');
             }
             $this->refresh();
         }

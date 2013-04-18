@@ -26,6 +26,13 @@ class I18n implements IClassInitialization {
         self::$messages[$lang] = $messages;
     }
 
+    public static function getMessages($lang){
+        if (!self::$messages[$lang]){
+            self::$loader->loadLang($lang);
+        }
+        return self::$messages[$lang];
+    }
+
     public static function setLang($lang, $save = true){
         self::$lang = str_replace(array(' ', '-'), '_', strtolower($lang));
 
