@@ -326,7 +326,18 @@ class RegenixTemplate {
             extract($__args, EXTR_PREFIX_INVALID | EXTR_OVERWRITE, 'arg_');
 
         CoreException::setMirrorFile($this->compiledFile, $this->file);
-        include $this->compiledFile;
+
+        ob_start();
+        try {
+            include $this->compiledFile;
+            $content = ob_get_contents();
+            ob_end_clean();
+            echo $content;
+            //ob_end_flush();
+        } catch (\Exception $e){
+            ob_end_clean();
+            throw $e;
+        }
     }
 
     public function _renderVar($var){
@@ -344,7 +355,7 @@ class RegenixTemplate {
     }
 
     public function _renderTag($tag, array $args = array()){
-        $this->tags[$tag]->call($args, $this);
+        echo $this->tags[$tag]->call($args, $this);
     }
 
     public function _renderBlock($block, $file, array $args = null){
@@ -394,7 +405,7 @@ class RegenixGetTag extends RegenixTemplateTag {
     }
 
     public function call($args, RegenixTemplate $ctx){
-        echo '%__BLOCK_' . $args['_arg'] . '__%';
+        return '%__BLOCK_' . $args['_arg'] . '__%';
     }
 }
 

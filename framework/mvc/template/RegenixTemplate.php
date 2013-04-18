@@ -69,7 +69,7 @@ class RegenixAssetTag extends RegenixTemplateTag {
             throw new FileNotFoundException(new File($path));
         }
 
-        echo $path;
+        return $path;
     }
 }
 
@@ -91,7 +91,7 @@ class RegenixPathTag extends RegenixTemplateTag {
             throw CoreException::formated('Can`t reverse url for action "%s(%s)"',
                 $action, implode(', ', array_keys($args)));
 
-        echo $url;
+        return $url;
     }
 }
 
@@ -103,7 +103,7 @@ class RegenixPathTag extends RegenixTemplateTag {
 
         public function call($args, RegenixTPL $ctx){
             $project = Project::current();
-            echo '/public/' . $project->getName() . '/' . $args['_arg'];
+            return '/public/' . $project->getName() . '/' . $args['_arg'];
         }
     }
 
@@ -119,7 +119,7 @@ class RegenixPathTag extends RegenixTemplateTag {
                 $file = ROOT . $file;
 
             $file = ImageUtils::crop($file, $args['w'], $args['h']);
-            echo str_replace(ROOT, '/', $file);
+            return str_replace(ROOT, '/', $file);
         }
     }
 
@@ -135,7 +135,7 @@ class RegenixPathTag extends RegenixTemplateTag {
                 $file = ROOT . $file;
 
             $file = ImageUtils::resize($file, $args['w'], $args['h']);
-            echo str_replace(ROOT, '/', $file);
+            return str_replace(ROOT, '/', $file);
         }
     }
 
@@ -150,7 +150,7 @@ class RegenixPathTag extends RegenixTemplateTag {
             if (!$project->config->getBoolean('captcha.enable'))
                 throw CoreException::formated('Captcha is not enable in configuration, needs `captcha.enable = on`');
 
-            echo Captcha::URL;
+            return Captcha::URL;
         }
     }
 }
