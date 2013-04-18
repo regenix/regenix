@@ -7,7 +7,8 @@ use framework\exceptions\CoreException;
 use framework\io\File;
 use framework\io\FileNotFoundException;
 use framework\lang\ClassLoader;
-use framework\libs\RegenixTPL\RegenixTemplate as RegenixTPL;
+    use framework\libs\Captcha;
+    use framework\libs\RegenixTPL\RegenixTemplate as RegenixTPL;
 use framework\libs\RegenixTPL\RegenixTemplateTag;
 use framework\libs\ImageUtils;
 
@@ -34,6 +35,8 @@ class RegenixTemplate extends BaseTemplate {
 
             self::$tpl->registerTag(new RegenixImageCropTag());
             self::$tpl->registerTag(new RegenixImageResizeTag());
+
+            self::$tpl->registerTag(new RegenixCaptchaTag());
 
             self::$tpl->setTempDir( Core::$tempDir . 'regenixtpl/' );
             self::$tpl->setTplDirs( TemplateLoader::getPaths() );
@@ -133,6 +136,21 @@ class RegenixPathTag extends RegenixTemplateTag {
 
             $file = ImageUtils::resize($file, $args['w'], $args['h']);
             echo str_replace(ROOT, '/', $file);
+        }
+    }
+
+    class RegenixCaptchaTag extends RegenixTemplateTag {
+
+        function getName(){
+            return 'captcha';
+        }
+
+        public function call($args, RegenixTPL $ctx){
+            $project = Project::current();
+            if (!$project->config->getBoolean('captcha.enable'))
+                throw CoreException::formated('Captcha is not enable in configuration, needs `captcha.enable = on`');
+
+            echo Captcha::URL;
         }
     }
 }

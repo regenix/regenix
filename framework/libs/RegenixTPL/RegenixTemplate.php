@@ -39,6 +39,9 @@ class RegenixTemplate {
         'script' => 1
     );
 
+    /** @var array */
+    protected $args;
+
     /** @var string */
     protected $tmpDir;
 
@@ -316,6 +319,7 @@ class RegenixTemplate {
 
     public function render($__args, $__cached = true){
         $this->compile($__cached);
+        $this->args = $__args;
         $_tags = $this->tags;
         $_TPL = $this;
         if ($__args)
@@ -348,6 +352,11 @@ class RegenixTemplate {
         $file = str_replace('\\', '/', $file);
         if (!String::endsWith($file, '.html'))
             $file .= '.html';
+
+        // TODO: refactor
+        if ($block === 'doLayout'){
+            $args = array_merge($this->args, $args == null ? array() : $args);
+        }
 
         $tpl->setFile( TemplateLoader::findFile($file) );
         ob_start();

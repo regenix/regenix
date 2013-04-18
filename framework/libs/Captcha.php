@@ -18,6 +18,7 @@ class Captcha implements IClassInitialization {
 
     const type = __CLASS__;
     const SESSION_KEY = '__CAPTCHA_word';
+    const URL = '/system/captcha.img';
 
     /** @var string */
     protected $keyString;
