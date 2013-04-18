@@ -184,6 +184,15 @@ abstract class Controller extends StrictObject {
     }
 
     /**
+     * redirect to current open url
+     * @param array $args
+     * @param bool $permanent
+     */
+    public function refresh(array $args = array(), $permanent = false){
+        $this->redirect($this->actionMethod, $args, $permanent);
+    }
+
+    /**
      * switch template engine
      * @param string $templateEngine
      */
@@ -209,7 +218,7 @@ abstract class Controller extends StrictObject {
     /**
      * Render the corresponding template
      * render template by action method name or template name
-     * @param bool $template
+     * @param bool|object|string $template
      * @param array $args
      */
     public function render($template = false, array $args = null){
