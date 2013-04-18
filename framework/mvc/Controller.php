@@ -3,6 +3,7 @@
 namespace framework\mvc;
 
 use framework\Core;
+use framework\SDK;
 use framework\StrictObject;
 use framework\exceptions\CoreException;
 use framework\exceptions\NotFoundException;
@@ -361,3 +362,8 @@ abstract class Controller extends StrictObject {
         return self::$current;
     }
 }
+
+/** register trigger types */
+SDK::registerTrigger('beforeRequest');
+SDK::registerTrigger('afterRequest');
+SDK::registerTrigger('finallyRequest');
