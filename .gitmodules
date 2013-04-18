@@ -1,3 +1,6 @@
 [submodule "vendor/Imagine"]
 	path = vendor/Imagine
 	url = git://github.com/avalanche123/Imagine.git
+[submodule "vendor/kcaptcha"]
+	path = vendor/kcaptcha
+	url = git://github.com/dim-s/kcaptcha.git
