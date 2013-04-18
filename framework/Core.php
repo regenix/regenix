@@ -117,8 +117,8 @@ abstract class Core {
             if ( $declClass->isAbstract() ){
                 throw CoreException::formated('Can\'t use "%s.%s()" as action method', $controllerClass, $actionMethod);
             }
-            
-            SDK::doBeforeRequest($controller);
+
+            SDK::trigger('beforeRequest', array($controller));
             
             $controller->callBefore();
             $router->invokeMethod($controller, $reflection);
@@ -144,7 +144,7 @@ abstract class Core {
         
         if ( !$responseErr ){
             $controller->callAfter();
-            SDK::doAfterRequest($controller);
+            SDK::trigger('afterRequest', array($controller));
         }
         
         if ( !$response ){
@@ -153,7 +153,7 @@ abstract class Core {
         
         $response->send();
         $controller->callFinally();
-        SDK::doFinallyRequest($controller);
+        SDK::trigger('finallyRequest', array($controller));
     }
 
     private static function catchError($error, $logPath){
