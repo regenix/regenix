@@ -19,6 +19,8 @@ class Application extends Controller {
 
     public function index(){
 
+        $this->put("USER", "Admin");
+
         if ($this->request->isMethod('POST')){
             $form = $this->body->asQuery();
             if (Captcha::isValid($form->get('captcha'))){
