@@ -4,10 +4,6 @@ namespace framework;
 use framework\exceptions\TypeException;
 
 abstract class SDK {
-    
-    static $beforeHandlers = array();
-    static $afterHandlers  = array();
-    static $finallyHandlers = array();
 
     private static $handlers = array();
 
@@ -43,7 +39,11 @@ abstract class SDK {
             call_user_func_array($handle, $args);
         }
     }
-    
+
+    /**
+     * @param string $moduleUID
+     * @return bool
+     */
     public static function isModuleRegister($moduleUID){
         return (boolean)modules\AbstractModule::$modules[ $moduleUID ];
     }
