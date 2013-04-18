@@ -213,7 +213,11 @@ abstract class Controller extends StrictObject {
      * @param array $args
      */
     public function render($template = false, array $args = null){
-        $this->renderTemplate($template === false ? $this->template() : $template, $args);
+        if (is_object($template)){
+            $this->response->setEntity($template);
+            $this->send();
+        } else
+            $this->renderTemplate($template === false ? $this->template() : $template, $args);
     }
 
     /**
