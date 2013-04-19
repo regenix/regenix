@@ -4,3 +4,6 @@
 [submodule "vendor/kcaptcha"]
 	path = vendor/kcaptcha
 	url = git://github.com/dim-s/kcaptcha.git
+[submodule "regenix-documentation"]
+	path = regenix-documentation
+	url = git://github.com/dim-s/regenix-documentation.git
