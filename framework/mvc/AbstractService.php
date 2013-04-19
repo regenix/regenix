@@ -34,6 +34,13 @@ abstract class AbstractService extends StrictObject {
     }
 
     /**
+     * @return string
+     */
+    public function getModelClass(){
+        return $this->modelClass;
+    }
+
+    /**
      * @return array
      */
     public function getMeta(){
@@ -93,7 +100,7 @@ abstract class AbstractService extends StrictObject {
         return $result;
     }
 
-    protected function fetch(AbstractModel $object, $data, $lazyNeed = false){
+    public function fetch(AbstractModel $object, $data, $lazyNeed = false){
         if ( $object instanceof IHandleBeforeLoad ){
             $object->onBeforeLoad($data);
         }
@@ -104,6 +111,9 @@ abstract class AbstractService extends StrictObject {
                 $this->__callSetter($object, $field, $value, $lazyNeed);
             }
         }
+
+        $valueId = $data[$this->meta['id_field']['column']];
+        $this->setId($object, $valueId);
 
         if ( $object instanceof IHandleAfterLoad ){
             $object->onAfterLoad();
@@ -135,7 +145,6 @@ abstract class AbstractService extends StrictObject {
         return is_scalar($value);
     }
 
-
     /**
      * @param $value
      * @param array $fields
@@ -159,6 +168,14 @@ abstract class AbstractService extends StrictObject {
         $modelClass = $this->modelClass;
         return $this->fetch(new $modelClass(), $data, $lazy);
     }
+
+    /**
+     * @param array $filter
+     * @param array $fields
+     * @param bool $lazy
+     * @return AbstractModelCursor
+     */
+    abstract public function findByFilter(array $filter, array $fields = array(), $lazy = false);
 
     /**
      * @param mixed $value
@@ -194,18 +211,15 @@ abstract class AbstractService extends StrictObject {
         $value = $object->__data[$field];
 
         if ( $info['ref'] && $info['ref']['lazy'] ){
-
             if ( $info['is_array'] ){
 
             } else {
-
                 $type = $info['type'];
                 ClassLoader::load($type);
 
                 /** @var $service AbstractService */
                 $service = $type::getService();
                 if ( $service->isReference($value) ){
-
                     $value = $service->findByRef($value);
                     $this->__callSetter($object, $field, $value);
                 }
@@ -217,7 +231,7 @@ abstract class AbstractService extends StrictObject {
     public function __callSetter(AbstractModel $object, $field, $value, $lazy = false){
         $info = $this->meta['fields'][$field];
 
-        if ( $info['ref'] && !$info['ref']['lazy'] && $lazy === false){
+        if ($info['ref'] && !$info['ref']['lazy'] && $lazy === false){
             ClassLoader::load($info['type']);
             $type = $info['type'];
             /** @var $service AbstractService */
@@ -227,7 +241,7 @@ abstract class AbstractService extends StrictObject {
 
         if ($info['setter']){
             $method = 'set' . $field;
-            $object->{$method}($value);
+            $object->__data[$field] = $object->{$method}($value);
         } else {
             $object->__data[$field] = $value;
         }
@@ -257,7 +271,7 @@ abstract class AbstractService extends StrictObject {
     protected static function registerModelMetaId(&$propInfo, &$allInfo,
                                                   \ReflectionClass $class, $name, Annotations $property){
         $allInfo['id_field'] = array(
-            'column' => $propInfo['column'], 'field' => $propInfo['name'], 'type' => $propInfo['type']
+            'column' => '_id', 'field' => $propInfo['name'], 'type' => $propInfo['type']
         );
     }
 
@@ -397,5 +411,51 @@ abstract class AbstractService extends StrictObject {
     /****** UTILS *******/
     public static function typed($value, $type, $ref = null){
         return $value; // TODO
+    }
+}
+
+abstract class AbstractModelCursor implements \Iterator {
+
+    /**
+     * @param array $fields
+     * @return $this
+     */
+    abstract public function sort(array $fields);
+
+    /**
+     * @param int $value
+     * @return $this
+     */
+    abstract public function skip($value);
+
+    /**
+     * @param int $value
+     * @return $this
+     */
+    abstract public function limit($value);
+
+    /**
+     * @return int
+     */
+    abstract public function count();
+
+    /**
+     * @return mixed
+     */
+    abstract public function explain();
+
+    /**
+     * @return AbstractModel
+     */
+    public function first(){
+        $this->rewind();
+        return $this->current();
+    }
+
+    /**
+     * @return AbstractModel[]
+     */
+    public function asArray(){
+        return iterator_to_array($this);
     }
 }

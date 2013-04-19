@@ -2,7 +2,6 @@
 
 namespace framework\mvc;
 
-
 use framework\StrictObject;
 use framework\lang\IClassInitialization;
 
@@ -88,6 +87,14 @@ interface IHandleAfterLoad {
 
 interface IHandleBeforeLoad {
     public function onBeforeLoad(&$data);
+}
+
+interface IHandleAfterRemove {
+    public function onAfterRemove();
+}
+
+interface IHandleBeforeRemove {
+    public function onBeforeRemove();
 }
 
 // ANNOTATIONS ...

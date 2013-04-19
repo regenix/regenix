@@ -419,5 +419,9 @@ Annotations::registerAnnotation('var', array(
     'fields' => '_arg'
 ), 'property');
 
+Annotations::registerAnnotation('package', array(
+    'fields' => '_arg'
+), 'class');
+
 if ( extension_loaded('eaccelerator') && (bool)ini_get('eaccelerator.enable') )
     throw CoreException::formated('Can`t use annotations with eAccelerator, Rerflections::getDocComments() not supports :(');
