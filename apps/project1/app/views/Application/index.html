@@ -1,4 +1,8 @@
 {extends 'root'}
 {set title: 'Block works!'}
 
-<img src="{image.crop 'logo.png', w: 170, h: 100}" />
+        <form method="POST">
+            <img src="{image.captcha}" />
+            <br>
+            <input name="captcha"> <button>Send</button>
+        </form>

@@ -48,8 +48,8 @@ class CoreException extends \Exception {
 
     /**
      * create error mirror file
-     * @param $original file path
-     * @param $file
+     * @param string $original file path
+     * @param string $file
      */
     public static function setMirrorFile($original, $file){
         $original = str_replace('\\', '/', $original);

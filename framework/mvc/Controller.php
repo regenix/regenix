@@ -3,6 +3,7 @@
 namespace framework\mvc;
 
 use framework\Core;
+use framework\SDK;
 use framework\StrictObject;
 use framework\exceptions\CoreException;
 use framework\exceptions\NotFoundException;
@@ -69,9 +70,15 @@ abstract class Controller extends StrictObject {
     public $routeArgs = array();
 
     /**
+     * @var bool
+     */
+    private $useSession = true;
+
+    /**
      * @var Controller
      */
     private static $current;
+
 
     public function __construct() {
         self::$current  = $this;
@@ -118,9 +125,19 @@ abstract class Controller extends StrictObject {
         $this->onAfter();
     }
     
-    final public function callFinally(){
+    public function callFinally(){
         $this->onFinally();
-        $this->flash->touchAll();
+        if ($this->useSession)
+            $this->flash->touchAll();
+    }
+
+    /**
+     * set use session, if true use session and flash features
+     * default: true
+     * @param bool $value
+     */
+    protected function setUseSession($value){
+        $this->useSession = (bool)$value;
     }
     
     final public function callException(\Exception $e){
@@ -184,6 +201,15 @@ abstract class Controller extends StrictObject {
     }
 
     /**
+     * redirect to current open url
+     * @param array $args
+     * @param bool $permanent
+     */
+    public function refresh(array $args = array(), $permanent = false){
+        $this->redirect($this->actionMethod, $args, $permanent);
+    }
+
+    /**
      * switch template engine
      * @param string $templateEngine
      */
@@ -209,11 +235,15 @@ abstract class Controller extends StrictObject {
     /**
      * Render the corresponding template
      * render template by action method name or template name
-     * @param bool $template
+     * @param bool|object|string $template
      * @param array $args
      */
     public function render($template = false, array $args = null){
-        $this->renderTemplate($template === false ? $this->template() : $template, $args);
+        if (is_object($template)){
+            $this->response->setEntity($template);
+            $this->send();
+        } else
+            $this->renderTemplate($template === false ? $this->template() : $template, $args);
     }
 
     /**
@@ -283,6 +313,7 @@ abstract class Controller extends StrictObject {
      * @param bool $attach
      */
     public function renderFile($file, $attach = true){
+        $this->setUseSession(false);
         // TODO optimize ?
         ResponseProvider::register(ResponseFileProvider::type);
 

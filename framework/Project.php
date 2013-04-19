@@ -6,6 +6,7 @@ use framework\io\File;
 
 use framework\config\Configuration;
 use framework\config\PropertiesConfiguration;
+use framework\libs\Captcha;
 use framework\mvc\ModelClassloader;
 use framework\mvc\Request;
 use framework\mvc\URL;
@@ -207,6 +208,19 @@ class Project {
 
         if (IS_DEV)
             $this->_registerTests();
+
+        $this->_registerSystemController();
+    }
+
+    private function _registerSystemController(){
+        if ($this->config->getBoolean('captcha.enable')){
+            $this->router->addRoute('GET', Captcha::URL, 'framework.mvc.SystemController.captcha');
+        }
+
+        if ($this->config->getBoolean('i18n.js')){
+            $this->router->addRoute('GET', '/system/i18n.js', 'framework.mvc.SystemController.i18n_js');
+            $this->router->addRoute('GET', '/system/i18n.{_lang}.js', 'framework.mvc.SystemController.i18n_js');
+        }
     }
 
     private function _registerTests(){
@@ -225,9 +239,9 @@ class Project {
     private function _registerLoader(){
         $this->classLoader = new ClassLoader();
         $this->classLoader->addClassPath(ROOT . 'vendor/');
+        $this->classLoader->addClassLibPath(ROOT . 'vendor/');
         $this->classLoader->addClassPath($this->getPath() . 'app/');
 
-        
         $this->classLoader->register();
     }
 

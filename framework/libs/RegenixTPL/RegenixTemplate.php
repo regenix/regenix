@@ -9,9 +9,13 @@ namespace framework\libs\RegenixTPL {
     use framework\exceptions\CoreException;
     use framework\lang\String;
     use framework\libs\I18n;
+    use framework\mvc\Flash;
+    use framework\mvc\Request;
+    use framework\mvc\RequestQuery;
     use framework\mvc\template\TemplateLoader;
+    use framework\mvc\template\TemplateNotFoundException;
 
-/**
+    /**
  *  ${var} - var
  *  {tag /} - tag
  *  {tag} #{/tag} - big tag
@@ -39,6 +43,9 @@ class RegenixTemplate {
         'script' => 1
     );
 
+    /** @var array */
+    protected $args;
+
     /** @var string */
     protected $tmpDir;
 
@@ -58,6 +65,8 @@ class RegenixTemplate {
     protected $compiledFile;
 
     public function __construct(){
+        $this->registerTag(new RegenixRenderTag());
+        $this->registerTag(new RegenixIncludeTag());
         $this->registerTag(new RegenixGetTag());
         $this->registerTag(new RegenixSetTag());
     }
@@ -72,6 +81,13 @@ class RegenixTemplate {
 
     public function setTplDirs(array $dirs){
         $this->tplDirs = $dirs;
+    }
+
+    /**
+     * @return array
+     */
+    public function getArgs(){
+        return $this->args;
     }
 
     public function registerTag(RegenixTemplateTag $tag){
@@ -94,6 +110,10 @@ class RegenixTemplate {
         $i = 0;
         foreach($args as $arg){
             $tmp = self::explodeMagic(':', $arg);
+            if (sizeof($tmp) === 3){
+                unset($tmp[1]);
+                $tmp[0] = $arg;
+            }
             if ($tmp[1]){
                 $key = trim($tmp[0]);
                 $result .= "'" . $key . "' =>" . $tmp[1] . ', ';
@@ -259,6 +279,8 @@ class RegenixTemplate {
                                     $str .= '%__BLOCK_doLayout__%';
                                 } elseif (self::$control[$cmd]){
                                     $str .= '<?php ' . $cmd . '(' . $tmp[1] . '):?>';
+                                } elseif (String::startsWith($cmd, 'tag.')){
+                                    $str .= '<?php $_TPL->_renderHtmlTag("' . substr($cmd, 4) . '", ' . $this->_makeArgs($tmp[1]) . ');?>';
                                 } elseif ($this->tags[$cmd]){
                                     $str .= '<?php $_TPL->_renderTag("' . $cmd . '", '.$this->_makeArgs($tmp[1]).');?>';
                                 } else {
@@ -278,7 +300,6 @@ class RegenixTemplate {
                                         $str .= '<?php echo htmlspecialchars((string)(' . $data[0] . '))?>';
                                     }
                                 }
-
                             }
                         }
                     }
@@ -316,13 +337,25 @@ class RegenixTemplate {
 
     public function render($__args, $__cached = true){
         $this->compile($__cached);
+        $this->args = $__args;
         $_tags = $this->tags;
         $_TPL = $this;
         if ($__args)
             extract($__args, EXTR_PREFIX_INVALID | EXTR_OVERWRITE, 'arg_');
 
         CoreException::setMirrorFile($this->compiledFile, $this->file);
-        include $this->compiledFile;
+
+        ob_start();
+        try {
+            include $this->compiledFile;
+            $content = ob_get_contents();
+            ob_end_clean();
+            echo $content;
+            //ob_end_flush();
+        } catch (\Exception $e){
+            ob_end_clean();
+            throw $e;
+        }
     }
 
     public function _renderVar($var){
@@ -340,7 +373,23 @@ class RegenixTemplate {
     }
 
     public function _renderTag($tag, array $args = array()){
-        $this->tags[$tag]->call($args, $this);
+        echo $this->tags[$tag]->call($args, $this);
+    }
+
+    public function _renderHtmlTag($tag, array $args = array()){
+        $tpl     = clone $this;
+        $tplFile = 'tags/' . str_replace('.', '/', $tag) . '.html';
+
+        $args['flash'] = Flash::current();
+        $args['request'] = Request::current();
+        $args['session'] = Request::current();
+
+        $file = TemplateLoader::findFile($tplFile);
+        if (!$file)
+            throw new TemplateNotFoundException($tplFile);
+
+        $tpl->setFile( $file );
+        $tpl->render($args);
     }
 
     public function _renderBlock($block, $file, array $args = null){
@@ -348,6 +397,11 @@ class RegenixTemplate {
         $file = str_replace('\\', '/', $file);
         if (!String::endsWith($file, '.html'))
             $file .= '.html';
+
+        // TODO: refactor
+        if ($block === 'doLayout'){
+            $args = array_merge($this->args, $args == null ? array() : $args);
+        }
 
         $tpl->setFile( TemplateLoader::findFile($file) );
         ob_start();
@@ -385,7 +439,7 @@ class RegenixGetTag extends RegenixTemplateTag {
     }
 
     public function call($args, RegenixTemplate $ctx){
-        echo '%__BLOCK_' . $args['_arg'] . '__%';
+        return '%__BLOCK_' . $args['_arg'] . '__%';
     }
 }
 
@@ -398,6 +452,50 @@ class RegenixSetTag extends RegenixTemplateTag {
     public function call($args, RegenixTemplate $ctx){
         list($key, $value) = each($args);
         $ctx->blocks[$key] = $value;
+    }
+}
+
+class RegenixRenderTag extends RegenixTemplateTag {
+
+    function getName(){
+        return 'render';
+    }
+
+    protected function render($args, RegenixTemplate $tpl){
+        $tplFile = $args['_arg'];
+
+        $args['flash'] = Flash::current();
+        $args['request'] = Request::current();
+        $args['session'] = Request::current();
+
+        $file = TemplateLoader::findFile($tplFile);
+        if (!$file)
+            throw new TemplateNotFoundException($tplFile);
+
+        $tpl->setFile( $file );
+
+        ob_start();
+        $tpl->render($args);
+        $str = ob_get_contents();
+        ob_end_clean();
+
+        return $str;
+    }
+
+    public function call($args, RegenixTemplate $ctx){
+        return $this->render($args, clone $ctx);
+    }
+}
+
+class RegenixIncludeTag extends RegenixRenderTag {
+
+    function getName(){
+        return 'include';
+    }
+
+    public function call($args, RegenixTemplate $ctx){
+        $args = array_merge($ctx->getArgs(), $args);
+        return $this->render($args, clone $ctx);
     }
 }
 

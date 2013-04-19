@@ -2,6 +2,7 @@
 namespace framework {
 
     use framework\exceptions\CoreException;
+    use framework\exceptions\CoreStrictException;
     use framework\exceptions\NotFoundException;
     use framework\exceptions\ResponseException;
     use framework\lang\String;
@@ -48,6 +49,7 @@ abstract class Core {
         // register system
         require 'framework/cache/InternalCache.php';
 
+        self::_registerTriggers();
         self::_registerProjects();
         self::_registerCurrentProject();
 
@@ -55,6 +57,13 @@ abstract class Core {
             set_error_handler(array(Core::type, 'errorHandler'));
 
         register_shutdown_function(array(Core::type, 'shutdown'), self::$__project);
+    }
+
+    private static function _registerTriggers(){
+        SDK::registerTrigger('beforeRequest');
+        SDK::registerTrigger('afterRequest');
+        SDK::registerTrigger('finallyRequest');
+        SDK::registerTrigger('registerTemplateEngine');
     }
 
     private static function _registerProjects(){
@@ -117,8 +126,8 @@ abstract class Core {
             if ( $declClass->isAbstract() ){
                 throw CoreException::formated('Can\'t use "%s.%s()" as action method', $controllerClass, $actionMethod);
             }
-            
-            SDK::doBeforeRequest($controller);
+
+            SDK::trigger('beforeRequest', array($controller));
             
             $controller->callBefore();
             $router->invokeMethod($controller, $reflection);
@@ -144,7 +153,7 @@ abstract class Core {
         
         if ( !$responseErr ){
             $controller->callAfter();
-            SDK::doAfterRequest($controller);
+            SDK::trigger('afterRequest', array($controller));
         }
         
         if ( !$response ){
@@ -153,7 +162,7 @@ abstract class Core {
         
         $response->send();
         $controller->callFinally();
-        SDK::doFinallyRequest($controller);
+        SDK::trigger('finallyRequest', array($controller));
     }
 
     private static function catchError($error, $logPath){
@@ -282,7 +291,7 @@ abstract class Core {
                 if ( $errno === E_DEPRECATED
                     || $errno === E_USER_DEPRECATED
                     || $errno === E_WARNING ){
-                    throw CoreException::formated($errstr . ' {app.mode.strict = on}');
+                    throw CoreStrictException::formated($errstr);
                 }
 
                 // ignore tmp dir
@@ -291,7 +300,7 @@ abstract class Core {
 
                 if (String::startsWith($errstr, 'Undefined variable:')
                         || String::startsWith($errstr, 'Use of undefined constant')){
-                    throw CoreException::formated($errstr . ' {app.mode.strict = on}');
+                    throw CoreStrictException::formated($errstr);
                 }
             }
         }
