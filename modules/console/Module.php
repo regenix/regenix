@@ -14,8 +14,7 @@ class Module extends AbstractModule {
     }
     
     public function __construct() {
-
-        SDK::addBeforeRequest(array($this, 'onBeforeRequest'));
+        SDK::addHandler('beforeRequest', array($this, 'onBeforeRequest'));
     }
     
     public function onBeforeRequest(Controller $controller){

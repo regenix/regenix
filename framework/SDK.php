@@ -1,13 +1,13 @@
 <?php
 namespace framework;
 
+use framework\exceptions\CoreException;
 use framework\exceptions\TypeException;
 
 abstract class SDK {
-    
-    static $beforeHandlers = array();
-    static $afterHandlers  = array();
-    static $finallyHandlers = array();
+
+    private static $types = array();
+    private static $handlers = array();
 
     private static function setCallable($callback, array &$to, $prepend = false){
         if ( IS_DEV && !is_callable($callback) ){
@@ -21,60 +21,53 @@ abstract class SDK {
     }
 
     /**
-     * add callback handle to before request
+     * @param string $trigger
      * @param callable $callback
+     * @param bool $prepend
+     * @throws exceptions\CoreException
      */
-    public static function addBeforeRequest($callback){   
-        self::setCallable($callback, self::$beforeHandlers, false);
-    }
-    
-    /**
-     * add callback handle to after request
-     * @param callable $callback
-     */
-    public static function addAfterRequest($callback){
-        self::setCallable($callback, self::$afterHandlers, false);
-    }
-    
-    /**
-     * add callback handle to finaly request
-     * @param callable $callback
-     */
-    public static function addFinallyRequest($callback){
-        self::setCallable($callback, self::$finallyHandlers, false);
+    public static function addHandler($trigger, $callback, $prepend = false){
+        if (IS_DEV && !self::$types[$trigger])
+            throw CoreException::formated('Trigger type `%s` is not registered', $trigger);
+
+        if (!self::$handlers[$trigger])
+            self::$handlers[$trigger] = array();
+
+        self::setCallable($callback, self::$handlers[$trigger], $prepend);
     }
 
-
     /**
-     * add callback handle to after model class load
-     * @param callable $callback
+     * @param string $name
+     * @param array $args
+     * @throws exceptions\CoreException
      */
-    public static function addAfterModelLoad($callback){
-        self::setCallable($callback, self::$modelLoadHandlers, false);
-    }
-    
-    
-    public static function doBeforeRequest(mvc\Controller $controller){
-        foreach(self::$beforeHandlers as $handle){
-            call_user_func($handle, $controller);
-        }
-    }
-    
-    public static function doAfterRequest(mvc\Controller $controller){
-        foreach(self::$afterHandlers as $handle){
-            call_user_func($handle, $controller);
+    public static function trigger($name, array $args = array()){
+        if (IS_DEV && !self::$types[$name])
+            throw CoreException::formated('Trigger type `%s` is not registered', $name);
+
+        foreach((array)self::$handlers[$name] as $handle){
+            call_user_func_array($handle, $args);
         }
     }
 
     /**
-     * @param mvc\Controller $controller
+     * @param string $name
      */
-    public static function doFinallyRequest(mvc\Controller $controller){
-        foreach(self::$finallyHandlers as $handle){
-            call_user_func($handle, $controller);
-        }
+    public static function registerTrigger($name){
+        self::$types[$name] = true;
     }
-    
+
+    /**
+     * @param string $name
+     */
+    public static function unregisterTrigger($name){
+        unset(self::$types[$name]);
+    }
+
+    /**
+     * @param string $moduleUID
+     * @return bool
+     */
     public static function isModuleRegister($moduleUID){
         return (boolean)modules\AbstractModule::$modules[ $moduleUID ];
     }

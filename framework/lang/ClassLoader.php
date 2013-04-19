@@ -17,6 +17,7 @@ class ClassLoader {
     const type = __CLASS__;
 
     private $classPaths = array();
+    private $classLibPaths = array();
     private $namespaces = array();
 
     /**
@@ -41,6 +42,13 @@ class ClassLoader {
             array_unshift( $this->classPaths, $path );
         else
             $this->classPaths[] = $path;
+    }
+
+    public function addClassLibPath($path, $prepend = false) {
+        if ($prepend)
+            array_unshift( $this->classLibPaths, $path );
+        else
+            $this->classLibPaths[] = $path;
     }
 
     public function addNamespace($namespace, $path, $prepend = false, $callback = null) {
@@ -77,6 +85,13 @@ class ClassLoader {
             if (file_exists( $file )) {
                 return $file;
             }
+        }
+
+        foreach ($this->classLibPaths as $path){
+            $tmp = explode(DIRECTORY_SEPARATOR, $class_rev, 2);
+            $file = $path . $tmp[0] . '/lib/' . $class_rev . '.php';
+            if (file_exists( $file ))
+                return $file;
         }
 
         foreach ($this->namespaces as $item) {

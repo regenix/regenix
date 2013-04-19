@@ -91,7 +91,7 @@ class Request extends StrictObject {
      */
     public function getHeader($name, $def = null){
         $name = strtolower($name);
-        return isset($this->headers[$name]) ? $this->headers : $def;
+        return isset($this->headers[$name]) ? $this->headers[$name] : $def;
     }
 
     /**
@@ -227,6 +227,20 @@ class Request extends StrictObject {
         }
         return false;
     }
+
+
+    /**
+     * @param string $etag
+     * @return bool
+     */
+    public function isCachedEtag($etag){
+        $tagHead = 'if-none-match';
+        if ($this->hasHeader($tagHead)){
+            $rTag = $this->getHeader($tagHead);
+            return $rTag === $etag;
+        } else
+            return false;
+    }
     
     /**
      * @param string|URL $url
@@ -260,14 +274,23 @@ class Request extends StrictObject {
  */
 class Session extends StrictObject {
 
+    private $init = false;
+
     protected function __construct(){
-        session_start();
+    }
+
+    protected function check(){
+        if (!$this->init){
+            session_start();
+            $this->init = true;
+        }
     }
 
     /**
      * @return string
      */
     public function getId(){
+        $this->check();
         return session_id();
     }
 
@@ -275,7 +298,8 @@ class Session extends StrictObject {
      * @return array
      */
     public function all(){
-        return $_SESSION;
+        $this->check();
+        return (array)$_SESSION;
     }
 
     /**
@@ -284,6 +308,7 @@ class Session extends StrictObject {
      * @return null|scalar
      */
     public function get($name, $def = null){
+        $this->check();
         return $this->has($name) ? $_SESSION[$name] : $def;
     }
 
@@ -292,6 +317,7 @@ class Session extends StrictObject {
      * @param $value string|int|float|null
      */
     public function put($name, $value){
+        $this->check();
         $_SESSION[$name] = $value;
     }
 
@@ -299,6 +325,7 @@ class Session extends StrictObject {
      * @param array $values
      */
     public function putAll(array $values){
+        $this->check();
         foreach($values as $name => $value){
             $this->put($name, $value);
         }
@@ -309,6 +336,7 @@ class Session extends StrictObject {
      * @return bool
      */
     public function has($name){
+        $this->check();
         return isset($_SESSION[$name]);
     }
 
@@ -316,6 +344,7 @@ class Session extends StrictObject {
      * @param string $name
      */
     public function remove($name){
+        $this->check();
         unset($_SESSION[$name]);
     }
 
@@ -323,6 +352,7 @@ class Session extends StrictObject {
      * clear all session values
      */
     public function clear(){
+        $this->check();
         session_unset();
     }
 
