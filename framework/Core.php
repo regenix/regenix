@@ -2,6 +2,7 @@
 namespace framework {
 
     use framework\exceptions\CoreException;
+    use framework\exceptions\CoreStrictException;
     use framework\exceptions\NotFoundException;
     use framework\exceptions\ResponseException;
     use framework\lang\String;
@@ -62,6 +63,7 @@ abstract class Core {
         SDK::registerTrigger('beforeRequest');
         SDK::registerTrigger('afterRequest');
         SDK::registerTrigger('finallyRequest');
+        SDK::registerTrigger('registerTemplateEngine');
     }
 
     private static function _registerProjects(){
@@ -289,7 +291,7 @@ abstract class Core {
                 if ( $errno === E_DEPRECATED
                     || $errno === E_USER_DEPRECATED
                     || $errno === E_WARNING ){
-                    throw CoreException::formated($errstr . ' {app.mode.strict = on}');
+                    throw CoreStrictException::formated($errstr);
                 }
 
                 // ignore tmp dir
@@ -298,7 +300,7 @@ abstract class Core {
 
                 if (String::startsWith($errstr, 'Undefined variable:')
                         || String::startsWith($errstr, 'Use of undefined constant')){
-                    throw CoreException::formated($errstr . ' {app.mode.strict = on}');
+                    throw CoreStrictException::formated($errstr);
                 }
             }
         }
