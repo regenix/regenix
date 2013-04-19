@@ -274,12 +274,15 @@ class Request extends StrictObject {
  */
 class Session extends StrictObject {
 
+    private $init = false;
+
     protected function __construct(){
     }
 
     protected function check(){
-        if (!session_id()){
+        if (!$this->init){
             session_start();
+            $this->init = true;
         }
     }
 
@@ -295,6 +298,7 @@ class Session extends StrictObject {
      * @return array
      */
     public function all(){
+        $this->check();
         return (array)$_SESSION;
     }
 
@@ -304,6 +308,7 @@ class Session extends StrictObject {
      * @return null|scalar
      */
     public function get($name, $def = null){
+        $this->check();
         return $this->has($name) ? $_SESSION[$name] : $def;
     }
 
@@ -331,6 +336,7 @@ class Session extends StrictObject {
      * @return bool
      */
     public function has($name){
+        $this->check();
         return isset($_SESSION[$name]);
     }
 
@@ -338,6 +344,7 @@ class Session extends StrictObject {
      * @param string $name
      */
     public function remove($name){
+        $this->check();
         unset($_SESSION[$name]);
     }
 
@@ -345,8 +352,8 @@ class Session extends StrictObject {
      * clear all session values
      */
     public function clear(){
-        if (session_id())
-            session_unset();
+        $this->check();
+        session_unset();
     }
 
     private static $current;

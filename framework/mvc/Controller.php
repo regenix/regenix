@@ -70,9 +70,15 @@ abstract class Controller extends StrictObject {
     public $routeArgs = array();
 
     /**
+     * @var bool
+     */
+    private $useSession = true;
+
+    /**
      * @var Controller
      */
     private static $current;
+
 
     public function __construct() {
         self::$current  = $this;
@@ -119,9 +125,19 @@ abstract class Controller extends StrictObject {
         $this->onAfter();
     }
     
-    final public function callFinally(){
+    public function callFinally(){
         $this->onFinally();
-        $this->flash->touchAll();
+        if ($this->useSession)
+            $this->flash->touchAll();
+    }
+
+    /**
+     * set use session, if true use session and flash features
+     * default: true
+     * @param bool $value
+     */
+    protected function setUseSession($value){
+        $this->useSession = (bool)$value;
     }
     
     final public function callException(\Exception $e){

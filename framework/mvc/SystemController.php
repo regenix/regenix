@@ -10,6 +10,7 @@ class SystemController extends Controller {
      * Captcha
      */
     public function captcha(){
+        $this->setUseSession(false);
         $this->render(Captcha::current());
     }
 
@@ -18,6 +19,8 @@ class SystemController extends Controller {
      * @param $_lang
      */
     public function i18n_js($_lang){
+        $this->setUseSession(false);
+
         if (!$_lang)
             $_lang = 'default';
 
