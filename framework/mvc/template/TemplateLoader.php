@@ -2,6 +2,7 @@
 
 namespace framework\mvc\template;
 
+use framework\SDK;
 use framework\exceptions\CoreException;
 use framework\lang\String;
 use framework\mvc\providers\ResponseProvider;
@@ -122,7 +123,6 @@ class TemplateLoader {
     }
 
     public static function register($templateClass, $asDefault = FALSE){
-    
         $reflection = self::getReflection($templateClass);
         $ext = $reflection->getConstant('FILE_EXT');
         
@@ -133,6 +133,7 @@ class TemplateLoader {
         ResponseProvider::register('\framework\mvc\providers\ResponseBaseTemplateProvider', $templateClass);
         
         self::$registered[ $templateClass ] = 1;
+        SDK::trigger('registerTemplateEngine', array($reflection));
     }
 
     public static function setDefaultExt($ext){
