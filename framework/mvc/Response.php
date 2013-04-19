@@ -78,11 +78,15 @@ class Response extends StrictObject {
         return $this;
     }
 
-    public function cacheForETag($etag, $duration, $lastModified = null){
-        $this->cacheFor($duration);
+    public function cacheETag($etag, $lastModified = null){
         $this->setHeader("Last-Modified", gmdate("D, d M Y H:i:s ", $lastModified));
         $this->setHeader("Etag", $etag);
         return $this;
+    }
+
+    public function cacheForETag($etag, $duration = '999m', $lastModified = null){
+        $this->cacheFor($duration);
+        return $this->cacheETag($etag, $lastModified);
     }
 
     public function sendHeaders(){
@@ -92,7 +96,6 @@ class Response extends StrictObject {
         foreach($this->headers as $name => $value){
             header($name . ': ' . $value);
         }
-
         header('Powered-By: Regenix Framework v' . Core::VERSION);
     }
 
