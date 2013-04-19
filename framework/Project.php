@@ -213,11 +213,14 @@ class Project {
     }
 
     private function _registerSystemController(){
-        if ($this->config->getBoolean('captcha.enable'))
+        if ($this->config->getBoolean('captcha.enable')){
             $this->router->addRoute('GET', Captcha::URL, 'framework.mvc.SystemController.captcha');
+        }
 
-        $this->router->addRoute('GET', '/system/i18n.js', 'framework.mvc.SystemController.i18n_js');
-        $this->router->addRoute('GET', '/system/i18n.{_lang}.js', 'framework.mvc.SystemController.i18n_js');
+        if ($this->config->getBoolean('i18n.js')){
+            $this->router->addRoute('GET', '/system/i18n.js', 'framework.mvc.SystemController.i18n_js');
+            $this->router->addRoute('GET', '/system/i18n.{_lang}.js', 'framework.mvc.SystemController.i18n_js');
+        }
     }
 
     private function _registerTests(){
