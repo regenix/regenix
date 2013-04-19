@@ -26,6 +26,8 @@ class SystemController extends Controller {
 
         $messages = (array)I18n::getMessages($_lang);
         $out = "I18n_messages = " . json_encode($messages);
+
+        $this->response->cacheForETag(I18n::getLangStamp($_lang), '3d');
         $this->response->setContentType(MIMETypes::getByExt('js'));
         $this->renderText($out);
     }

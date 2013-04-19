@@ -61,6 +61,16 @@ class I18n implements IClassInitialization {
             return self::$loader && (self::$messages[$lang] || self::$loader->loadLang($lang));
     }
 
+
+    /**
+     * return unique hash of lang from last update
+     * @param string $lang
+     * @return string
+     */
+    public static function getLangStamp($lang){
+        return md5(self::$loader->getLastUpdate($lang));
+    }
+
     /**
      * i18n format string
      * @param string $message
@@ -158,14 +168,28 @@ class I18n implements IClassInitialization {
 
 abstract class I18nLoader {
 
+    /**
+     * @param string $lang
+     * @return mixed
+     */
     abstract public function loadLang($lang);
+
+    /**
+     * @param string $lang
+     * @return int
+     */
+    abstract public function getLastUpdate($lang);
 }
 
 class I18nDefaultLoader extends I18nLoader {
 
-    public function loadLang($lang) {
+    protected function getLangFile($lang){
         $project = Project::current();
-        $file = $project->getPath() . 'conf/i18n/' . $lang . '.lang';
+        return $project->getPath() . 'conf/i18n/' . $lang . '.lang';
+    }
+
+    public function loadLang($lang) {
+        $file = self::getLangFile($lang);
         if ( file_exists($file) ){
             $messages = SystemCache::getWithCheckFile('i18n.' . $lang, $file);
             if ( $messages === null ){
@@ -177,5 +201,13 @@ class I18nDefaultLoader extends I18nLoader {
             return true;
         }
         return false;
+    }
+
+    public function getLastUpdate($lang){
+        $file = self::getLangFile($lang);
+        if (file_exists($file))
+            return filemtime($file);
+        else
+            return -1;
     }
 }
