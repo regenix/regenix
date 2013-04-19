@@ -313,6 +313,7 @@ abstract class Controller extends StrictObject {
      * @param bool $attach
      */
     public function renderFile($file, $attach = true){
+        $this->setUseSession(false);
         // TODO optimize ?
         ResponseProvider::register(ResponseFileProvider::type);
 
