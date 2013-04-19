@@ -7,3 +7,6 @@
 [submodule "regenix-documentation"]
 	path = regenix-documentation
 	url = git://github.com/dim-s/regenix-documentation.git
+[submodule "documentation"]
+	path = documentation
+	url = git://github.com/dim-s/regenix-documentation.git
