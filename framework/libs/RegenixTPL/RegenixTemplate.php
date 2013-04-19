@@ -110,6 +110,10 @@ class RegenixTemplate {
         $i = 0;
         foreach($args as $arg){
             $tmp = self::explodeMagic(':', $arg);
+            if (sizeof($tmp) === 3){
+                unset($tmp[1]);
+                $tmp[0] = $arg;
+            }
             if ($tmp[1]){
                 $key = trim($tmp[0]);
                 $result .= "'" . $key . "' =>" . $tmp[1] . ', ';
