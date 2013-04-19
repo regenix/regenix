@@ -107,7 +107,7 @@ class Router extends StrictObject {
             $action = '.' . $action;
 
         if (!String::startsWith($action, '.controllers.'))
-            $action = '.controllers.' . $action;
+            $action = '.controllers' . $action;
 
         foreach($this->routes as $route){
             if ($method != '*' && $route['method'] != '*' && strtoupper($method) != $route['method'])
