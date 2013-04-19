@@ -35,7 +35,6 @@ class RegenixTemplate extends BaseTemplate {
 
             self::$tpl->registerTag(new RegenixImageCropTag());
             self::$tpl->registerTag(new RegenixImageResizeTag());
-
             self::$tpl->registerTag(new RegenixCaptchaTag());
 
             self::$tpl->setTempDir( Core::$tempDir . 'regenixtpl/' );
@@ -142,7 +141,7 @@ class RegenixPathTag extends RegenixTemplateTag {
     class RegenixCaptchaTag extends RegenixTemplateTag {
 
         function getName(){
-            return 'captcha';
+            return 'image.captcha';
         }
 
         public function call($args, RegenixTPL $ctx){
