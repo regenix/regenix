@@ -2,14 +2,25 @@
 
 namespace models;
 
-use modules\orm\Model;
+use modules\mongodb\Document;
 
-class Log extends Model {
+class Log extends Document {
 
     /**
      * @id
-     * @column id
-     * @var integer
      */
     public $id;
+
+    /** @var timestamp */
+    public $upd;
+
+    /** @var string */
+    public $message;
+
+
+    public static function add($message){
+        $log = new Log();
+        $log->message = $message;
+        return $log->save();
+    }
 }

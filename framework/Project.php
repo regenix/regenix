@@ -6,7 +6,9 @@ use framework\io\File;
 
 use framework\config\Configuration;
 use framework\config\PropertiesConfiguration;
+use framework\lang\ModulesClassLoader;
 use framework\libs\Captcha;
+use framework\modules\AbstractModule;
 use framework\mvc\ModelClassloader;
 use framework\mvc\Request;
 use framework\mvc\URL;
@@ -37,6 +39,9 @@ class Project {
 
     /** @var PropertiesConfiguration */
     public $config;
+
+    /** @var array */
+    public $deps;
     
     /** @var mvc\route\Router */
     public $router;
@@ -55,7 +60,7 @@ class Project {
             $this->config = new PropertiesConfiguration(new File( $configFile ));
             SystemCache::setWithCheckFile('appconf', $this->config, $configFile);            
         }
-        $this->applyConfig( $this->config ); 
+        $this->applyConfig( $this->config );
     }
 
     /**
@@ -196,13 +201,13 @@ class Project {
         
         // classloader
         $this->_registerLoader();
+
+        // module deps
+        $this->_registerDeps();
         
         // template
         //$this->_registerTemplates();
-        
-        // modules
-        $this->_registerModules();
-        
+
         // route
         $this->_registerRoute();
 
@@ -210,6 +215,20 @@ class Project {
             $this->_registerTests();
 
         $this->_registerSystemController();
+    }
+
+    private function _registerDeps(){
+        $loader = new ModulesClassLoader();
+        $loader->register();
+
+        $file = $this->getPath() . 'conf/deps.json';
+        if (is_file($file)){
+            $this->deps = json_decode(file_get_contents($file), true);
+        }
+
+        foreach((array)$this->deps['modules'] as $name => $conf){
+            AbstractModule::register($name, $conf['version']);
+        }
     }
 
     private function _registerSystemController(){
@@ -226,14 +245,6 @@ class Project {
     private function _registerTests(){
         $this->router->addRoute('*', '/@test', 'framework.test.Tester.run');
         $this->router->addRoute('GET', '/@test.json', 'framework.test.Tester.runAsJson');
-    }
-    
-    private function _registerModules(){
-        $modules = $this->config->getArray('app.modules');
-        foreach ($modules as $module){
-            if (trim($module))
-                modules\AbstractModule::register($module);
-        }
     }
 
     private function _registerLoader(){

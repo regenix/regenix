@@ -1,7 +1,6 @@
 {
-    "modules": [],
-
-    "vendors": [
-        {"group": "any", "version": "1.2"}
-    ]
+    "modules": {
+        "mongodb": {"version": "1.0"},
+        "console": {"version": "1.0"}
+    }
 }

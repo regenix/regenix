@@ -19,8 +19,9 @@ class CoreException extends \Exception {
         if (func_num_args() > 1){
             $args = array_slice(func_get_args(), 1);
         }
-        
-        return new CoreException(vsprintf($message, $args));
+
+        $class = get_called_class();
+        return new $class(vsprintf($message, $args));
     }
 
     public function getSourceLine(){
@@ -33,11 +34,13 @@ class CoreException extends \Exception {
 
     public static function findProjectStack(\Exception $e){
         $project    = Project::current();
-        $projectDir = str_replace('\\', '/', $project->getPath());
-        foreach($e->getTrace() as $stack){
-            $dir = str_replace('\\', '/', dirname($stack['file']));
-            if ( strpos($dir, $projectDir) === 0 ){
-                return $stack;
+        if ($project){
+            $projectDir = str_replace('\\', '/', $project->getPath());
+            foreach($e->getTrace() as $stack){
+                $dir = str_replace('\\', '/', dirname($stack['file']));
+                if ( strpos($dir, $projectDir) === 0 ){
+                    return $stack;
+                }
             }
         }
         return null; //current($e->getTrace());

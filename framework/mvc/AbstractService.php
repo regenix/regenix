@@ -71,11 +71,11 @@ abstract class AbstractService extends StrictObject {
         return self::$services[$modelClass] = static::newInstance($modelClass);
     }
 
-    abstract public function save(AbstractModel $object, array $options = array());
-    abstract public function remove(AbstractModel $object, array $options = array());
+    abstract public function save(ActiveRecord $object, array $options = array());
+    abstract public function remove(ActiveRecord $object, array $options = array());
 
     /**
-     * @param AbstractModel[] $documents
+     * @param ActiveRecord[] $documents
      * @param array $options
      * @return array of bool
      */
@@ -100,7 +100,7 @@ abstract class AbstractService extends StrictObject {
         return $result;
     }
 
-    public function fetch(AbstractModel $object, $data, $lazyNeed = false){
+    public function fetch(ActiveRecord $object, $data, $lazyNeed = false){
         if ( $object instanceof IHandleBeforeLoad ){
             $object->onBeforeLoad($data);
         }
@@ -123,11 +123,11 @@ abstract class AbstractService extends StrictObject {
     }
 
     /**
-     * @param AbstractModel $object
+     * @param ActiveRecord $object
      * @param bool $typed
      * @return mixed|null
      */
-    public function getId(AbstractModel $object, $typed = true){
+    public function getId(ActiveRecord $object, $typed = true){
         $idField = $this->meta['id_field']['field'];
         if ( $idField ){
             return $typed
@@ -157,7 +157,7 @@ abstract class AbstractService extends StrictObject {
      * @param mixed $id
      * @param array $fields
      * @param bool $lazy
-     * @return AbstractModel
+     * @return ActiveRecord
      */
     public function findById($id, array $fields = array(), $lazy = false){
         $idField = $this->meta['id_field'];
@@ -173,7 +173,7 @@ abstract class AbstractService extends StrictObject {
      * @param array $filter
      * @param array $fields
      * @param bool $lazy
-     * @return AbstractModelCursor
+     * @return ActiveRecordCursor
      */
     abstract public function findByFilter(array $filter, array $fields = array(), $lazy = false);
 
@@ -181,19 +181,19 @@ abstract class AbstractService extends StrictObject {
      * @param mixed $value
      * @param array $fields
      * @param bool $lazy
-     * @return AbstractModel
+     * @return ActiveRecord
      */
     protected function findByRef($value, array $fields = array(), $lazy = false){
         return $this->findById($value, $fields, $lazy);
     }
 
     /**
-     * @param AbstractModel $object
+     * @param ActiveRecord $object
      * @param array $fields
      * @return bool
      * @throws \framework\exceptions\CoreException
      */
-    public function reload(AbstractModel $object, array $fields = array()){
+    public function reload(ActiveRecord $object, array $fields = array()){
         $id = $this->getId($object);
         if ( !$id )
             throw CoreException::formated('Can`t reload non-exist document');
@@ -206,7 +206,7 @@ abstract class AbstractService extends StrictObject {
             return false;
     }
 
-    public function __callGetter(AbstractModel $object, $field){
+    public function __callGetter(ActiveRecord $object, $field){
         $info  = $this->meta['fields'][$field];
         $value = $object->__data[$field];
 
@@ -228,7 +228,7 @@ abstract class AbstractService extends StrictObject {
         return $value;
     }
 
-    public function __callSetter(AbstractModel $object, $field, $value, $lazy = false){
+    public function __callSetter(ActiveRecord $object, $field, $value, $lazy = false){
         $info = $this->meta['fields'][$field];
 
         if ($info['ref'] && !$info['ref']['lazy'] && $lazy === false){
@@ -249,10 +249,10 @@ abstract class AbstractService extends StrictObject {
 
 
     /**
-     * @param AbstractModel $object
+     * @param ActiveRecord $object
      * @param $id
      */
-    public function setId(AbstractModel $object, $id){
+    public function setId(ActiveRecord $object, $id){
         $idField = $this->meta['id_field'];
         if ( $idField ){
             $field = $idField['field'];
@@ -392,7 +392,7 @@ abstract class AbstractService extends StrictObject {
      * @param string $className
      */
     public static function registerModel($className){
-        if ( $className === AbstractModel::type ) return;
+        if ( $className === ActiveRecord::type ) return;
 
         /** @var $annotation Annotations */
         $class     = new \ReflectionClass($className);
@@ -414,7 +414,7 @@ abstract class AbstractService extends StrictObject {
     }
 }
 
-abstract class AbstractModelCursor implements \Iterator {
+abstract class ActiveRecordCursor implements \Iterator {
 
     /**
      * @param array $fields
@@ -445,7 +445,7 @@ abstract class AbstractModelCursor implements \Iterator {
     abstract public function explain();
 
     /**
-     * @return AbstractModel
+     * @return ActiveRecord
      */
     public function first(){
         $this->rewind();
@@ -453,7 +453,7 @@ abstract class AbstractModelCursor implements \Iterator {
     }
 
     /**
-     * @return AbstractModel[]
+     * @return ActiveRecord[]
      */
     public function asArray(){
         return iterator_to_array($this);

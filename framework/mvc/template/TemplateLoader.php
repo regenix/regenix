@@ -34,9 +34,7 @@ class TemplateLoader {
     public static $FUNCTIONS = array();
 
     public static function __lazyLoad(){
-        
         if ( !self::$lazyLoaded ){
-            
             self::registerFunctions('\framework\mvc\template\extension\StandartTemplateFunctions');
         
             self::registerPath(ROOT . 'modules/', false);
@@ -44,13 +42,17 @@ class TemplateLoader {
             
             // current project
             $project = Project::current();
-            self::setAssetPath('/apps/' . $project->getName() . '/assets/');
-            
-            $default = $project->config->getString('template.default', 'Regenix');
-            $classTemplate = $default;
+            if ($project){
+                self::setAssetPath('/apps/' . $project->getName() . '/assets/');
 
-            self::switchEngine($classTemplate);
-            self::registerPath( $project->getViewPath() );
+                $default = $project->config->getString('template.default', 'Regenix');
+                $classTemplate = $default;
+
+                self::switchEngine($classTemplate);
+                self::registerPath( $project->getViewPath() );
+            } else {
+                self::switchEngine('Regenix');
+            }
         
             self::$lazyLoaded = true;
         }

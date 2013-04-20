@@ -89,12 +89,14 @@ abstract class Logger implements IClassInitialization {
     public static function initialize(){
         $project = Project::current();
 
-        $enable   = $project->config->getBoolean('logger.enable', true);
-        $division = $project->config->getBoolean('logger.division', true);
-        $level    = $project->config->getString('logger.level', 'info');
-        if ( $enable ){
-            self::registerHandler(self::getLevelOrd($level),
-                new LoggerDefaultHandler($project->getPath() . 'log/', $division));
+        if ($project){
+            $enable   = $project->config->getBoolean('logger.enable', true);
+            $division = $project->config->getBoolean('logger.division', true);
+            $level    = $project->config->getString('logger.level', 'info');
+            if ( $enable ){
+                self::registerHandler(self::getLevelOrd($level),
+                    new LoggerDefaultHandler($project->getPath() . 'log/', $division));
+            }
         }
     }
 }

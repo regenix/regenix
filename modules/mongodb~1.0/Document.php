@@ -2,10 +2,7 @@
 namespace modules\mongodb;
 
 use framework\exceptions\CoreException;
-use framework\lang\IClassInitialization;
-use framework\lang\String;
 use framework\modules\AbstractModule;
-use framework\mvc\AbstractModel;
 use framework\mvc\AbstractService;
 use framework\mvc\ActiveRecord;
 
@@ -35,7 +32,7 @@ abstract class Document extends ActiveRecord {
     /**
      * @param Query $filter
      * @param array $fields
-     * @return ModelCursor
+     * @return DocumentCursor
      */
     public static function find(Query $filter = null, array $fields = array()){
         return static::getService()->findByFilter($filter ? $filter->getData() : array(), $fields);
@@ -70,6 +67,13 @@ abstract class Document extends ActiveRecord {
     }
 }
 
+class QueryException extends CoreException {
+
+    public function __construct($message){
+        parent::__construct('Query build error: ', $message);
+    }
+}
+
 class Query {
 
     /** @var AbstractService */
@@ -87,10 +91,10 @@ class Query {
 
     public function field($name){
         if ($this->stackField)
-            throw CoreException::formated('Query build error: field `%s` set already', $this->stackField);
+            throw QueryException::formated('field `%s` set already', $this->stackField);
 
         if (!$this->meta['fields'][$name])
-            throw CoreException::formated('Query build error: field `%s` not exists in `%s` document type', $name, $this->service->getModelClass());
+            throw QueryException::formated('field `%s` not exists in `%s` document type', $name, $this->service->getModelClass());
 
         $this->stackField = $name;
         return $this;
@@ -100,7 +104,7 @@ class Query {
         $name = $this->stackField;
         $this->stackField = '';
         if (!$name){
-            throw CoreException::formated('Query build error: field is not set');
+            throw QueryException::formated('field is not set');
         }
 
         $column = $this->meta['fields'][$name]['column'];
@@ -109,7 +113,13 @@ class Query {
 
     protected function getValue($field, $value){
         $info = $this->meta['fields'][$field];
-        return Service::typed($value, $info['type'], $info['ref']);
+        if (is_array($value)){
+            foreach($value as &$el){
+                $el = Service::typed($el, $info['type'], $info['ref']);
+            }
+            return $value;
+        } else
+            return Service::typed($value, $info['type'], $info['ref']);
     }
 
     public function addOr(Query $query){
@@ -148,17 +158,15 @@ class Query {
     }
 
     public function all(array $value){
-        $this->data[$this->popField()]['$all'] = $value;
+        return $this->popValue($value, '$all');
     }
 
     public function in(array $value){
-        $this->data[$this->popField()]['$in'] = $value;
-        return $this;
+        return $this->popValue($value, '$in');
     }
 
     public function nin(array $value){
-        $this->data[$this->popField()]['$nin'] = $value;
-        return $this;
+        return $this->popValue($value, '$nin');
     }
 
     /**
@@ -179,13 +187,23 @@ class Query {
         $regex = \MongoRegex($pattern);
         if ($flags)
             $regex->flags = $flags;
-        $this->data[$this->popField()]['$exists'] = $regex;
+        $this->data[$this->popField()] = $regex;
         return $this;
     }
 
     public function sort($value){
         $value = (strtolower($value) === 'asc' ? 1 : (strtolower($value) === 'desc' ? -1 : $value));
         $this->data['$sort'][$this->popField()] = $value;
+        return $this;
+    }
+
+    public function skip($value){
+        $this->data['$skip'] = (int)$value;
+        return $this;
+    }
+
+    public function limit($value){
+        $this->data['$limit'] = (int)$value;
         return $this;
     }
 

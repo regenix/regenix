@@ -17,7 +17,7 @@ abstract class Core {
 
     const type = __CLASS__;
 
-    const VERSION = '0.2';
+    const VERSION = '0.3';
     
     /** @var string */
     public static $tempDir = 'tmp/';
@@ -45,17 +45,14 @@ abstract class Core {
         require 'framework/lang/ClassLoader.php';
         $loader = new FrameworkClassLoader();
         $loader->register();
-        
-        // register system
-        require 'framework/cache/InternalCache.php';
 
         self::_registerTriggers();
         self::_registerProjects();
-        self::_registerCurrentProject();
 
         if ( APP_MODE_STRICT )
             set_error_handler(array(Core::type, 'errorHandler'));
 
+        self::_registerCurrentProject();
         register_shutdown_function(array(Core::type, 'shutdown'), self::$__project);
     }
 
@@ -225,6 +222,9 @@ abstract class Core {
         }
 
         $stack = CoreException::findProjectStack($e);
+        if ($stack === null){
+            $stack = current($e->getTrace());
+        }
         $info  = new \ReflectionClass($e);
 
         if ($stack){

@@ -3,6 +3,7 @@
 namespace framework\modules;
 
 use framework\exceptions\ClassNotFoundException;
+use framework\lang\ClassLoader;
 use framework\mvc\route\Router;
 use framework\exceptions\CoreException;
 use framework\io\File;
@@ -68,26 +69,27 @@ abstract class AbstractModule {
     /**
      * register module by name, all modules in module directory
      * @param string $moduleName
-     * @throws \framework\exceptions\CoreException
+     * @param $version
+     * @throws
      * @return boolean
      */
-    public static function register($moduleName){
+    public static function register($moduleName, $version){
         if ( self::$modules[ $moduleName ] )
             return false;
-        
+
+        ClassLoader::$modulesLoader->addModule($moduleName, $version);
+
         self::$modules[ $moduleName ] = true;
         $bootstrapName = '\\modules\\' . $moduleName . '\\Module';
-        
-        try {
-            $module = new $bootstrapName();
-            $module->uid = $moduleName;
-            self::$modules[ $moduleName ] = $module;
-            
-        } catch (ClassNotFoundException $e){
+        if (!ClassLoader::load($bootstrapName)){
             unset(self::$modules[ $moduleName ]);
-            throw CoreException::formated('Unload Module.php class of `%s` module', $module);
+            throw CoreException::formated('Unload bootstrap `%s` class of `%s` module', $bootstrapName, $moduleName . '~' . $version);
         }
-       
+
+        $module = new $bootstrapName();
+        $module->uid = $moduleName;
+        self::$modules[ $moduleName ] = $module;
+
         return true;
     }
 }

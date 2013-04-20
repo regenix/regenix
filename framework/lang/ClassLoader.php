@@ -26,6 +26,11 @@ class ClassLoader {
     public static $frameworkLoader;
 
     /**
+     * @var ModulesClassLoader
+     */
+    public static $modulesLoader;
+
+    /**
      * @param $fileName string
      * @param $class string
      * @throws \framework\exceptions\CoreException
@@ -101,7 +106,6 @@ class ClassLoader {
                 $p = strpos( $class, $item['namespace'] );
 
             if ($p !== false && $p < 2) {
-
                 $file = $item['path'] . $class_rev . '.php';
                 if (file_exists( $file )) {
 
@@ -128,9 +132,8 @@ class ClassLoader {
     }
 
     public static function load($class) {
-        class_exists( $class, true );
+        return class_exists( $class, true );
     }
-
 }
 
 /**
@@ -145,11 +148,10 @@ class FrameworkClassLoader extends ClassLoader {
     public function loadClass($class) {
         // optimize
         $tmp = explode( '\\', $class, 3 );
-        $isModule = $tmp[0] == 'modules';
+        $isModule = false; // $tmp[0] == 'modules';
         $check = $isModule || $tmp[0] == 'framework';
 
         if ($check) {
-
             if ( IS_DEV ){
                 $this->checkCaseFilename(
                     str_replace( '\\', DIRECTORY_SEPARATOR, $class ) . '.php',
@@ -187,6 +189,35 @@ class FrameworkClassLoader extends ClassLoader {
     }
 }
 
+class ModulesClassLoader extends ClassLoader {
+
+    private $modules = array();
+
+    public function addModule($name, $version){
+        $this->modules[$name] = $version;
+    }
+
+    public function findFile($class){
+        $mod = explode('\\', $class, 3);
+        $mod = $mod[1];
+
+        $ver = $this->modules[$mod];
+        if (!$ver)
+            return null;
+
+        $file = str_replace(
+            array('\\', 'modules\\' . $mod . '\\'),
+            array(DIRECTORY_SEPARATOR, 'modules\\' . $mod . '~' . $ver . '\\'),
+            $class) . '.php';
+
+        return file_exists($file) ? $file : null;
+    }
+
+    public function register($prepend = false) {
+        parent::register( $prepend );
+        ClassLoader::$modulesLoader = $this;
+    }
+}
 
 interface IClassInitialization {
 

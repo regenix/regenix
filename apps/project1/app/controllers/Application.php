@@ -9,27 +9,18 @@ use framework\logger\Logger;
 use framework\mvc\Controller;
 use framework\mvc\RequestQuery;
 use framework\libs\ImageUtils;
+use models\Log;
 
 class Application extends Controller {
 
     public function onBefore(){
-        if (!I18n::availLang())
-            $this->notFound();
+        Log::add('open: ' . $this->actionMethod);
     }
 
     public function index(){
-        $flash = $this->flash;
-        $this->put("USER", "Admin");
-
-        if ($this->request->isMethod('POST')){
-            $form = $this->body->asQuery();
-            if (Captcha::isValid($form->get('captcha'))){
-                $flash->success('Captcha is Valid.');
-            } else {
-                $flash->error('Captcha is Invalid!!!');
-            }
-            $this->refresh();
-        }
+        $query = Log::query()->field("upd")->sort("desc");
+        $logs  = Log::find($query)->asArray();
+        $this->put('logs', $logs);
 
         $this->render();
     }
