@@ -2,6 +2,7 @@
 
 namespace framework\modules;
 
+use framework\Core;
 use framework\exceptions\ClassNotFoundException;
 use framework\lang\ClassLoader;
 use framework\mvc\route\Router;
@@ -19,6 +20,14 @@ abstract class AbstractModule {
 
     // abstract
     abstract public function getName();
+
+    /**
+     * @return array
+     */
+    public static function getDeps(){
+        return array();
+    }
+
     public function getDescription(){ return null; }
     
     
@@ -86,11 +95,38 @@ abstract class AbstractModule {
             throw CoreException::formated('Unload bootstrap `%s` class of `%s` module', $bootstrapName, $moduleName . '~' . $version);
         }
 
+        /** @var $module AbstractModule */
+        $deps = $bootstrapName::getDeps();
+        foreach((array)$deps as $name => $ver){
+            self::register($name, $ver);
+        }
+
         $module = new $bootstrapName();
         $module->uid = $moduleName;
+
         self::$modules[ $moduleName ] = $module;
 
         return true;
+    }
+
+
+    /**
+     * @return array
+     */
+    public static function getAllModules(){
+        $result = array();
+        $dirs   = scandir(ROOT . 'modules/');
+        foreach((array)$dirs as $dir){
+            $dir = basename($dir);
+            if ($dir){
+                $dir = explode('~', $dir);
+                if ($dir[1]){
+                    $result[$dir[0]][] = $dir[1];
+                }
+            }
+        }
+
+        return $result;
     }
 }
 

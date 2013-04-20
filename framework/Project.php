@@ -49,8 +49,7 @@ class Project {
     /**
     * @param string $projectName root directory name of project
     */
-    public function __construct($projectName){
-        Request::current();
+    public function __construct($projectName, $inWeb = true){
         $this->name   = $projectName;
         
         $configFile   = $this->getPath() . 'conf/application.conf';
@@ -60,7 +59,11 @@ class Project {
             $this->config = new PropertiesConfiguration(new File( $configFile ));
             SystemCache::setWithCheckFile('appconf', $this->config, $configFile);            
         }
-        $this->applyConfig( $this->config );
+
+        if ($inWeb){
+            Request::current();
+            $this->applyConfig( $this->config );
+        }
     }
 
     /**
@@ -160,6 +163,8 @@ class Project {
 
 
     public function register(){
+        Request::current();
+
         // config
         $this->mode   = strtolower($this->config->getString('app.mode', 'dev'));
         define('IS_PROD', $this->isProd());
@@ -288,6 +293,6 @@ class Project {
     public static function getSrcDir(){
         if ( self::$srcDir ) return self::$srcDir;
 
-        return self::$srcDir = str_replace(DIRECTORY_SEPARATOR, '/', realpath('apps/'));
+        return self::$srcDir = str_replace(DIRECTORY_SEPARATOR, '/', ROOT . 'apps/');
     }
 }

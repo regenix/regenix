@@ -4,7 +4,7 @@ namespace framework\mvc;
 
 use framework\Core;
 use framework\SDK;
-use framework\StrictObject;
+use framework\exceptions\StrictObject;
 use framework\exceptions\CoreException;
 use framework\exceptions\NotFoundException;
 use framework\io\File;

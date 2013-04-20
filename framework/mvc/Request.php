@@ -2,7 +2,7 @@
 
 namespace framework\mvc;
 
-use framework\StrictObject;
+use framework\exceptions\StrictObject;
 use framework\exceptions\CoreException;
 use framework\lang\ArrayTyped;
 use framework\lang\String;

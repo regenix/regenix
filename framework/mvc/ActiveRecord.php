@@ -1,7 +1,7 @@
 <?php
 namespace framework\mvc;
 
-use framework\StrictObject;
+use framework\exceptions\StrictObject;
 use framework\lang\IClassInitialization;
 
 abstract class ActiveRecord extends StrictObject implements IClassInitialization {

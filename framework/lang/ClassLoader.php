@@ -38,7 +38,7 @@ class ClassLoader {
     protected function checkCaseFilename($fileName, $class){
         $class = str_replace('\\', DIRECTORY_SEPARATOR, $class);
 
-        if ( !String::endsWith(realpath($fileName), $class . '.php') )
+        if ( !String::endsWith($fileName, $class . '.php') )
             throw CoreException::formated('Unable load `%s`, "%s.php" class file name case sensitive', $class,  $class);
     }
 

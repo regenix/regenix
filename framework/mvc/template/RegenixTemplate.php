@@ -206,7 +206,7 @@ class RegenixTemplate extends BaseTemplate {
 
 namespace {
 
-    use framework\StrictObject;
+    use framework\exceptions\StrictObject;
     use framework\exceptions\CoreException;
     use framework\mvc\template\RegenixTemplate;
 

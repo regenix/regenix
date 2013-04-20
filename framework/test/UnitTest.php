@@ -1,7 +1,7 @@
 <?php
 namespace framework\test;
 
-use framework\StrictObject;
+use framework\exceptions\StrictObject;
 
 /**
  * Class UnitTest

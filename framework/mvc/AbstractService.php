@@ -7,7 +7,7 @@
 
 namespace framework\mvc;
 
-use framework\StrictObject;
+use framework\exceptions\StrictObject;
 use framework\exceptions\AnnotationException;
 use framework\exceptions\CoreException;
 use framework\lang\ArrayTyped;

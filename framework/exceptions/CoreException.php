@@ -92,3 +92,14 @@ class CoreException extends \Exception {
         return 0;
     }
 }
+
+abstract class StrictObject {
+
+    public function __set($name, $value){
+        throw CoreException::formated('Property `%s` not defined in `%s` class', $name, get_class($this));
+    }
+
+    public function __get($name){
+        throw CoreException::formated('Property `%s` not defined in `%s` class', $name, get_class($this));
+    }
+}

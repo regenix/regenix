@@ -3,7 +3,7 @@
 namespace framework\mvc\route;
 
 use framework\Project;
-use framework\StrictObject;
+use framework\exceptions\StrictObject;
 use framework\cache\SystemCache;
 use framework\lang\String;
 use framework\mvc\Controller;

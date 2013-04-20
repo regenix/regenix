@@ -21,6 +21,13 @@ class Module extends AbstractModule {
     /** @var \MongoClient */
     public static $client;
 
+    /**
+     * @return array
+     */
+    public static function getDeps() {
+        return array();
+    }
+
     public function getName() {
         return 'MongoDB';
     }

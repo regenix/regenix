@@ -3,7 +3,7 @@
 namespace framework\mvc;
 
 use framework\Core;
-use framework\StrictObject;
+use framework\exceptions\StrictObject;
 use framework\libs\Time;
 use framework\mvc\providers\ResponseProvider;
 

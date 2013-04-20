@@ -191,22 +191,6 @@ class Query {
         return $this;
     }
 
-    public function sort($value){
-        $value = (strtolower($value) === 'asc' ? 1 : (strtolower($value) === 'desc' ? -1 : $value));
-        $this->data['$sort'][$this->popField()] = $value;
-        return $this;
-    }
-
-    public function skip($value){
-        $this->data['$skip'] = (int)$value;
-        return $this;
-    }
-
-    public function limit($value){
-        $this->data['$limit'] = (int)$value;
-        return $this;
-    }
-
     public function getData(){
         return $this->data;
     }

@@ -1,6 +1,5 @@
 {
     "modules": {
-        "mongodb": {"version": "1.0"},
-        "console": {"version": "1.0"}
+        "mongodb": {"version": "1.0"}
     }
 }

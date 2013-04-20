@@ -18,10 +18,10 @@ class Application extends Controller {
     }
 
     public function index(){
-        $query = Log::query()->field("upd")->sort("desc");
-        $logs  = Log::find($query)->asArray();
-        $this->put('logs', $logs);
+        $query = Log::query()->field("upd")->exists(false);
+        $logs  = Log::find($query)->explain();
 
+        dump($logs);
         $this->render();
     }
 
