@@ -118,9 +118,6 @@ class WSRequest {
     /** @var bool */
     protected $followRedirects = true;
 
-    /** @var File */
-    protected $toFile;
-
     public function __construct($url, $encoding = 'utf-8'){
         $this->encoding = $encoding;
         $this->url      = $url;
@@ -132,15 +129,6 @@ class WSRequest {
      */
     public function contentType($type){
         $this->setHeader('Content-Type', $type);
-        return $this;
-    }
-
-    /**
-     * @param File $file
-     * @return $this
-     */
-    public function toFile(File $file){
-        $this->toFile = $file;
         return $this;
     }
 
@@ -282,14 +270,6 @@ class WSRequest {
             CURLOPT_FRESH_CONNECT => true,
         ));
 
-        if ($this->toFile){
-            $fp = fopen($this->toFile->getPath(), 'w+');
-            curl_setopt($ch, CURLOPT_FILE, $fp);
-            curl_setopt($ch, CURLOPT_HEADER, false);
-            curl_setopt($ch, CURLOPT_VERBOSE, false);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-        }
-
         if ($this->progressCallback){
             $callback = $this->progressCallback;
             curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, function($ch, $dlTotal, $dlNow, $ulTotal, $ulNow) use ($callback){
@@ -347,10 +327,6 @@ class WSRequest {
         $response = new WSResponse($ch, $return);
 
         curl_close($ch);
-        if ($this->toFile){
-            fclose($fp);
-        }
-
         return $response;
     }
 
@@ -474,5 +450,14 @@ class WSResponse {
      */
     public function asString(){
         return (string)$this->body;
+    }
+
+    /**
+     * save body to file
+     * @param File $file
+     * @return int
+     */
+    public function asFile(File $file){
+        return file_put_contents($file->getPath(), $this->body);
     }
 }

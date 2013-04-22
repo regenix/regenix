@@ -2,23 +2,26 @@
 namespace controllers;
 
 use framework\Project;
+use framework\deps\GithubOrigin;
+use framework\deps\Repository;
 use framework\lang\FrameworkClassLoader;
 use framework\libs\Captcha;
 use framework\libs\I18n;
+use framework\libs\WS;
 use framework\logger\Logger;
 use framework\mvc\Controller;
 use framework\mvc\RequestQuery;
 use framework\libs\ImageUtils;
-use models\Log;
 
 class Application extends Controller {
 
     public function index(){
-        $query = Log::query()->field("upd")->exists(false);
-        $logs  = Log::find($query)->explain();
+        $repository = new Repository(Project::current()->deps);
+        $repository->setOrigin(new GithubOrigin('https://github.com/dim-s/regenix-repository/'));
+        $repository->setEnv('assets');
+        $repository->download('jquery', '1.8.*');
 
-        dump($logs);
-        $this->render();
+        $this->renderJSON('OK');
     }
 
     public function crop($w, $h){

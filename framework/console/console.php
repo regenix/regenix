@@ -4,6 +4,7 @@ namespace framework\console;
     use framework\lang\FrameworkClassLoader;
 
 {
+    set_time_limit(0);
     error_reporting(E_ALL ^ E_NOTICE);
 
     define('IS_DEV', true);

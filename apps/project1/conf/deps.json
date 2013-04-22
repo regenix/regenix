@@ -1,4 +1,7 @@
 {
+    "assets": {
+        "jquery": {"version": "1.*"}
+    },
     "modules": {
         "mongodb": {"version": "1.0"}
     }
