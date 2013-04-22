@@ -5,7 +5,10 @@ Options +FollowSymlinks +Indexes
     RewriteBase /
 
     # MODULES
-    RewriteRule ^modules/([a-z0-9-_A-Z]+)/assets/(.*)$ - [L]
+    RewriteRule ^assets/(.*)$ - [L]
+
+    # MODULES
+    RewriteRule ^modules/([a-z0-9-_A-Z\~\.]+)/assets/(.*)$ - [L]
 
     # PUBLIC
     RewriteRule ^public/([a-z0-9-_A-Z]+)/(.*)$ - [L]

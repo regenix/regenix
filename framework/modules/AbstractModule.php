@@ -3,8 +3,10 @@
 namespace framework\modules;
 
 use framework\Core;
+use framework\Project;
 use framework\exceptions\ClassNotFoundException;
 use framework\lang\ClassLoader;
+use framework\mvc\Assets;
 use framework\mvc\route\Router;
 use framework\exceptions\CoreException;
 use framework\io\File;
@@ -102,6 +104,9 @@ abstract class AbstractModule {
             throw CoreException::formated('Unload bootstrap `%s` class of `%s` module', $bootstrapName, $moduleName . '~' . $version);
         }
 
+        $assets = $bootstrapName::getAssetDeps();
+        Project::current()->assets->addDeps($assets);
+
         /** @var $module AbstractModule */
         $deps = $bootstrapName::getDeps();
         foreach((array)$deps as $name => $ver){
@@ -112,7 +117,6 @@ abstract class AbstractModule {
         $module->uid = $moduleName;
 
         self::$modules[ $moduleName ] = $module;
-
         return true;
     }
 

@@ -12,7 +12,8 @@ use framework\lang\ClassLoader;
 use framework\lang\String;
 use framework\libs\Captcha;
 use framework\libs\RegenixTPL\RegenixTemplate as RegenixTPL;
-use framework\libs\RegenixTPL\RegenixTemplateTag;
+    use framework\libs\RegenixTPL\RegenixTemplate as RegenixTemplate0;
+    use framework\libs\RegenixTPL\RegenixTemplateTag;
 use framework\libs\ImageUtils;
 
 ClassLoader::load(RegenixTPL::type);
@@ -31,6 +32,9 @@ class RegenixTemplate extends BaseTemplate {
 
         if (!self::$loaded){
             self::$tpl = new RegenixTPL();
+
+            self::$tpl->registerTag(new RegenixDepsAssetsTag());
+            self::$tpl->registerTag(new RegenixDepsAssetTag());
 
             self::$tpl->registerTag(new RegenixAssetTag());
             self::$tpl->registerTag(new RegenixHtmlAssetTag());
@@ -168,6 +172,36 @@ class RegenixTemplate extends BaseTemplate {
                 throw CoreException::formated('Captcha is not enable in configuration, needs `captcha.enable = on`');
 
             return Captcha::URL;
+        }
+    }
+
+    class RegenixDepsAssetsTag extends RegenixTemplateTag {
+
+        function getName(){
+            return 'deps.assets';
+        }
+
+        public function call($args, RegenixTPL $ctx) {
+            $project = Project::current();
+            return $project->assets->getHtmlInclude();
+        }
+    }
+
+    class RegenixDepsAssetTag extends RegenixTemplateTag {
+
+        function getName(){
+            return 'deps.asset';
+        }
+
+        public function call($args, RegenixTPL $ctx) {
+            $project = Project::current();
+            $all     = $project->assets->all();
+            $asset   = $all[$args['_arg']];
+
+            if (!$asset)
+                throw CoreException::formated('Asset `%s` not found', $args['_arg']);
+
+            return $asset->getHtmlInclude();
         }
     }
 
