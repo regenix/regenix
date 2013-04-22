@@ -1,8 +1,8 @@
 <?php
-
 namespace models;
 
 use modules\mongodb\Document;
+
 
 class Log extends Document {
 

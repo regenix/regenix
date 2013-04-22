@@ -13,10 +13,6 @@ use models\Log;
 
 class Application extends Controller {
 
-    public function onBefore(){
-        Log::add('open: ' . $this->actionMethod);
-    }
-
     public function index(){
         $query = Log::query()->field("upd")->exists(false);
         $logs  = Log::find($query)->explain();

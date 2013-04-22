@@ -28,6 +28,13 @@ abstract class AbstractModule {
         return array();
     }
 
+    /**
+     * @return array
+     */
+    public static function getAssetDeps(){
+        return array();
+    }
+
     public function getDescription(){ return null; }
     
     
