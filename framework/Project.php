@@ -2,6 +2,7 @@
 
 namespace framework;
 
+use framework\exceptions\CoreException;
 use framework\io\File;
 
 use framework\config\Configuration;
@@ -9,6 +10,7 @@ use framework\config\PropertiesConfiguration;
 use framework\lang\ModulesClassLoader;
 use framework\libs\Captcha;
 use framework\modules\AbstractModule;
+use framework\mvc\Assets;
 use framework\mvc\ModelClassloader;
 use framework\mvc\Request;
 use framework\mvc\URL;
@@ -45,6 +47,9 @@ class Project {
     
     /** @var mvc\route\Router */
     public $router;
+
+    /** @var Assets */
+    public $assets;
 
     /**
     * @param string $projectName root directory name of project
@@ -231,8 +236,20 @@ class Project {
             $this->deps = json_decode(file_get_contents($file), true);
         }
 
+        // assets js, css and other
+        $this->assets = new Assets((array)$this->deps['assets']);
+
         foreach((array)$this->deps['modules'] as $name => $conf){
             AbstractModule::register($name, $conf['version']);
+        }
+
+        if (IS_DEV){
+            foreach($this->assets->all() as $asset){
+                if (!$asset->isExists()){
+                    throw CoreException::formated('Asset `%s` not valid or not exists, please run in console `regenix deps update`',
+                        $asset->name . ' ' . $asset->patternVersion);
+                }
+            }
         }
     }
 
