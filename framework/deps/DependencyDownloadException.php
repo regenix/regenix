@@ -22,6 +22,6 @@ class DependencyDownloadException extends CoreException {
         $this->env = $env;
         $this->group = $group;
         $this->version = $version;
-        parent::__construct(String::format('Can`t download `%s` dependency `%s`, version - %s', $env, $group, $version));
+        parent::__construct(String::format('Can`t download dependency `%s/%s/%s`', $env, $group, $version));
     }
 }

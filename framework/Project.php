@@ -227,18 +227,21 @@ class Project {
         $this->_registerSystemController();
     }
 
-    private function _registerDeps(){
-        $loader = new ModulesClassLoader();
-        $loader->register();
-
+    public function loadDeps(){
         $file = $this->getPath() . 'conf/deps.json';
         if (is_file($file)){
             $this->deps = json_decode(file_get_contents($file), true);
         }
+    }
+
+    private function _registerDeps(){
+        $loader = new ModulesClassLoader();
+        $loader->register();
+
+        $this->loadDeps();
 
         // assets js, css and other
         $this->assets = new Assets((array)$this->deps['assets']);
-
         foreach((array)$this->deps['modules'] as $name => $conf){
             AbstractModule::register($name, $conf['version']);
         }

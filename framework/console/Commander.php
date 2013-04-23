@@ -4,6 +4,7 @@ namespace framework\console;
 use framework\Core;
 use framework\Project;
 use framework\console\commands\AboutCommand;
+use framework\console\commands\DepsCommand;
 use framework\console\commands\HelpCommand;
 use framework\console\commands\InfoCommand;
 use framework\console\commands\LoadCommand;
@@ -65,7 +66,7 @@ class Commander implements IClassInitialization {
                 if ($arg[1])
                     $this->options[ substr($arg[0], 1) ] = trim($arg[1]);
                 else
-                    $this->options[ substr($arg, 1) ] = true;
+                    $this->options[ substr($arg[0], 1) ] = true;
             } else {
                 $this->args[] = $arg;
             }
@@ -106,6 +107,7 @@ class Commander implements IClassInitialization {
         self::register(new InfoCommand());
         self::register(new AboutCommand());
         self::register(new LoadCommand());
+        self::register(new DepsCommand());
     }
 
     private static $instance;

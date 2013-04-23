@@ -17,14 +17,9 @@ class Application extends Controller {
 
     public function index(){
         $repository = new Repository(Project::current()->deps);
-        $repository->setOrigin(new GithubOrigin('https://github.com/dim-s/regenix-repository/'));
         $repository->setEnv('assets');
-        $repository->download('jquery', '1.8.*');
+        $repository->download('jquery', '2.*');
 
         $this->renderJSON('OK');
-    }
-
-    public function crop($w, $h){
-        $this->renderFile(ImageUtils::crop(ROOT . 'logo.png', $w, $h), false);
     }
 }

@@ -14,6 +14,6 @@ class DependencyNotFoundException extends CoreException {
         $this->env = $env;
         $this->group = $group;
         $this->version = $version;
-        parent::__construct(String::format('Dependency %s `%s`, version %s - not found', $env, $group, $version));
+        parent::__construct(String::format('Dependency `%s/%s/%s` not found', $env, $group, $version));
     }
 }

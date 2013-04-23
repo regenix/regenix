@@ -22,6 +22,8 @@ abstract class ConsoleCommand {
     /** @var string */
     protected $method;
 
+    abstract public function __default();
+
     public function __loadInfo($method, Project $project, array $args, array $options){
         $this->method = $method;
         $this->project = $project;
@@ -33,7 +35,7 @@ abstract class ConsoleCommand {
     protected function onBefore(){}
 
     protected function write($message){
-        fwrite(STDOUT, '    ' . String::formatArgs($message, array_slice(func_get_args(), 1)));
+        fwrite(CONSOLE_STDOUT, '    ' . String::formatArgs($message, array_slice(func_get_args(), 1)));
         return $this;
     }
 

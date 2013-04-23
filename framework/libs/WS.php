@@ -260,7 +260,7 @@ class WSRequest {
             CURLOPT_CONNECTTIMEOUT => $this->timeout,
             CURLOPT_FOLLOWLOCATION => $this->followRedirects,
 
-            CURLOPT_VERBOSE        => true,
+            CURLOPT_VERBOSE        => false,
             CURLOPT_HEADER         => true,
             CURLOPT_RETURNTRANSFER => true,
 
@@ -458,6 +458,7 @@ class WSResponse {
      * @return int
      */
     public function asFile(File $file){
+        $file->getParent()->mkdirs();
         return file_put_contents($file->getPath(), $this->body);
     }
 }

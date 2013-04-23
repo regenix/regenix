@@ -6,6 +6,7 @@ namespace framework\console;
 {
     set_time_limit(0);
     error_reporting(E_ALL ^ E_NOTICE);
+    header_remove();
 
     define('IS_DEV', true);
     define('IS_PROD', false);
@@ -16,6 +17,7 @@ namespace framework\console;
     $loader->register();
 
     defined('STDIN') or define('STDIN', fopen('php://stdin', 'r'));
+    define('CONSOLE_STDOUT', fopen('php://stdout', 'w+'));
 
     $commander = Commander::current();
     $commander->run();

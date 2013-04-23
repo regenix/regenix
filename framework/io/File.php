@@ -39,6 +39,14 @@ class File {
     }
 
     /**
+     * get parent directory
+     * @return File
+     */
+    public function getParent(){
+       return new File(dirname($this->getPath()));
+    }
+
+    /**
      * get real path of file
      * @return string
      */

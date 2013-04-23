@@ -8,7 +8,8 @@ use framework\libs\WS;
 
 class GithubOrigin extends Origin {
 
-    const HOST = 'https://github.com/';
+    const type = __CLASS__;
+    const PREFIX = 'github';
 
     /** @var string */
     protected $address;
@@ -17,13 +18,13 @@ class GithubOrigin extends Origin {
     protected $rawAddress;
 
     public function __construct($address){
-        $this->address = $address;
-        $this->rawAddress = 'https://raw.' . substr($address, 8) . 'master/';
-    }
+        $address = substr($address, 7); // "github:" strip
 
-    public static function isCurrent($origin){
-        $is = String::startsWith($origin, self::HOST);
-        return $is;
+        if (!String::endsWith($address, '/'))
+            $address .= '/';
+
+        $this->address = $address;
+        $this->rawAddress = 'https://raw.github.com/' . $address;
     }
 
     /**
@@ -76,13 +77,10 @@ class GithubOrigin extends Origin {
         $url = $group . '/' . $version . '/' . $name;
         $fileName = $toDir . $name;
         $file = new File($fileName);
-        $file->mkdirs();
-
-        $response = $this->ws($url)
-            ->toFile($file)
-            ->get();
+        $response = $this->ws($url)->get();
 
         if ($response->isSuccess()){
+            $response->asFile( $file );
             return true;
         } else {
             return false;
