@@ -32,6 +32,8 @@ abstract class Core {
      */
     public static $__project = null;
 
+    /** @var AbstractBootstrap */
+    public static $bootstrap;
 
     static function init(){
         // TODO
@@ -154,7 +156,7 @@ abstract class Core {
         }
         
         if ( !$response ){
-            throw new CoreException('Unknown type of controller result for response');
+            throw CoreException::formated('Unknown type of action `%s.%s()` result for response', $controllerClass, $actionMethod);
         }
         
         $response->send();
@@ -222,7 +224,7 @@ abstract class Core {
         }
 
         $stack = CoreException::findProjectStack($e);
-        if ($stack === null){
+        if ($stack === null && IS_CORE_DEBUG){
             $stack = current($e->getTrace());
         }
         $info  = new \ReflectionClass($e);
@@ -347,6 +349,13 @@ abstract class Core {
         self::$tempDir = $dir;
     }
 }
+
+
+    abstract class AbstractBootstrap {
+
+        public function onStart(){}
+        public function onUseTemplates(){}
+    }
 
 }
 

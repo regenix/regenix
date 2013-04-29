@@ -42,7 +42,7 @@ class Commander implements IClassInitialization {
     private function _registerProjects(){
         $dirs = scandir(Project::getSrcDir());
         foreach ((array)$dirs as $dir){
-            if ($dir == '.' || $dir == '..') continue;
+            if ($dir[0] == '.' || $dir == '..') continue;
             $this->projects[ $dir ] = new Project( $dir, false );
         }
     }

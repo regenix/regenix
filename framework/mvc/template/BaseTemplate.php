@@ -1,37 +1,65 @@
 <?php
+namespace framework\mvc\template;
 
-namespace framework\mvc\template {
+use framework\exceptions\TypeException;
+use framework\lang\IClassInitialization;
 
-    abstract class BaseTemplate {
+abstract class BaseTemplate implements IClassInitialization {
 
-        const type = __CLASS__;
+    const type = __CLASS__;
 
-        const REGENIX = 'Regenix';
-        const PHP = 'PHP';
+    const REGENIX = 'Regenix';
+    const PHP = 'PHP';
 
-        protected $file;
-        protected $name;
-        protected $args = array();
+    protected $file;
+    protected $name;
+    protected $args = array();
 
-        const ENGINE_NAME = 'abstract';
-        const FILE_EXT    = '???';
-        
-
-        public function __construct($templateFile, $templateName) {
-            
-            $this->file = $templateFile;
-            $this->name = $templateName;
-        }
-        
-        public function getContent(){ return null; }
-        public function render(){}
+    const ENGINE_NAME = 'abstract';
+    const FILE_EXT    = '???';
 
 
-        public function putArgs(array $args = array()){
-            $this->args = $args;
-        }
+    public function __construct($templateFile, $templateName) {
 
-        public function onBeforeRender(){}
+        $this->file = $templateFile;
+        $this->name = $templateName;
     }
 
+    public function getContent(){ return null; }
+    public function render(){}
+
+
+    public function putArgs(array $args = array()){
+        $this->args = $args;
+    }
+
+    public function onBeforeRender(){}
+
+
+    private static $assetsTpls = array();
+
+    public static function registerAssetTemplate($ext, $callback){
+        if (IS_DEV && !is_callable($callback)){
+            throw new TypeException('$callback', 'callable');
+        }
+
+        self::$assetsTpls[strtolower($ext)] = $callback;
+    }
+
+    public static function getAssetTemplate($path, $ext = false){
+        $ext = strtolower($ext ? $ext : pathinfo($path, PATHINFO_EXTENSION));
+        if ($callback = self::$assetsTpls[$ext]){
+            return call_user_func($callback, $path, $ext);
+        }
+        return '';
+    }
+
+    public static function initialize(){
+        self::registerAssetTemplate('js', function($path, $ext){
+            return '<script type="text/javascript" src="' . $path . '"></script>';
+        });
+        self::registerAssetTemplate('css', function($path, $ext){
+            return '<link rel="stylesheet" type="text/css" href="'. $path .'">';
+        });
+    }
 }

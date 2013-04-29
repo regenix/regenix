@@ -2,7 +2,9 @@
 
 namespace framework;
 
+use framework\deps\Repository;
 use framework\exceptions\CoreException;
+use framework\exceptions\JsonFileException;
 use framework\io\File;
 
 use framework\config\Configuration;
@@ -48,12 +50,19 @@ class Project {
     /** @var mvc\route\Router */
     public $router;
 
-    /** @var Assets */
-    public $assets;
+    /** @var Repository */
+    public $repository;
+
+    /** @var AbstractBootstrap */
+    public $bootstrap;
+
+    /** @var array */
+    protected $assets;
 
     /**
-    * @param string $projectName root directory name of project
-    */
+     * @param string $projectName root directory name of project
+     * @param bool $inWeb
+     */
     public function __construct($projectName, $inWeb = true){
         $this->name   = $projectName;
         
@@ -84,7 +93,7 @@ class Project {
      * @return string
      */
     public function getPath(){
-        return self::getSrcDir() . '/' . $this->name . '/';
+        return self::getSrcDir() . $this->name . '/';
     }
     
     public function getViewPath(){
@@ -170,6 +179,14 @@ class Project {
     public function register(){
         Request::current();
 
+        if (is_file($file = $this->getPath() . 'app/Bootstrap.php')){
+            require $file;
+            if (!class_exists('Bootstrap', false)){
+                throw CoreException::formated('Can`t find `Bootstrap` class at `%s`', $file);
+            }
+            $this->bootstrap = new \Bootstrap();
+        }
+
         // config
         $this->mode   = strtolower($this->config->getString('app.mode', 'dev'));
         define('IS_PROD', $this->isProd());
@@ -212,26 +229,66 @@ class Project {
         // classloader
         $this->_registerLoader();
 
-        // module deps
-        $this->_registerDeps();
-        
-        // template
-        //$this->_registerTemplates();
-
         // route
         $this->_registerRoute();
+
+        // module deps
+        $this->_registerDeps();
 
         if (IS_DEV)
             $this->_registerTests();
 
         $this->_registerSystemController();
+
+        if ($this->bootstrap){
+            $this->bootstrap->onStart();
+        }
     }
 
     public function loadDeps(){
         $file = $this->getPath() . 'conf/deps.json';
+        $this->deps = array();
+
         if (is_file($file)){
-            $this->deps = json_decode(file_get_contents($file), true);
+            if (IS_DEV){
+                $this->deps = json_decode(file_get_contents($file), true);
+                if (json_last_error()){
+                    throw new JsonFileException('conf/deps.json');
+                }
+            } else {
+                $this->deps = SystemCache::getWithCheckFile('app.deps', $file);
+                if ($this->deps === null){
+                    $this->deps = json_decode(file_get_contents($file), true);
+                    if (json_last_error()){
+                        throw new JsonFileException('conf/deps.json', 'invalid json format');
+                    }
+                    SystemCache::setWithCheckFile('app.deps', $this->deps, $file, 60 * 5);
+                }
+            }
         }
+    }
+
+    /**
+     * Get all assets of project
+     * @return array
+     * @throws
+     */
+    public function getAssets(){
+        if (is_array($this->assets))
+            return $this->assets;
+
+        $this->assets = $this->repository->getAll('assets');
+
+        if (IS_DEV){
+            foreach($this->assets as $group => $versions){
+                foreach($versions as $version => $el){
+                    if (!$this->repository->isValid($group, $version)){
+                        throw CoreException::formated('Asset `%s/%s` not valid or not exists, please run in console `regenix deps update`', $group, $version);
+                    }
+                }
+            }
+        }
+        return $this->assets;
     }
 
     private function _registerDeps(){
@@ -239,21 +296,22 @@ class Project {
         $loader->register();
 
         $this->loadDeps();
+        $this->repository = new Repository($this->deps);
 
-        // assets js, css and other
-        $this->assets = new Assets((array)$this->deps['assets']);
+        // modules
+        $this->repository->setEnv('modules');
         foreach((array)$this->deps['modules'] as $name => $conf){
-            AbstractModule::register($name, $conf['version']);
+            $dep = $this->repository->findLocalVersion($name, $conf['version']);
+            if (!$dep){
+                throw CoreException::formated('Can`t find `%s/%s` module, please run in console `regenix deps update`', $name, $conf['version']);
+            } elseif (IS_DEV && !$this->repository->isValid($name, $dep['version'])){
+                throw CoreException::formated('Module `%s` not valid or not exists, please run in console `regenix deps update`', $name);
+            }
+            AbstractModule::register($name, $dep['version']);
         }
 
-        if (IS_DEV){
-            foreach($this->assets->all() as $asset){
-                if (!$asset->isExists()){
-                    throw CoreException::formated('Asset `%s` not valid or not exists, please run in console `regenix deps update`',
-                        $asset->name . ' ' . $asset->patternVersion);
-                }
-            }
-        }
+        if (IS_DEV)
+            $this->getAssets();
     }
 
     private function _registerSystemController(){

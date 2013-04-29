@@ -15,8 +15,8 @@ abstract class AbstractModule {
 
     const type = __CLASS__;
     
-    protected $uid;
-
+    public $uid;
+    public $version;
 
     static $modules = array();
 
@@ -105,7 +105,10 @@ abstract class AbstractModule {
         }
 
         $assets = $bootstrapName::getAssetDeps();
+        /*
+         * TODO ??
         Project::current()->assets->addDeps($assets);
+        */
 
         /** @var $module AbstractModule */
         $deps = $bootstrapName::getDeps();
@@ -114,7 +117,8 @@ abstract class AbstractModule {
         }
 
         $module = new $bootstrapName();
-        $module->uid = $moduleName;
+        $module->uid     = $moduleName;
+        $module->version = $version;
 
         self::$modules[ $moduleName ] = $module;
         return true;

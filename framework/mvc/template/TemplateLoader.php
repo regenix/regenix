@@ -15,7 +15,6 @@ class TemplateLoader {
 
     private static $lazyLoaded = false;
 
-
     /**
      * @var string
      */
@@ -29,14 +28,10 @@ class TemplateLoader {
     
     /** @var string */
     public static $ASSET_PATH;
-    
-    /** @var TemplateFunctions[] */
-    public static $FUNCTIONS = array();
 
     public static function __lazyLoad(){
         if ( !self::$lazyLoaded ){
-            self::registerFunctions('\framework\mvc\template\extension\StandartTemplateFunctions');
-        
+
             self::registerPath(ROOT . 'modules/', false);
             self::registerPath(Core::getFrameworkPath() . 'views/', false);
             
@@ -55,6 +50,10 @@ class TemplateLoader {
             }
         
             self::$lazyLoaded = true;
+
+            if ($project->bootstrap) {
+                $project->bootstrap->onUseTemplates();
+            }
         }
     }
 
@@ -65,7 +64,6 @@ class TemplateLoader {
      * @return BaseTemplate
      */
     public static function load($name){
-    
         $name   = str_replace('\\', '/', $name);
         
         $ext = pathinfo($name, PATHINFO_EXTENSION);
@@ -144,7 +142,6 @@ class TemplateLoader {
     }
     
     public static function registerPath($path, $prepend = true){
-        
         if ( $prepend )
             array_unshift(self::$paths, $path);
         else
@@ -155,23 +152,21 @@ class TemplateLoader {
         return self::$paths;
     }
 
+    private static $currentRoot = false;
+
+    public static function getCurrentRoot(){
+        return self::$currentRoot;
+    }
+
     public static function findFile($file){
-        
         foreach(self::$paths as $path){
-            
-            if (file_exists($path . $file) )
+            if (file_exists($path . $file) ){
+                self::$currentRoot = $path;
                 return $path . $file;
+            }
         }
         
         return false;
-    }
-    
-    public static function registerFunctions($funcsClass, $prepend = false){
-        
-        if ( $prepend )
-            array_unshift(self::$FUNCTIONS, $funcsClass);
-        else
-            self::$FUNCTIONS[] = $funcsClass;
     }
 }
 

@@ -222,14 +222,16 @@ abstract class Controller extends StrictObject {
      * Work out the default template to load for the invoked action.
      * E.g. "controllers\Pages\index" returns "views/Pages/index.html".
      */
-    public function template(){
-        $controller = str_replace('\\', '/', get_class($this));
+    public function template($template = false){
+        if (!$template){
+            $controller = str_replace('\\', '/', get_class($this));
 
-        if ( String::startsWith($controller, 'controllers/') )
-            $controller = substr($controller, 12);
+            if ( String::startsWith($controller, 'controllers/') )
+                $controller = substr($controller, 12);
 
-        $template   = $controller . '/' . $this->actionMethod;
-        return $template;
+            $template   = $controller . '/' . $this->actionMethod;
+        }
+        return str_replace('\\', '/', $template);
     }
 
     /**
@@ -243,7 +245,7 @@ abstract class Controller extends StrictObject {
             $this->response->setEntity($template);
             $this->send();
         } else
-            $this->renderTemplate($template === false ? $this->template() : $template, $args);
+            $this->renderTemplate($template, $args);
     }
 
     /**
@@ -254,6 +256,8 @@ abstract class Controller extends StrictObject {
     public function renderTemplate($template, array $args = null){
         if ( $args )
             $this->putAll($args);
+
+        $template = $this->template($template);
 
         $this->put("flash", $this->flash);
         $this->put("session", $this->session);

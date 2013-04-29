@@ -2,6 +2,7 @@
 
 namespace framework\deps;
 
+use framework\exceptions\CoreException;
 use framework\io\File;
 use framework\lang\IClassInitialization;
 use framework\lang\String;
@@ -36,8 +37,16 @@ class Repository implements IClassInitialization{
         }
     }
 
+    public function getAddress(){
+        return $this->origin->getAddress();
+    }
+
     public function setOrigin(Origin $origin){
         $this->origin = $origin;
+    }
+
+    public function getOrigin(){
+        return $this->origin;
     }
 
     public function setEnv($env){
@@ -46,11 +55,32 @@ class Repository implements IClassInitialization{
             $this->origin->setEnv($env);
     }
 
-    protected function getMeta($group){
+    public function getMeta($group){
         if ($this->meta[$group])
             return $this->meta[$group];
 
         return $this->meta[$group] = $this->origin->getMetaInfo($group);
+    }
+
+    /** @var array */
+    private $localMetas = array();
+
+    /**
+     * @param $group
+     * @param $version
+     * @return mixed|null
+     */
+    public function getLocalMeta($group, $version){
+        if ($json = $this->localMetas[$group][$version])
+            return $json;
+
+        $file = (ROOT . $this->env . '/' . $group . '~' . $version . '/meta.json');
+        if (is_file($file)){
+            $json = json_decode(file_get_contents($file), true);
+            if (!json_last_error())
+                return $this->localMetas[$group][$version] = $json;
+        }
+        return null;
     }
 
     protected function findMaxVersion($meta, $patternVersion){
@@ -66,6 +96,77 @@ class Repository implements IClassInitialization{
         if (is_array($result))
             $result['version'] = $curVersion;
 
+        return $result;
+    }
+
+    /**
+     * @return array
+     */
+    public function findAll(){
+        $meta = array();
+        $dirs = glob(ROOT . $this->env . '/*~*', GLOB_ONLYDIR | GLOB_NOSORT);
+        foreach($dirs as $dir){
+            $asset = basename($dir);
+            $curVer = explode('~', $asset, 2);
+            if ($curVer[1]){
+                $meta[$curVer[0]][] = $curVer[1];
+            }
+        }
+        return $meta;
+    }
+
+    /**
+     * @param $env
+     * @param $group
+     * @param $version
+     * @param $result
+     * @param bool $check
+     * @throws
+     */
+    private function _getAllDependencies($env, $group, $version, &$result, $check = true){
+        if (!$result)
+            $result = array();
+
+        $result[$group][$version] = array('version' => $version);
+        $meta = $this->getLocalMeta($group, $version);
+        if (is_array($meta['deps'])){
+            foreach($meta['deps'] as $gr => $pattern){
+                $dep = $this->findLocalVersion($gr, $pattern['version']);
+                if ($dep){
+                    $result[$gr][$dep['version']] = array('version' => $dep['version']);
+                    $result[$group][$version]['deps'][$gr] = $dep['version'];
+                    $this->_getAllDependencies($env, $gr, $dep['version'], $result);
+                } elseif ($check){
+                    throw CoreException::formated('Can`t find `%s/%s/%s` dependency, please run in console `regenix deps update`',
+                        $env, $gr, $pattern['version']);
+                } else {
+                    $result[$gr][$pattern['version']] = array();
+                }
+            }
+        }
+    }
+
+    /**
+     * @param $env
+     * @param bool $check
+     * @throws
+     * @return array
+     */
+    public function getAll($env, $check = true){
+        $result = array();
+        $this->setEnv($env);
+
+        foreach($this->deps[$env] as $group => $patternVersion){
+            $dep  = $this->findLocalVersion($group, $patternVersion['version']);
+            if ($dep){
+                $this->_getAllDependencies($env, $group, $dep['version'], $result, $check);
+            } elseif ($check){
+                throw CoreException::formated('Can`t find `%s/%s/%s` dependency, please run in console `regenix deps update`',
+                    $env, $group, $patternVersion['version']);
+            } else {
+                $result[$group][$patternVersion['version']] = array();
+            }
+        }
         return $result;
     }
 
@@ -102,6 +203,32 @@ class Repository implements IClassInitialization{
 
     /**
      * @param $group
+     * @param $dep
+     * @param $toDir
+     * @throws DependencyDownloadException
+     */
+    protected function downloadDep($group, $dep, $toDir){
+        foreach($dep['files'] as $file){
+            $done = $this->origin->downloadDependency($group, $dep['version'], $file, $toDir);
+            if (!$done){
+                throw new DependencyDownloadException($this->env, $group, $dep['version']);
+            }
+            if (String::endsWith($file, '.extract.zip')){
+                $zip = new \ZipArchive();
+                if ($zip->open($toDir . $file) === true){
+                    $zip->extractTo($toDir);
+                    $zip->close();
+                }
+                @unlink($toDir . $file);
+            }
+        }
+        $tmp = new File($toDir);
+        $tmp->mkdirs();
+        file_put_contents($toDir . 'meta.json', json_encode($dep));
+    }
+
+    /**
+     * @param $group
      * @param $patternVersion
      * @param bool $force
      * @return bool
@@ -113,32 +240,21 @@ class Repository implements IClassInitialization{
         if (!$dep){
             throw new DependencyNotFoundException($this->env, $group, $patternVersion);
         } else {
+            $toDir = ROOT . $this->env . '/' . $group . '~' . $dep['version'] . '/';
+
             if (!$force
                 && $this->isDownloaded($group, $dep['version'])
                 && $this->isValid($group, $dep['version'], $dep)){
                 $dep['skip'] = true;
+
+                $tmp = new File($toDir);
+                $tmp->mkdirs();
+                file_put_contents($toDir . 'meta.json', json_encode($dep));
+
                 return $dep;
             }
 
-            $toDir = ROOT . $this->env . '/' . $group . '~' . $dep['version'] . '/';
-            foreach($dep['files'] as $file){
-                $done = $this->origin->downloadDependency($group, $dep['version'], $file, $toDir);
-                if (!$done){
-                    throw new DependencyDownloadException($this->env, $group, $dep['version']);
-                }
-                if (String::endsWith($file, '.extract.zip')){
-                    $zip = new \ZipArchive();
-                    if ($zip->open($toDir . $file) === true){
-                        $zip->extractTo($toDir);
-                        $zip->close();
-                    }
-                    @unlink($toDir . $file);
-                }
-            }
-            $tmp = new File($toDir);
-            $tmp->mkdirs();
-            file_put_contents($toDir . 'meta.json', json_encode($dep));
-
+            $this->downloadDep($group, $dep, $toDir);
             return $dep;
         }
     }

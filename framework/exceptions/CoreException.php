@@ -36,9 +36,13 @@ class CoreException extends \Exception {
         $project    = Project::current();
         if ($project){
             $projectDir = str_replace('\\', '/', $project->getPath());
+            $moduleDir  = ROOT . 'modules/';
             foreach($e->getTrace() as $stack){
                 $dir = str_replace('\\', '/', dirname($stack['file']));
-                if ( strpos($dir, $projectDir) === 0 ){
+                if (strpos($dir, $projectDir) === 0){
+                    return $stack;
+                }
+                if (strpos($dir, $moduleDir) === 0){
                     return $stack;
                 }
             }

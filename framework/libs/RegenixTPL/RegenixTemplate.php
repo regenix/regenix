@@ -58,6 +58,9 @@ class RegenixTemplate {
     /** @var string */
     protected $file;
 
+    /** @var string */
+    protected $root;
+
     /** @var array */
     public $blocks;
 
@@ -73,6 +76,10 @@ class RegenixTemplate {
 
     public function setFile($file){
         $this->file = $file;
+    }
+
+    public function setRoot($root){
+        $this->root = $root;
     }
 
     public function setTempDir($directory){
@@ -403,7 +410,13 @@ class RegenixTemplate {
             $args = array_merge($this->args, $args == null ? array() : $args);
         }
 
-        $tpl->setFile( TemplateLoader::findFile($file) );
+        $origin = $file;
+        $file   = TemplateLoader::findFile($file);
+        if (!$file){
+            throw new TemplateNotFoundException($origin);
+        }
+
+        $tpl->setFile( $file );
         ob_start();
             $tpl->render($args);
             $str = ob_get_contents();

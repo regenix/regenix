@@ -51,6 +51,7 @@ class RegenixTemplate extends BaseTemplate {
         }
 
         self::$tpl->setFile($templateFile);
+        self::$tpl->setRoot(TemplateLoader::getCurrentRoot());
     }
 
     public function render(){
@@ -80,7 +81,7 @@ class RegenixTemplate extends BaseTemplate {
             $path = TemplateLoader::$ASSET_PATH . $name;
             $path = str_replace('//', '/', $path);
 
-            if (!file_exists(ROOT . $path)){
+            if ($name && !is_file(ROOT . $path)){
                 throw new FileNotFoundException(new File($path));
             }
 
@@ -183,7 +184,14 @@ class RegenixTemplate extends BaseTemplate {
 
         public function call($args, RegenixTPL $ctx) {
             $project = Project::current();
-            return $project->assets->getHtmlInclude();
+            $assets  = $project->getAssets();
+
+            $html    = '';
+            $included = array();
+            foreach($assets as $group => $dep){
+                $html .= RegenixDepsAssetTag::getOne($group, false, $included);
+            }
+            return $html;
         }
     }
 
@@ -193,15 +201,57 @@ class RegenixTemplate extends BaseTemplate {
             return 'deps.asset';
         }
 
+        public static function getOne($group, $version = false, &$included = array()){
+            $project  = Project::current();
+            $all      = $project->getAssets();
+            $versions = $all[$group];
+
+            if (!$versions)
+                throw CoreException::formated('Asset `%s` not found', $group);
+
+            if ($version){
+                $info = $versions[$version];
+                if (!is_array($info)){
+                    throw CoreException::formated('Asset `%s/%s` not found', $group, $version);
+                }
+            } else {
+                list($version, $info) = each($versions);
+            }
+
+            $meta = $project->repository->getLocalMeta($group, $version);
+            if (!$meta)
+                throw CoreException::formated('Meta information not found for `%s` asset, please run deps update for fix it', $group);
+
+            if ($included[$group][$version])
+                return '';
+
+            $included[$group][$version] = true;
+
+            $result = '';
+            if (is_array($info['deps'])){
+                foreach($info['deps'] as $gr => $v){
+                    $result .= self::getOne($gr, $v, $included);
+                }
+            }
+
+            $path   = '/assets/' . $group . '~' . $version . '/';
+            foreach((array)$meta['files'] as $file){
+                $html = BaseTemplate::getAssetTemplate($path . $file);
+                if ($html){
+                    $result .= $html . "\n";
+                }
+
+                if (IS_DEV && !is_file(ROOT . $path . $file)){
+                    throw new FileNotFoundException(new File($path . $file));
+                }
+            }
+
+            return $result;
+        }
+
         public function call($args, RegenixTPL $ctx) {
-            $project = Project::current();
-            $all     = $project->assets->all();
-            $asset   = $all[$args['_arg']];
-
-            if (!$asset)
-                throw CoreException::formated('Asset `%s` not found', $args['_arg']);
-
-            return $asset->getHtmlInclude();
+            $included = array();
+            return self::getOne($args['_arg'], $included);
         }
     }
 
@@ -213,27 +263,11 @@ class RegenixTemplate extends BaseTemplate {
 
         public function call($args, RegenixTPL $ctx){
             $file = RegenixAssetTag::get($args['_arg']);
-            $ext  = $args['ext'] ? $args['ext'] : strtolower(pathinfo($file, PATHINFO_EXTENSION));
+            $tpl  = BaseTemplate::getAssetTemplate($file, $args['ext']);
+            if ($tpl)
+                return $tpl;
 
-            switch($ext){
-                case 'js': {
-                    return '<script type="text/javascript" src="' . $file . '"></script>' . "\n";
-                }
-                case 'dart': {
-                    return '<script type="application/dart" src="' . $file . '"></script>';
-                }
-                case 'coffee': {
-                    return '<script type="text/coffeescript" src="' . $file . '"></script>';
-                }
-                case 'ts': {
-                    return '<script type="text/typescript" src="' . $file . '"></script>';
-                }
-                case 'css': {
-                    return '<link rel="stylesheet" type="text/css" href="'. $file .'">' . "\n";
-                } break;
-            }
-
-            throw CoreException::formated('Unknown html asset extension `%s`, at `%s`', $ext, $file);
+            throw CoreException::formated('Unknown html asset for `%s`', $file);
         }
     }
 }
