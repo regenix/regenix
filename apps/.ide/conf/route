@@ -1,0 +1,4 @@
+
+*       /           IDE.index
+
+POST       /api/{group}/{method}/?                  api.{group}Api.{method}
