@@ -2,12 +2,10 @@
     "repository": "github:dim-s/regenix-repository/master",
 
     "assets": {
-        "jquery": {"version": "1.9.*"},
-        "underscore": {"version": "1.*"},
-        "bootstrap": {"version": "2.*"}
+
     },
 
     "modules": {
-        "mongodb": {"version": "1.*"}
+
     }
 }
