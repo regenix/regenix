@@ -1,16 +1,15 @@
 <?php
-namespace ide\files;
+namespace plugins\core\files;
 
 use ide\EditorType;
 use ide\FileType;
 use ide\Project;
-use ide\TextType;
-use ide\editors\SourceEditor;
+use plugins\core\editors\SourceEditor;
 
 class PhpFile extends TextType {
 
     /** @return string */
-    public function getIcon() {
+    protected function getIcon() {
         return 'img/icons/filetypes/php.png';
     }
 

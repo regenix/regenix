@@ -1,11 +1,11 @@
 <?php
-namespace ide\editors;
+namespace plugins\core\editors;
 
 use ide\EditorType;
 
 class SourceEditor extends EditorType {
 
-    public function getAssets(){
+    protected function getAssets(){
         $result = array(
             'codemirror/lib/codemirror.css',
             'codemirror/lib/codemirror.js',

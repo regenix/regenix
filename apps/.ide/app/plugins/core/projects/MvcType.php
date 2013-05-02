@@ -1,5 +1,5 @@
 <?php
-namespace ide\projects;
+namespace plugins\core\projects;
 
 use ide\FileType;
 use ide\Project;
@@ -8,6 +8,14 @@ use ide\ProjectType;
 class MvcType extends ProjectType {
 
     protected $root;
+
+    protected function getIcon(){
+        return 'plugins/core/img/website.png';
+    }
+
+    public function isMatch(Project $project){
+        return true;
+    }
 
     public function setProject(Project $project){
         $this->root = $project ? str_replace(DIRECTORY_SEPARATOR, '/', $project->getPath()) : null;

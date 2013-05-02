@@ -6,17 +6,13 @@ namespace {
     use ide\DirectoryType;
     use ide\FileType;
     use ide\TextType;
-    use ide\files\CssFile;
-    use ide\files\PhpFile;
+    use ide\Plugin;
+    use plugins\core\CorePlugin;
 
     class Bootstrap extends AbstractBootstrap {
 
         public function onStart(){
-            FileType::register(new TextType());
-            FileType::register(new DirectoryType());
-
-            FileType::register(new CssFile());
-            FileType::register(new PhpFile());
+            Plugin::register(new CorePlugin());
         }
     }
 }

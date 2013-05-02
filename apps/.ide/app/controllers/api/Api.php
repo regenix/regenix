@@ -2,27 +2,21 @@
 namespace controllers\api;
 
 use framework\mvc\Controller;
+use framework\mvc\controllers\RESTController;
 use ide\Project;
-use ide\projects\MvcType;
 
-abstract class Api extends Controller {
-
-    /** @var array */
-    protected $data = array();
+abstract class Api extends RESTController {
 
     /** @var Project */
     protected $project = null;
 
-    protected function onException(\Exception $e){
-        $this->response->setStatus($e->getCode() ? $e->getCode() : 500);
-        $this->renderJSON(array("error" => $e->getMessage()));
-    }
-
     protected function onBefore(){
         if ($this->request->isMethod('POST')){
-            $this->data    = $this->body->asJSON();
-            if ($this->data['project'])
-                $this->project = new Project($this->data['project'], new MvcType());
+            $data = $this->body->asJSON();
+
+            if ($data['project']){
+                $this->project = Project::findByName($data['project']);
+            }
         }
     }
 }

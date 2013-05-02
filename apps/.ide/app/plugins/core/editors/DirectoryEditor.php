@@ -1,5 +1,5 @@
 <?php
-namespace ide\editors;
+namespace plugins\core\editors;
 
 use ide\EditorType;
 

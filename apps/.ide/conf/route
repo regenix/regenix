@@ -1,4 +1,5 @@
 
 *       /           IDE.index
 
-POST       /api/{group}/{method}/?                  api.{group}Api.{method}
+*       /api/{_group}/{_method}/?                  api.{_group}Api.{_method}
+POST       /api/{_plugin}/{_group}/{_method}/?        .plugins.{_plugin}.controllers.api.{_group}Api.{_method}

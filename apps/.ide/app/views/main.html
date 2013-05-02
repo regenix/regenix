@@ -9,24 +9,23 @@
         ASSETS_PATH = "{{asset null}}";
     </script>
 
+    {html.asset 'css/main.css'}
     {html.asset 'js/async.js'}
     {html.asset 'js/head.min.js'}
     {html.asset 'js/jquery-1.9.1.min.js'}
     {html.asset 'js/jquery-migrate-1.1.1.min.js'}
 
-    {html.asset 'js/ext-all.js'}
-    {html.asset 'css/ext-all.css'}
+    {if IS_DEV}
+        {html.asset 'js/ext-all-debug-w-comments.js'}
+    {else}
+        {html.asset 'js/ext-all.js'}
+    {/if}
 
+    {html.asset 'css/ext-all.css'}
+    {html.asset 'js/plugin.js'}
     {html.asset 'js/ide.js'}
 </head>
 <body>
-<div class="cBody">
-    <div class="panel_menu"></div>
-    <div class="panel_bc"></div>
-    <div class="panel_editor"></div>
-    <dig class="panel_files"></dig>
     {doLayout}
-    <div class="panel_status"></div>
-</div>
 </body>
 </html>

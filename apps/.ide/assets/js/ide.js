@@ -1,68 +1,65 @@
+function c(idCmp){
+    return IDE.c(idCmp);
+}
+
 IDE = {
     _assets: {},
+    _ready: [],
 
-    panels: {
-        viewport: null,
-        menu: null,
-        bc: null,
-
-        editor: null,
-        leftSide: null,
-        rightSide: null,
-        statusBar: null
-    },
+    _plugins: [],
 
     init: function(){
-        this.panels.editor = new Ext.Panel({
-            region: 'center',
-            minHeight: 350,
-            minWidth: 350,
-            collapsible: false,
-            split: true
-        });
-
-        this.panels.leftSide = new Ext.Panel({
-            region: 'west',
-            title: 'LeftSide',
-            collapsible: true,
-            width: 220,
-            split: true,
-            minWidth: 100,
-            minHeight: 150
-        });
-
-        this.panels.leftSide.add(Ext.create('Ext.tree.Panel', {
-            id: 'ide_tree',
-            frame: false,
-            rootVisible: false,
-            root: {text: 'Root', expanded: true},
-            border: false
-        }));
-
-        this.panels.statusBar = new Ext.Toolbar({
-            region: 'south',
-            height: 23,
-            margin: '3 0 0 0'
-        });
-
-        this.panels.menu = Ext.create('Ext.toolbar.Toolbar', {
-            region: 'north',
-            height: 25,
-            margin: '0 0 3 0',
-            border: false
-        });
-
-        this.panels.viewport = new Ext.Viewport({
-            layout: {
-                type: 'border',
-                padding: 3
+        var $this = this;
+        IDE.api.call('core/plugins').success(function(json){
+            for(var i in json.data){
+                var meta = json.data[i];
+                var plugin = new Plugin();
+                plugin.loadMetaFromJson(meta);
+                $this._plugins.push(plugin);
             }
+            $this.__loadPlugins(function(){
+                $this.__callOnReady();
+                $this.setStatusLoading('Loading done.', true);
+                setTimeout(function(){
+                    $('.preloading').fadeOut();
+                }, 200);
+            });
         });
+    },
 
-        this.panels.viewport.add(this.panels.menu);
-        this.panels.viewport.add(this.panels.editor);
-        this.panels.viewport.add(this.panels.leftSide);
-        this.panels.viewport.add(this.panels.statusBar);
+    c: function(idCmp){
+        return Ext.getCmp(idCmp);
+    },
+
+    on: function(idCmp, event, callback){
+        return Ext.getCmp(idCmp).on(event, callback);
+    },
+
+    setStatusLoading: function(status, noPoints){
+        $('.preloading .status').html(status + (noPoints ? '' : ' ...'));
+    },
+
+    addComponent: function(cmp){
+        this._viewport.add(cmp);
+    },
+
+    onReady: function(callback){
+        this._ready.push(callback);
+    },
+
+    __callOnReady: function(){
+        // callback on ready
+        for(var i in this._ready){
+            this._ready[i]();
+        }
+    },
+
+    __loadPlugins: function(callback){
+        var $this = this;
+        async.each(this._plugins, function(plugin, callback){
+            $this.setStatusLoading('Load plugin: ' + plugin.name);
+            plugin.register(callback);
+        }, callback);
     },
 
     /**
@@ -78,10 +75,34 @@ IDE = {
         }
         this._assets[asset] = true;
         var ext = asset.split('.').pop();
+        var tmp = asset.split('.');
+        var prefix = tmp[tmp.length - 2];
 
         switch (ext){
-            case 'js': head.js(ASSETS_PATH + asset, callback); return;
-            case 'css': head.load(ASSETS_PATH + asset, callback); return;
+            case 'js': this.setStatusLoading('Load asset: '+asset); head.js(ASSETS_PATH + asset, callback); return;
+            case 'css': this.setStatusLoading('Load asset: '+asset); head.load(ASSETS_PATH + asset, callback); return;
+            case 'json': {
+                this.setStatusLoading('Load asset: '+asset);
+                if (prefix === 'ext'){
+                    return $.ajax(ASSETS_PATH + asset,{
+                        cache: false,
+                        type: 'GET',
+                        dataType: 'json'
+                    }).success(function(json){
+                        for(var x in json){
+                            var item = json[x];
+                            var data = item[1];
+                            var cmp = Ext.create(item[0], data);
+
+                            if (data['parent']){
+                                var parent = Ext.getCmp(data['parent']);
+                                parent.add(cmp);
+                            }
+                        }
+                        callback();
+                    });
+                }
+            }
         }
 
         if (typeof callback === "function")
@@ -108,7 +129,13 @@ IDE = {
 }
 
 var API = {
+    __onError: function(result, method, url, json){
+        console.log('error: ' + method + ':' + url);
+    },
+
     _call: function(method, url, json){
+        var $url  = url;
+        var $this = this;
         var url = ROOT + 'api/' + url;
         return $.ajax(url, {
             cache: false,
@@ -116,6 +143,8 @@ var API = {
             data: JSON.stringify(json),
             dataType: 'json',
             type: method
+        }).error(function(result){
+            $this.__onError(result, method, $url, json);
         });
     },
 

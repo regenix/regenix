@@ -1,0 +1,64 @@
+[
+    [
+        "Ext.Viewport",
+        {
+            "layout": {
+                "type": "border",
+                "padding": 3
+            },
+            "id": "IDE_viewport"
+        }
+    ],
+    [
+        "Ext.toolbar.Toolbar",
+        {
+            "id": "IDE_menu",
+            "region": "north",
+            "height": 25,
+            "margin": "0 0 3 0",
+            "border": false,
+            "parent": "IDE_viewport"
+        }
+    ],
+    [
+        "Ext.panel.Panel",
+        {
+            "id": "IDE_editor",
+            "region": "center",
+            "minHeight": 350,
+            "minWidth": 350,
+            "collapsible": false,
+            "split": true,
+            "parent": "IDE_viewport",
+            "items": [{
+                "xtype": "button",
+                "text": "Button",
+                "id": "my_btn"
+            }]
+        }
+    ],
+    [
+        "Ext.panel.Panel",
+        {
+            "id": "IDE_leftSide",
+            "region": "west",
+            "title": "LeftSide",
+            "collapsible": true,
+            "width": 220,
+            "split": true,
+            "minWidth": 100,
+            "minHeight": 150,
+            "parent": "IDE_viewport"
+        }
+    ],
+    [
+        "Ext.toolbar.Toolbar",
+        {
+            "id": "IDE_statusBar",
+            "region": "south",
+            "height": 23,
+            "margin": "3 0 0 0",
+            "parent": "IDE_viewport"
+        }
+    ]
+]

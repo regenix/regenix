@@ -11,10 +11,8 @@ final class Project {
     /** @var string */
     protected $name;
 
-    public function __construct($name, ProjectType $type){
-        $this->type = $type;
+    public function __construct($name){
         $this->name = $name;
-        $type->setProject($this);
     }
 
     /**
@@ -35,7 +33,7 @@ final class Project {
 
     /**
      * @param bool $cached
-     * @return array
+     * @return Project[]
      */
     public static function findAll($cached = true){
         if ($cached && self::$projects)
@@ -44,15 +42,34 @@ final class Project {
         self::$projects = array();
 
         $srcDir = \framework\Project::getSrcDir();
+
         $dirs   = scandir($srcDir);
         foreach($dirs as $dir){
-            if ($dir == '..' || $dir == '.' || $dir == '.ide')
+            if ($dir === '..' || $dir === '.' || $dir === '.ide')
                 continue;
 
-            if (is_dir($dir)){
-                self::$projects[] = new Project($dir, new MvcType());
+            if (is_dir($srcDir . $dir)){
+                $project = new Project($dir);
+                $project->type = ProjectType::getProjectType($project);
+                if ($project->type !== null){
+                    self::$projects[] = $project;
+                }
             }
         }
         return self::$projects;
+    }
+
+    /**
+     * @param string $name
+     * @param bool $cached
+     * @return Project|null
+     */
+    public static function findByName($name, $cached = true){
+        $projects = self::findAll($cached);
+        foreach($projects as $project){
+            if ($project->getName() === $name)
+                return $project;
+        }
+        return null;
     }
 }

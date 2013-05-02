@@ -5,10 +5,29 @@ namespace ide;
 abstract class EditorType {
 
     /**
+     * @return Plugin
+     */
+    public function getPlugin(){
+        return Plugin::getByInstance($this);
+    }
+
+    /**
      * @return array of files js/css etc.
      */
-    public function getAssets(){
+    protected function getAssets(){
         return array();
+    }
+
+    /**
+     * @return array
+     */
+    final public function getRealAssets(){
+        $result = array();
+        foreach($this->getAssets() as $asset){
+            $plugin = $this->getPlugin();
+            $result[] = $plugin ? $plugin->getAssetRealPath($asset) : $asset;
+        }
+        return $result;
     }
 
     /**
@@ -23,6 +42,6 @@ abstract class EditorType {
      * @return array
      */
     public function toJson(){
-        return array('assets' => $this->getAssets());
+        return array('assets' => $this->getRealAssets());
     }
 }

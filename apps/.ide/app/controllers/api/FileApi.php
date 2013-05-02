@@ -6,10 +6,10 @@ use ide\FileType;
 
 class FileApi extends Api {
 
-    public function type(){
-        $this->notFoundIfEmpty($this->project);
+    public function type($file = null){
+        $this->notFoundIfEmpty($this->project, $file);
 
-        $type = FileType::getFileType($this->project, $this->data['file']);
+        $type = FileType::getFileType($this->project, $file);
         $this->notFoundIfEmpty($type);
 
         $result = array();
@@ -20,44 +20,29 @@ class FileApi extends Api {
         $result['editor'] = array(
             'assets' =>  $editor->getAssets()
         );
-
-        $this->renderJSON($result);
+        return $result;
     }
 
-    public function find(){
-        $this->notFoundIfEmpty($this->project);
-
-        $path   = $this->data['path'];
-        $files  = $this->project->type->getFiles($path);
-
-        $this->renderJSON($files);
+    public function find($path = ''){
+        $this->notFoundIfEmpty($this->project, $path);
+        $files = $this->project->type->getFiles($path);
+        return $files;
     }
 
-    public function save(){
-        $this->notFoundIfEmpty($this->project);
+    public function save($file = '', $data = null){
+        $this->notFoundIfEmpty($this->project, $file);
 
-        $path   = $this->data['path'];
-        $data   = $this->data['data'];
-
-        $type   = FileType::getFileType($this->project, $path);
-        if ($this->data['is_dir']){
-            $type = new DirectoryType();
-        }
-
-        $result = $type->save($this->project, $path, $data);
+        $type   = FileType::getFileType($this->project, $file);
+        $result = $type->save($this->project, $file, $data);
         if (!$result)
-            throw new \Exception("cannot_save_file", 500);
-
-        $this->renderJSON('ok');
+            throw new \Exception("cannot_save_file");
     }
 
-    public function remove(){
-        $this->notFoundIfEmpty($this->project);
+    public function remove($file = ''){
+        $this->notFoundIfEmpty($this->project, $file);
 
-        $type = FileType::getFileType($this->project, $this->data['path']);
-        if ($type->remove($this->project, $this->data['path']))
-            $this->renderJSON('ok');
-        else
-            throw new \Exception("cannot_remove_file", 500);
+        $type = FileType::getFileType($this->project, $file);
+        if (!$type->remove($this->project, $file))
+            throw new \Exception("cannot_remove_file");
     }
 }
