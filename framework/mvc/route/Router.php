@@ -10,7 +10,6 @@ use framework\mvc\Controller;
 use framework\mvc\Request;
 use framework\mvc\RequestBindParams;
 use framework\mvc\RequestBinder;
-use framework\mvc\RequestBody;
 
 class Router extends StrictObject {
 
@@ -165,7 +164,12 @@ class Router extends StrictObject {
     }
 
     public function invokeMethod(Controller $controller, \ReflectionMethod $method){
-        $args = array();
+        $args       = array();
+        $parsedBody = null;
+
+        // bind params for method call
+        $controller->callBindParams($parsedBody);
+
         foreach($method->getParameters() as $param){
             $name = $param->getName();
             if ( isset($this->args[$name]) ){
@@ -189,11 +193,15 @@ class Router extends StrictObject {
                     $cls_name = $class->getName();
                     $value    = $cls_name::current();
                     $args[$name] = $value;
-                } else if ( $class && ($class->isSubclassOf(RequestBody::type) || $class->getName() == RequestBody::type) ){
-                    $args[$name] = $class->newInstance();
                 } else if ( $param->isArray() ){
                     $args[$name] = $controller->query->getArray($name);
-                } else if ( $controller->query->has($name) ){
+                } else if ( $parsedBody && ($v = $parsedBody[$name]) ){
+
+                    if ($class !== null)
+                        $args[$name] = RequestBinder::getValue($v, $class->getName());
+                    else
+                        $args[$name] = $v;
+                } else if ( !$parsedBody && $controller->query->has($name) ){
                     // получаем данные из GET
                     if ( $class !== null )
                         $value = $controller->query->getTyped($name, $class->getName());
@@ -203,11 +211,10 @@ class Router extends StrictObject {
                 }
             }
         }
-        $method->invokeArgs($controller, $args);
+        return $method->invokeArgs($controller, $args);
     }
 
     public function route(Request $request){
-        
         $isCached = IS_PROD;
         if ($isCached){
             $hash  = $request->getHash();

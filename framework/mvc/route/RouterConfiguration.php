@@ -36,9 +36,10 @@ class RouterConfiguration extends Configuration {
                 $action  = $matches[5][0];
                 $params  = $matches[6][0];
                 
-                if (is_numeric($prefix))
-                    $action = '\\controllers\\' . $action;
-                else {
+                if (is_numeric($prefix)){
+                    if ($action[0] != '.')
+                        $action = '\\controllers\\' . $action;
+                } else {
                     $action = $prefix . $action;
                 }
                 

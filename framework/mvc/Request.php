@@ -818,10 +818,17 @@ class RequestBody extends StrictObject {
 
     const type = __CLASS__;
 
-    protected $data = null;
+    private $data = null;
 
     public function __construct(){
-        $this->data = file_get_contents('php://input');
+        ;
+    }
+
+    protected function getData(){
+        if ($this->data)
+            return $this->data;
+
+        return $this->data = file_get_contents('php://input');
     }
 
     /**
@@ -829,7 +836,7 @@ class RequestBody extends StrictObject {
      * @return array
      */
     public function asJSON(){
-        return json_decode($this->data, true);
+        return json_decode($this->getData(), true);
     }
 
     /**
@@ -838,7 +845,7 @@ class RequestBody extends StrictObject {
      */
     public function asQuery(){
         $result = array();
-        parse_str((string)$this->data, $result);
+        parse_str((string)$this->getData(), $result);
         return new ArrayTyped($result);
     }
 
@@ -847,7 +854,7 @@ class RequestBody extends StrictObject {
      * @return string
      */
     public function asString(){
-        return (string)$this->data;
+        return (string)$this->getData();
     }
 }
 

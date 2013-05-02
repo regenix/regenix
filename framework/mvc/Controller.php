@@ -4,6 +4,7 @@ namespace framework\mvc;
 
 use framework\Core;
 use framework\SDK;
+use framework\exceptions\ForbiddenException;
 use framework\exceptions\StrictObject;
 use framework\exceptions\CoreException;
 use framework\exceptions\NotFoundException;
@@ -115,7 +116,16 @@ abstract class Controller extends StrictObject {
     protected function onBefore(){}
     protected function onAfter(){}
     protected function onFinally(){}
+    protected function onReturn($result){}
+
     protected function onException(\Exception $e){}
+    protected function onNotFound(NotFoundException $e){}
+    protected function onForbidden(ForbiddenException $e){}
+
+    /**
+     * @param $params
+     */
+    protected function onBindParams(&$params){}
     
     public function callBefore(){
         $this->onBefore();
@@ -131,6 +141,14 @@ abstract class Controller extends StrictObject {
             $this->flash->touchAll();
     }
 
+    public function callReturn($result){
+        $this->onReturn($result);
+    }
+
+    public function callBindParams(&$params){
+        $this->onBindParams($params);
+    }
+
     /**
      * set use session, if true use session and flash features
      * default: true
@@ -142,6 +160,14 @@ abstract class Controller extends StrictObject {
     
     final public function callException(\Exception $e){
         $this->onException($e);
+    }
+
+    final public function callNotFound(NotFoundException $e){
+        $this->onNotFound($e);
+    }
+
+    final public function callForbidden(ForbiddenException $e){
+        $this->onForbidden($e);
     }
 
     /**
@@ -284,7 +310,7 @@ abstract class Controller extends StrictObject {
         $this->send();
     }
     
-    public function renderHTML($html){
+    public function renderHtml($html){
         $this->response
                 ->setContentType(MIMETypes::getByExt('html'))
                 ->setEntity($html);
@@ -292,7 +318,7 @@ abstract class Controller extends StrictObject {
         $this->send();
     }
 
-    public function renderJSON($object){
+    public function renderJson($object){
         $this->response
                 ->setContentType(MIMETypes::getByExt('json'))
                 ->setEntity( json_encode($object) );
@@ -305,7 +331,7 @@ abstract class Controller extends StrictObject {
         $this->send();
     }
     
-    public function renderXML($xml){
+    public function renderXml($xml){
         if ( $xml instanceof \SimpleXMLElement ){
             /** @var \SimpleXMLElement */
             /// TODO
@@ -360,6 +386,14 @@ abstract class Controller extends StrictObject {
 
     /**
      * @param string $message
+     * @throws \framework\exceptions\ForbiddenException
+     */
+    public function forbidden($message = ''){
+        throw new ForbiddenException($message);
+    }
+
+    /**
+     * @param string $message
      * @throws \framework\exceptions\NotFoundException
      */
     public function notFound($message = ''){
@@ -367,14 +401,16 @@ abstract class Controller extends StrictObject {
     }
 
     /**
-     * @param $what
-     * @param string $message
+     * Can use several what, notFoundIfEmpty(arg1, arg2, arg3 ...)
+     * @param mixed $whats..
      */
-    public function notFoundIfEmpty($what, $message = ''){
-        if (empty($what))
-            $this->notFound($message);
+    public function notFoundIfEmpty($whats){
+        $args = func_get_args();
+        foreach($args as $arg){
+            if (empty($arg))
+                $this->notFound();
+        }
     }
-
 
     /**
      * @return Controller

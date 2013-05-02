@@ -2,11 +2,67 @@ IDE = {
     _assets: {},
 
     panels: {
+        viewport: null,
         menu: null,
         bc: null,
-        status: null,
+
         editor: null,
-        files: null
+        leftSide: null,
+        rightSide: null,
+        statusBar: null
+    },
+
+    init: function(){
+        this.panels.editor = new Ext.Panel({
+            region: 'center',
+            minHeight: 350,
+            minWidth: 350,
+            collapsible: false,
+            split: true
+        });
+
+        this.panels.leftSide = new Ext.Panel({
+            region: 'west',
+            title: 'LeftSide',
+            collapsible: true,
+            width: 220,
+            split: true,
+            minWidth: 100,
+            minHeight: 150
+        });
+
+        this.panels.leftSide.add(Ext.create('Ext.tree.Panel', {
+            id: 'ide_tree',
+            frame: false,
+            rootVisible: false,
+            root: {text: 'Root', expanded: true},
+            border: false
+        }));
+
+        this.panels.statusBar = new Ext.Toolbar({
+            region: 'south',
+            height: 23,
+            margin: '3 0 0 0'
+        });
+
+        this.panels.menu = Ext.create('Ext.toolbar.Toolbar', {
+            region: 'north',
+            height: 25,
+            margin: '0 0 3 0',
+            border: false
+        });
+
+        this.panels.viewport = new Ext.Viewport({
+            layout: {
+                type: 'border',
+                padding: 3
+            }
+        });
+
+        this.panels.viewport.add(this.panels.menu);
+        this.panels.viewport.add(this.panels.editor);
+        this.panels.viewport.add(this.panels.leftSide);
+        this.panels.viewport.add(this.panels.statusBar);
     },
 
     /**
@@ -72,13 +128,9 @@ var API = {
     }
 }
 
-
 IDE.api = API;
 
-$(function(){
-    IDE.panels.menu = $('.panel_menu');
-    IDE.panels.bc   = $('.panel_bc');
-    IDE.panels.editor = $('.panel_editor');
-    IDE.panels.files  = $('.panel_files');
-    IDE.panels.status = $('.panel_status');
+Ext.require(['*']);
+Ext.onReady(function(){
+    IDE.init();
 });

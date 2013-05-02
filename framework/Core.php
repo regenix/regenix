@@ -3,6 +3,7 @@ namespace framework {
 
     use framework\exceptions\CoreException;
     use framework\exceptions\CoreStrictException;
+    use framework\exceptions\ForbiddenException;
     use framework\exceptions\NotFoundException;
     use framework\exceptions\ResponseException;
     use framework\lang\String;
@@ -17,7 +18,7 @@ abstract class Core {
 
     const type = __CLASS__;
 
-    const VERSION = '0.3';
+    const VERSION = '0.4';
     
     /** @var string */
     public static $tempDir = 'tmp/';
@@ -82,6 +83,7 @@ abstract class Core {
             $url = $project->findCurrentPath();
             if ( $url ){
                 self::$__project = $project;
+                register_shutdown_function(array(Core::type, 'shutdown'), self::$__project);
                 $project->setUriPath( $url );
                 $project->register();
                 return;
@@ -129,16 +131,26 @@ abstract class Core {
             SDK::trigger('beforeRequest', array($controller));
             
             $controller->callBefore();
-            $router->invokeMethod($controller, $reflection);
-            
+            $return = $router->invokeMethod($controller, $reflection);
+
+            // if use return statement
+            $controller->callReturn($return);
+
         } catch (Result $result){
             $response = $result->getResponse();
         } catch (\Exception $e){
             
             if ( $controller ){
                 try {
-                    $responseErr = $controller->callException($e);
+                    if ($e instanceof NotFoundException){
+                        $controller->callNotFound($e);
+                    } else if ($e instanceof ForbiddenException){
+                        $controller->callForbidden($e);
+                    }
+                    // if no result, do:
+                    $controller->callException($e);
                 } catch (Result $result){
+                    /** @var $responseErr Response */
                     $responseErr = $result->getResponse();
                 }
             }
@@ -147,6 +159,8 @@ abstract class Core {
                 throw $e;
             else {
                 $response = $responseErr;
+                if ($e instanceof ResponseException)
+                    $response->setStatus($e->getStatus());
             }
         }
         
