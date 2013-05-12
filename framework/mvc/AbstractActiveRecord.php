@@ -1,15 +1,31 @@
 <?php
 namespace framework\mvc;
 
+use framework\exceptions\CoreException;
 use framework\exceptions\StrictObject;
 use framework\lang\IClassInitialization;
 
-abstract class ActiveRecord extends StrictObject implements IClassInitialization {
+abstract class AbstractActiveRecord extends StrictObject
+    implements IClassInitialization {
 
     const type = __CLASS__;
 
     /** @var array */
     public $__data = array();
+
+    /** @var array */
+    public $__modified = array();
+
+    public function __construct(){
+        $service = static::getService();
+        $meta    = $service->getMeta();
+
+        foreach($meta['fields'] as $name => $info){
+            $this->__data[ $name ] = $this->{$name};
+            unset($this->{$name});
+        }
+    }
+
 
     /**
      * @return mixed
@@ -39,6 +55,13 @@ abstract class ActiveRecord extends StrictObject implements IClassInitialization
         return $this->getId() === null;
     }
 
+    /**
+     * @return bool
+     */
+    public function isModified(){
+        return sizeof($this->__modified) > 0;
+    }
+
     public function __set($name, $value){
         $service = static::getService();
         $service->__callSetter($this, $name, $value, true);
@@ -56,10 +79,16 @@ abstract class ActiveRecord extends StrictObject implements IClassInitialization
 
     public function __unset($name){
         $this->__data[$name] = null;
+        $this->__modified[$name] = true;
     }
 
     public function save(array $options = array()){
         static::getService()->save($this, $options);
+        return $this;
+    }
+
+    public function reload(array $fields = array()){
+        static::getService()->reload($this, $fields);
         return $this;
     }
 
@@ -75,11 +104,50 @@ abstract class ActiveRecord extends StrictObject implements IClassInitialization
         return AbstractService::get(get_called_class());
     }
 
+    public static function beginTransaction(){
+        return static::getService()->beginTransaction();
+    }
+
+    public static function inTransaction(){
+        return static::getService()->inTransaction();
+    }
+
+    public static function commit(){
+        return static::getService()->commit();
+    }
+
+    public static function rollback(){
+        return static::getService()->rollback();
+    }
+
+    /**
+     * @param $id
+     * @return mixed
+     */
+    abstract public static function findById($id);
+
+    /**
+     * @param AbstractQuery $query
+     * @param array $fields
+     * @return mixed
+     */
+    abstract static function find(AbstractQuery $query = null, array $fields = array());
+
+    /** @return AbstractQuery */
+    abstract public static function query();
+
+    public function __clone(){
+        $this->setId(null);
+    }
+
     public static function initialize(){
-        AbstractService::registerModel(get_called_class());
+        $service = static::getService();
+
+        if ($service){
+            $service->registerModel(get_called_class());
+        }
     }
 }
-
 
 /** HANDLES */
 interface IHandleAfterSave {

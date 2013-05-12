@@ -1,10 +1,4 @@
 <?php
-/**
- * Author: Dmitriy Zayceff
- * E-mail: dz@dim-s.net
- * Date: 17.03.13
- */
-
 namespace framework\mvc;
 
 use framework\exceptions\StrictObject;
@@ -23,13 +17,12 @@ abstract class AbstractService extends StrictObject {
     protected $modelClass;
 
     /** @var array */
-    protected $meta;
+    private $meta_;
 
     /**
      * @param $modelClass string
      */
     protected function __construct($modelClass){
-        $this->meta = self::$modelInfo[$modelClass];
         $this->modelClass = $modelClass;
     }
 
@@ -44,7 +37,10 @@ abstract class AbstractService extends StrictObject {
      * @return array
      */
     public function getMeta(){
-        return $this->meta;
+        if (!$this->meta_)
+            $this->meta_ = self::$modelInfo[$this->modelClass];
+
+        return $this->meta_;
     }
 
     /**
@@ -60,6 +56,22 @@ abstract class AbstractService extends StrictObject {
      */
     private static $services = array();
 
+    public function beginTransaction(){
+        throw CoreException::formated('Transactions are not supported');
+    }
+
+    public function inTransaction(){
+        throw CoreException::formated('Transactions are not supported');
+    }
+
+    public function commit(){
+        throw CoreException::formated('Transactions are not supported');
+    }
+
+    public function rollback(){
+        throw CoreException::formated('Transactions are not supported');
+    }
+
     /**
      * @param $modelClass
      * @return AbstractService
@@ -71,11 +83,11 @@ abstract class AbstractService extends StrictObject {
         return self::$services[$modelClass] = static::newInstance($modelClass);
     }
 
-    abstract public function save(ActiveRecord $object, array $options = array());
-    abstract public function remove(ActiveRecord $object, array $options = array());
+    abstract public function save(AbstractActiveRecord $object, array $options = array());
+    abstract public function remove(AbstractActiveRecord $object, array $options = array());
 
     /**
-     * @param ActiveRecord[] $documents
+     * @param AbstractActiveRecord[] $documents
      * @param array $options
      * @return array of bool
      */
@@ -100,21 +112,23 @@ abstract class AbstractService extends StrictObject {
         return $result;
     }
 
-    public function fetch(ActiveRecord $object, $data, $lazyNeed = false){
+    public function fetch(AbstractActiveRecord $object, $data, $lazyNeed = false){
         if ( $object instanceof IHandleBeforeLoad ){
             $object->onBeforeLoad($data);
         }
 
+        $meta = $this->getMeta();
         foreach($data as $column => $value){
-            $field = $this->meta['fields_rev'][ $column ];
+            $field = $meta['fields_rev'][ $column ];
             if ( $field ){
                 $this->__callSetter($object, $field, $value, $lazyNeed);
             }
         }
 
-        $valueId = $data[$this->meta['id_field']['column']];
+        $valueId = $data[$meta['id_field']['column']];
         $this->setId($object, $valueId);
 
+        $object->__modified = array();
         if ( $object instanceof IHandleAfterLoad ){
             $object->onAfterLoad();
         }
@@ -123,15 +137,16 @@ abstract class AbstractService extends StrictObject {
     }
 
     /**
-     * @param ActiveRecord $object
+     * @param AbstractActiveRecord $object
      * @param bool $typed
      * @return mixed|null
      */
-    public function getId(ActiveRecord $object, $typed = true){
-        $idField = $this->meta['id_field']['field'];
+    public function getId(AbstractActiveRecord $object, $typed = true){
+        $meta = $this->getMeta();
+        $idField = $meta['id_field']['field'];
         if ( $idField ){
             return $typed
-                ? static::typed($object->__data[$idField], $this->meta['id_field']['type'])
+                ? static::typed($object->__data[$idField], $meta['id_field']['type'])
                 : $object->__data[$idField];
         } else
             return null;
@@ -157,10 +172,11 @@ abstract class AbstractService extends StrictObject {
      * @param mixed $id
      * @param array $fields
      * @param bool $lazy
-     * @return ActiveRecord
+     * @return AbstractActiveRecord
      */
     public function findById($id, array $fields = array(), $lazy = false){
-        $idField = $this->meta['id_field'];
+        $meta    = $this->getMeta();
+        $idField = $meta['id_field'];
         $data  = $this->findDataById(static::typed($id, $idField['type']));
         if ( $data === null )
             return null;
@@ -170,30 +186,30 @@ abstract class AbstractService extends StrictObject {
     }
 
     /**
-     * @param array $filter
+     * @param AbstractQuery $query
      * @param array $fields
      * @param bool $lazy
      * @return ActiveRecordCursor
      */
-    abstract public function findByFilter(array $filter, array $fields = array(), $lazy = false);
+    abstract public function findByFilter(AbstractQuery $query, array $fields = array(), $lazy = false);
 
     /**
      * @param mixed $value
      * @param array $fields
      * @param bool $lazy
-     * @return ActiveRecord
+     * @return AbstractActiveRecord
      */
     protected function findByRef($value, array $fields = array(), $lazy = false){
         return $this->findById($value, $fields, $lazy);
     }
 
     /**
-     * @param ActiveRecord $object
+     * @param AbstractActiveRecord $object
      * @param array $fields
      * @return bool
      * @throws \framework\exceptions\CoreException
      */
-    public function reload(ActiveRecord $object, array $fields = array()){
+    public function reload(AbstractActiveRecord $object, array $fields = array()){
         $id = $this->getId($object);
         if ( !$id )
             throw CoreException::formated('Can`t reload non-exist document');
@@ -206,8 +222,9 @@ abstract class AbstractService extends StrictObject {
             return false;
     }
 
-    public function __callGetter(ActiveRecord $object, $field){
-        $info  = $this->meta['fields'][$field];
+    public function __callGetter(AbstractActiveRecord $object, $field){
+        $meta  = $this->getMeta();
+        $info  = $meta['fields'][$field];
         $value = $object->__data[$field];
 
         if ( $info['ref'] && $info['ref']['lazy'] ){
@@ -228,8 +245,9 @@ abstract class AbstractService extends StrictObject {
         return $value;
     }
 
-    public function __callSetter(ActiveRecord $object, $field, $value, $lazy = false){
-        $info = $this->meta['fields'][$field];
+    public function __callSetter(AbstractActiveRecord $object, $field, $value, $lazy = false){
+        $meta = $this->getMeta();
+        $info = $meta['fields'][$field];
 
         if ($info['ref'] && !$info['ref']['lazy'] && $lazy === false){
             ClassLoader::load($info['type']);
@@ -245,20 +263,22 @@ abstract class AbstractService extends StrictObject {
         } else {
             $object->__data[$field] = $value;
         }
+
+        $object->__modified[$field] = true;
     }
 
-
     /**
-     * @param ActiveRecord $object
+     * @param AbstractActiveRecord $object
      * @param $id
      */
-    public function setId(ActiveRecord $object, $id){
-        $idField = $this->meta['id_field'];
+    public function setId(AbstractActiveRecord $object, $id){
+        $meta    = $this->getMeta();
+        $idField = $meta['id_field'];
         if ( $idField ){
             $field = $idField['field'];
             $object->__data[$field] = static::typed($id, $idField['type']);
         } else
-            CoreException::formated('Document `%s` has no @id field', $this->meta['name']);
+            CoreException::formated('Document `%s` has no @id field', $meta['name']);
     }
 
     protected static function registerModelMetaClass(&$info, \ReflectionClass $class, Annotations $classInfo){
@@ -271,7 +291,8 @@ abstract class AbstractService extends StrictObject {
     protected static function registerModelMetaId(&$propInfo, &$allInfo,
                                                   \ReflectionClass $class, $name, Annotations $property){
         $allInfo['id_field'] = array(
-            'column' => '_id', 'field' => $propInfo['name'], 'type' => $propInfo['type']
+            'column' => $propInfo['column'] ? $propInfo['column'] : 'id',
+            'field' => $propInfo['name'], 'type' => $propInfo['type']
         );
     }
 
@@ -367,6 +388,7 @@ abstract class AbstractService extends StrictObject {
                 if ( $idDefined ){
                     throw new AnnotationException($property, 'id', 'Can\'t redeclare id field');
                 }
+
                 static::registerModelMetaId($cur, $info, $class, $nm, $property);
                 $idDefined = true;
             }
@@ -391,8 +413,8 @@ abstract class AbstractService extends StrictObject {
     /**
      * @param string $className
      */
-    public static function registerModel($className){
-        if ( $className === ActiveRecord::type ) return;
+    public function registerModel($className){
+        if ( $className === AbstractActiveRecord::type ) return;
 
         /** @var $annotation Annotations */
         $class     = new \ReflectionClass($className);
@@ -445,7 +467,7 @@ abstract class ActiveRecordCursor implements \Iterator {
     abstract public function explain();
 
     /**
-     * @return ActiveRecord
+     * @return AbstractActiveRecord
      */
     public function first(){
         $this->rewind();
@@ -453,9 +475,133 @@ abstract class ActiveRecordCursor implements \Iterator {
     }
 
     /**
-     * @return ActiveRecord[]
+     * @return AbstractActiveRecord[]
      */
     public function asArray(){
         return iterator_to_array($this);
+    }
+}
+
+
+class QueryException extends CoreException {
+
+    public function __construct($message){
+        parent::__construct('Query build error: ' . $message);
+    }
+}
+
+abstract class AbstractQuery {
+
+    /** @var AbstractService */
+    protected $service;
+    protected $meta;
+
+    protected $data;
+    protected $stackField;
+
+    public function __construct(AbstractService $service){
+        $this->data    = array();
+        $this->service = $service;
+        $this->meta    = $service->getMeta();
+    }
+
+    public function field($name){
+        if ($this->stackField)
+            throw QueryException::formated('field `%s` set already', $this->stackField);
+
+        if (!$this->meta['fields'][$name])
+            throw QueryException::formated('field `%s` not exists in `%s` document type', $name, $this->service->getModelClass());
+
+        $this->stackField = $name;
+        return $this;
+    }
+
+    protected function popField(){
+        $name = $this->stackField;
+        $this->stackField = '';
+        if (!$name){
+            throw QueryException::formated('field is not set');
+        }
+
+        $column = $this->meta['fields'][$name]['column'];
+        return $column;
+    }
+
+    protected function getValue($field, $value){
+        $info = $this->meta['fields'][$field];
+        if (is_array($value)){
+            foreach($value as &$el){
+                $el = $this->service->typed($el, $info['type'], $info['ref']);
+            }
+            return $value;
+        } else
+            return $this->service->typed($value, $info['type'], $info['ref']);
+    }
+
+    public function addOr(AbstractQuery $query){
+        $this->data['$or'][] = $query;
+        return $this;
+    }
+
+    protected function popValue($field, $value, $prefix = '$eq'){
+        $this->field($field);
+        $this->data[$prefix][$field] = $this->getValue($field, $value);
+        return $this;
+    }
+
+    public function eq($field, $value){
+        return $this->popValue($field, $value);
+    }
+
+    public function notEq($field, $value){
+        return $this->popValue($field, $value, '$neq');
+    }
+
+    public function gt($field, $value){
+        return $this->popValue($field, $value, '$gt');
+    }
+
+    public function gte($field, $value){
+        return $this->popValue($field, $value, '$gte');
+    }
+
+    public function lt($field, $value){
+        return $this->popValue($field, $value, '$lt');
+    }
+
+    public function lte($field, $value){
+        return $this->popValue($field, $value, '$lte');
+    }
+
+    public function all($field, array $value){
+        return $this->popValue($field, $value, '$all');
+    }
+
+    public function in($field, array $value){
+        return $this->popValue($field, $value, '$in');
+    }
+
+    public function notIn($field, array $value){
+        return $this->popValue($field, $value, '$nin');
+    }
+
+    public function like($field, $expr){
+        return $this->popValue($field, $expr, '$like');
+    }
+
+    public function notLike($field, $expr){
+        return $this->popValue($field, $expr, '$nlike');
+    }
+
+    public function isNull($field){
+        return $this->popValue($field, true, '$null');
+    }
+
+    public function isNotNull($field){
+        return $this->popValue($field, true, '$nnull');
+    }
+
+    public function getData(){
+        return $this->data;
     }
 }
