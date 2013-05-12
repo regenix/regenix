@@ -1,0 +1,11 @@
+{
+    "repository": "github:dim-s/regenix-repository/master",
+
+    "assets": {
+
+    },
+
+    "modules": {
+        "mongodb": {"version": "1.*"}
+    }
+}
