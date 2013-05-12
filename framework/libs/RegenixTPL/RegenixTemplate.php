@@ -101,7 +101,7 @@ class RegenixTemplate {
         $this->tags[strtolower($tag->getName())] = $tag;
     }
 
-    public function __clone(){
+    public function duplicate(){
         $new = new RegenixTemplate();
         $new->setTplDirs($this->tplDirs);
         $new->setTempDir($this->tmpDir);
@@ -281,9 +281,9 @@ class RegenixTemplate {
                                     else
                                         $str .= '<?php else:?>';
                                 } elseif ($cmd === 'extends'){
-                                    $str .= '<?php echo $_TPL->_renderBlock("doLayout", ' . $tmp[1] . '); $__extends = true;?>';
-                                } elseif ($cmd === 'doLayout'){
-                                    $str .= '%__BLOCK_doLayout__%';
+                                    $str .= '<?php echo $_TPL->_renderBlock("content", ' . $tmp[1] . '); $__extends = true;?>';
+                                } elseif ($cmd === 'content'){
+                                    $str .= '%__BLOCK_content__%';
                                 } elseif (self::$control[$cmd]){
                                     $str .= '<?php ' . $cmd . '(' . $tmp[1] . '):?>';
                                 } elseif (String::startsWith($cmd, 'tag.')){
@@ -384,7 +384,7 @@ class RegenixTemplate {
     }
 
     public function _renderHtmlTag($tag, array $args = array()){
-        $tpl     = clone $this;
+        $tpl     = $this->duplicate();
         $tplFile = 'tags/' . str_replace('.', '/', $tag) . '.html';
 
         $args['flash'] = Flash::current();
@@ -400,13 +400,13 @@ class RegenixTemplate {
     }
 
     public function _renderBlock($block, $file, array $args = null){
-        $tpl = clone $this;
+        $tpl  = $this->duplicate();
         $file = str_replace('\\', '/', $file);
         if (!String::endsWith($file, '.html'))
             $file .= '.html';
 
         // TODO: refactor
-        if ($block === 'doLayout'){
+        if ($block === 'content'){
             $args = array_merge($this->args, $args == null ? array() : $args);
         }
 
@@ -428,9 +428,9 @@ class RegenixTemplate {
     public function _renderContent(){
         $content = ob_get_contents();
         ob_end_clean();
-        $content = str_replace('%__BLOCK_doLayout__%', $content, $this->blocks['doLayout']);
+        $content = str_replace('%__BLOCK_content__%', $content, $this->blocks['content']);
         foreach($this->blocks as $name => $block){
-            if ($name != 'doLayout'){
+            if ($name != 'content'){
                 $content = str_replace('%__BLOCK_'.$name.'__%', $block, $content);
             }
         }
@@ -452,6 +452,9 @@ class RegenixGetTag extends RegenixTemplateTag {
     }
 
     public function call($args, RegenixTemplate $ctx){
+        if (isset($args['default']))
+            $ctx->blocks[$args['_arg']] = $args['default'];
+
         return '%__BLOCK_' . $args['_arg'] . '__%';
     }
 }
@@ -464,6 +467,8 @@ class RegenixSetTag extends RegenixTemplateTag {
 
     public function call($args, RegenixTemplate $ctx){
         list($key, $value) = each($args);
+        if ($key === 'content')
+            throw CoreException::formated('Block `content` can not be used');
         $ctx->blocks[$key] = $value;
     }
 }
@@ -496,7 +501,7 @@ class RegenixRenderTag extends RegenixTemplateTag {
     }
 
     public function call($args, RegenixTemplate $ctx){
-        return $this->render($args, clone $ctx);
+        return $this->render($args, $ctx->duplicate());
     }
 }
 
@@ -508,7 +513,7 @@ class RegenixIncludeTag extends RegenixRenderTag {
 
     public function call($args, RegenixTemplate $ctx){
         $args = array_merge($ctx->getArgs(), $args);
-        return $this->render($args, clone $ctx);
+        return $this->render($args, $ctx->duplicate());
     }
 }
 
@@ -541,6 +546,21 @@ class RegenixVariable {
         return $this;
     }
 
+    public function trim(){
+        $this->var = trim($this->var);
+        return $this;
+    }
+
+    public function substring($from, $to = null){
+        $this->var = String::substring($this->var, $from, $to);
+        return $this;
+    }
+
+    public function replace($what, $replace){
+        $this->var = str_replace($what, $replace, $this->var);
+        return $this;
+    }
+
     public function nl2br(){
         $this->var = nl2br($this->var);
         return $this;
@@ -568,16 +588,4 @@ class RegenixVariable {
             throw CoreException::formated('Template `%s()` modifier not found', $name);
     }
 }
-}
-
-namespace {
-
-    use framework\libs\I18n;
-
-    function __($message, $args = ''){
-        if (is_array($args))
-            return I18n::get($message, $args);
-        else
-            return I18n::get($message, array_slice(func_get_args(), 1));
-    }
 }

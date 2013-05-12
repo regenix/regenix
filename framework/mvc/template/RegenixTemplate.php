@@ -97,8 +97,8 @@ class RegenixTemplate extends BaseTemplate {
 
         public function call($args, RegenixTPL $ctx){
             $action = $args['_arg'] ? $args['_arg'] : $args['action'];
-            if (!$action)
-                throw CoreException::formated('Action argument of reverse is empty');
+            /*if (!$action)
+                throw CoreException::formated('Action argument of reverse is empty');*/
 
             unset($args['_arg'], $args['action']);
             $project = Project::current();
@@ -304,5 +304,14 @@ namespace {
             } else
                 throw CoreException::formated('TPL class may only be used in templates');
         }
+    }
+
+    use framework\libs\I18n;
+
+    function __($message, $args = ''){
+        if (is_array($args))
+            return I18n::get($message, $args);
+        else
+            return I18n::get($message, array_slice(func_get_args(), 1));
     }
 }
