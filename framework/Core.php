@@ -19,7 +19,7 @@ abstract class Core {
     const VERSION = '0.4';
     
     /** @var string */
-    public static $tempDir = 'tmp/';
+    public static $tempDir;
     
     /**
      * @var array
@@ -39,6 +39,7 @@ abstract class Core {
         ini_set('display_errors', 'Off');
         error_reporting(E_ALL ^ E_NOTICE);
         set_include_path(ROOT);
+        self::$tempDir = sys_get_temp_dir() . '/';
 
         unset($_POST, $_GET, $_REQUEST);
 
