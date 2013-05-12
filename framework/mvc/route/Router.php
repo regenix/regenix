@@ -100,13 +100,16 @@ class Router extends StrictObject {
     }
 
     public function reverse($action, array $args = array(), $method = '*'){
-        $action = strtolower($action);
-        $action = str_replace('\\', '.', $action);
-        if ($action[0] != '.')
-            $action = '.' . $action;
 
-        if (!String::startsWith($action, '.controllers.'))
-            $action = '.controllers' . $action;
+        if ($action !== null){
+            $action = strtolower($action);
+            $action = str_replace('\\', '.', $action);
+            if ($action[0] != '.')
+                $action = '.' . $action;
+
+            if (!String::startsWith($action, '.controllers.'))
+                $action = '.controllers' . $action;
+        }
 
         foreach($this->routes as $route){
             if ($method != '*' && $route['method'] != '*' && strtoupper($method) != $route['method'])
@@ -121,8 +124,10 @@ class Router extends StrictObject {
                 }
             }
             $curAction = str_replace($replace, $to, $route['action']);
-            if ( $action === strtolower(str_replace('\\', '.', $curAction)) ){
+            if ( $action === null || $action === strtolower(str_replace('\\', '.', $curAction)) ){
                 $match = true;
+
+                if ($action)
                 foreach($route['patterns'] as $name => $pattern){
                     if (!preg_match('#^'. $pattern . '$#', (string)$args[$name])){
                         $match = false;
@@ -131,7 +136,7 @@ class Router extends StrictObject {
                 }
 
                 if ($match){
-                    $url = str_replace($replace, $to, $route['url']);
+                    $url = str_replace($replace, $to, $action === null ? '' : $route['url']);
                     $i = 0;
                     foreach($args as $key => $value){
                         if (!$route['types'][$key]){
