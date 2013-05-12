@@ -254,9 +254,9 @@ class Request extends StrictObject {
      * @return boolean
      */
     public function isBase($baseUrl){
-        if ( !($baseUrl instanceof URL) )
+        if ( !($baseUrl instanceof URL) ){
             $baseUrl = new URL($baseUrl);
-        
+        }
         return $this->currentUrl->constaints($baseUrl);
     }
 

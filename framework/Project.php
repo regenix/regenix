@@ -181,7 +181,7 @@ class Project {
 
 
     public function register(){
-        Request::current();
+        $request = Request::current();
 
         if (is_file($file = $this->getPath() . 'app/Bootstrap.php')){
             require $file;
@@ -193,6 +193,12 @@ class Project {
 
         // config
         $this->mode   = strtolower($this->config->getString('app.mode', 'dev'));
+        if (file_exists($environment = $this->getPath() . 'conf/environment.php'))
+            $this->mode = include $environment;
+
+        if (!$this->mode)
+            throw CoreException::formated('App mode must be set in `conf/environment.php` or `conf/application.conf`');
+
         define('IS_PROD', $this->isProd());
         define('IS_DEV', $this->isDev());
         define('IS_CORE_DEBUG', $this->config->getBoolean('core.debug'));
