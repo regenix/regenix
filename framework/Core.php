@@ -367,6 +367,7 @@ abstract class Core {
     abstract class AbstractBootstrap {
 
         public function onStart(){}
+        public function onEnvironment(&$env){}
         public function onUseTemplates(){}
     }
 

@@ -193,8 +193,8 @@ class Project {
 
         // config
         $this->mode   = strtolower($this->config->getString('app.mode', 'dev'));
-        if (file_exists($environment = $this->getPath() . 'conf/environment.php'))
-            $this->mode = include $environment;
+        if ($this->bootstrap)
+            $this->bootstrap->onEnvironment($this->mode);
 
         if (!$this->mode)
             throw CoreException::formated('App mode must be set in `conf/environment.php` or `conf/application.conf`');
