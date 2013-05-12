@@ -210,7 +210,7 @@ class Request extends StrictObject {
      * @param int $port
      */
     public function setPort($port){
-        $this->setPort($port);
+        $this->port = $port;
     }
 
     /**

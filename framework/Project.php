@@ -80,7 +80,7 @@ class Project {
                 Request::current()->setPort($port);
             } else
                 Request::current();
-            
+
             $this->applyConfig( $this->config );
         }
     }
