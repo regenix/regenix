@@ -79,7 +79,6 @@ abstract class Core {
          * @var Project $project
          */
         foreach (self::$projects as $project){
-            
             $url = $project->findCurrentPath();
             if ( $url ){
                 self::$__project = $project;

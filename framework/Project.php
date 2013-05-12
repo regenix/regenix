@@ -150,7 +150,7 @@ class Project {
      */
     public function findCurrentPath(){
         $request = Request::current();
-        
+        dump($request);
         foreach ($this->paths as $url){
             if ( $request->isBase( $url ) )
                 return $url;

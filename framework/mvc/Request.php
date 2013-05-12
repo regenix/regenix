@@ -211,6 +211,7 @@ class Request extends StrictObject {
      */
     public function setPort($port){
         $this->port = $port;
+        $this->currentUrl->setPort($port);
     }
 
     /**
@@ -998,6 +999,70 @@ class URL extends StrictObject {
         }
     }
 
+    /**
+     * @param string $host
+     */
+    public function setHost($host)
+    {
+        $this->host = $host;
+    }
+
+    /**
+     * @return string
+     */
+    public function getHost()
+    {
+        return $this->host;
+    }
+
+    /**
+     * @param int $port
+     */
+    public function setPort($port)
+    {
+        $this->port = $port;
+    }
+
+    /**
+     * @return int
+     */
+    public function getPort()
+    {
+        return $this->port;
+    }
+
+    /**
+     * @param string $protocol
+     */
+    public function setProtocol($protocol)
+    {
+        $this->protocol = $protocol;
+    }
+
+    /**
+     * @return string
+     */
+    public function getProtocol()
+    {
+        return $this->protocol;
+    }
+
+    /**
+     * @param string $query
+     */
+    public function setQuery($query)
+    {
+        $this->query = $query;
+    }
+
+    /**
+     * @return string
+     */
+    public function getQuery()
+    {
+        return $this->query;
+    }
+
     public function getUrl(){
         return $this->url;
     }
@@ -1028,7 +1093,7 @@ class URL extends StrictObject {
 
         $url->url = $protocol  . '://'
             . $host
-            . ($port == 80 ? '' : $port)
+            . ($port == 80 ? '' : ':' . $port)
             . $path
             . ($query ? '?' . $query : '');
 
