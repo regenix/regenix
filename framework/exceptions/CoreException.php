@@ -10,8 +10,6 @@ class CoreException extends \Exception {
 
     public function __construct($message){
         parent::__construct($message);
-
-        // TODO
     }
     
     public static function formated($message){
@@ -20,8 +18,7 @@ class CoreException extends \Exception {
             $args = array_slice(func_get_args(), 1);
         }
 
-        $class = get_called_class();
-        return new $class(vsprintf($message, $args));
+        return new static(String::formatArgs($message, $args));
     }
 
     public function getSourceLine(){
@@ -35,13 +32,15 @@ class CoreException extends \Exception {
     public static function findProjectStack(\Exception $e){
         $project    = Project::current();
         if ($project){
-            $projectDir = str_replace('\\', '/', $project->getPath());
+            $projectDir = str_replace('\\', '/', Project::getSrcDir());
             $moduleDir  = ROOT . 'modules/';
             foreach($e->getTrace() as $stack){
                 $dir = str_replace('\\', '/', dirname($stack['file']));
                 if (strpos($dir, $projectDir) === 0){
                     return $stack;
                 }
+                if (self::$onlyPublic) continue;
+
                 if (strpos($dir, $moduleDir) === 0){
                     return $stack;
                 }
@@ -94,6 +93,22 @@ class CoreException extends \Exception {
             return (int)$offset;
 
         return 0;
+    }
+
+    private static $onlyPublic = false;
+
+    /**
+     * @param bool $value
+     */
+    public static function showOnlyPublic($value){
+        self::$onlyPublic = $value;
+    }
+
+    /**
+     * @return bool
+     */
+    public static function isOnlyPublic(){
+        return self::$onlyPublic;
     }
 }
 
