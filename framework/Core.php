@@ -56,7 +56,8 @@ abstract class Core {
             set_error_handler(array(Core::type, 'errorHandler'));
 
         self::_registerCurrentProject();
-        register_shutdown_function(array(Core::type, 'shutdown'), self::$__project);
+        if (!self::$__project)
+            register_shutdown_function(array(Core::type, 'shutdown'), self::$__project);
     }
 
     private static function _registerTriggers(){
@@ -303,7 +304,7 @@ abstract class Core {
             $errfile = str_replace('\\', '/', $errfile);
 
             // only for project sources
-            if (String::startsWith($errfile, $project->getPath())){
+            if (!$project || String::startsWith($errfile, $project->getPath())){
                 if ( $errno === E_DEPRECATED
                     || $errno === E_USER_DEPRECATED
                     || $errno === E_WARNING ){
@@ -311,7 +312,7 @@ abstract class Core {
                 }
 
                 // ignore tmp dir
-                if ( String::startsWith($errfile, $project->getPath() . 'tmp/') )
+                if (!$project || String::startsWith($errfile, $project->getPath() . 'tmp/') )
                     return false;
 
                 if (String::startsWith($errstr, 'Undefined variable:')
