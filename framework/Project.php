@@ -76,10 +76,11 @@ class Project {
 
         if ($inWeb){
             $port = $this->config->getNumber('http.port', 0);
-            if ($port)
-                $_SERVER['SERVER_PORT'] = $port;
-
-            Request::current();
+            if ($port){
+                Request::current()->setPort($port);
+            } else
+                Request::current();
+            
             $this->applyConfig( $this->config );
         }
     }

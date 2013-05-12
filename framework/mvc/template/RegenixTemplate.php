@@ -29,7 +29,6 @@ class RegenixTemplate extends BaseTemplate {
     private static $loaded = false;
 
     public function __construct($templateFile, $templateName){
-
         if (!self::$loaded){
             self::$tpl = new RegenixTPL();
 

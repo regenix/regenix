@@ -200,11 +200,17 @@ class Request extends StrictObject {
     }
 
     public function setBasePath($path){
-        
         $this->basePath = $path;
         $this->setUri($this->getUri());
         
         return $this;
+    }
+
+    /**
+     * @param int $port
+     */
+    public function setPort($port){
+        $this->setPort($port);
     }
 
     /**
