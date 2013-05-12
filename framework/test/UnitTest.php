@@ -2,6 +2,8 @@
 namespace framework\test;
 
 use framework\exceptions\StrictObject;
+use framework\exceptions\TypeException;
+use framework\lang\ClassLoader;
 
 /**
  * Class UnitTest
@@ -21,6 +23,7 @@ abstract class UnitTest extends StrictObject {
 
     protected function onBefore(){}
     protected function onAfter(){}
+    protected function onException(\Exception $e){}
 
     protected function onGlobalBefore(){}
     protected function onGlobalAfter(){}
@@ -41,8 +44,60 @@ abstract class UnitTest extends StrictObject {
         $this->requires[$unitTestClass] = array('needOk' => $needOk);
     }
 
+    public function getRequires(){
+        return $this->requires;
+    }
+
     protected function requiredOk($unitTestClass){
         $this->required($unitTestClass, true);
+    }
+
+    /**
+     * @param string $class
+     * @param callable $callback
+     * @param array $args
+     * @throws \framework\exceptions\TypeException
+     */
+    protected function exception($class, $callback, array $args = array()){
+        if (!is_callable($callback))
+            throw new TypeException('$callback', 'callable');
+
+        ClassLoader::load($class);
+        $meta = new \ReflectionClass($class);
+        if (!$meta->isSubclassOf("\\Exception") && $meta->getName() !== '\\Exception')
+            throw new TypeException('$class', 'Exception class');
+
+        try {
+            call_user_func_array($callback, $args);
+        } catch (\Exception $e){
+            if ($meta->isSubclassOf($class) || $meta->getName() === $class){
+                $this->assertWrite(true);
+                return;
+            }
+            throw $e;
+        }
+        $this->assertWrite(false);
+    }
+
+    protected function notException($class, $callback, array $args = array()){
+        if (!is_callable($callback))
+            throw new TypeException('$callback', 'callable');
+
+        ClassLoader::load($class);
+        $meta = new \ReflectionClass($class);
+        if (!$meta->isSubclassOf("\\Exception") && $meta->getName() !== '\\Exception')
+            throw new TypeException('$class', 'Exception class');
+
+        try {
+            call_user_func_array($callback, $args);
+        } catch (\Exception $e){
+            if ($meta->isSubclassOf($class) || $meta->getName() === $class){
+                $this->assertWrite(false);
+                return;
+            }
+            throw $e;
+        }
+        $this->assertWrite(true);
     }
 
     protected function eq($with, $what){
@@ -81,6 +136,10 @@ abstract class UnitTest extends StrictObject {
         $this->assertWrite(!!($what));
     }
 
+    protected function notReq($what){
+        $this->assertWrite(!($what));
+    }
+
     public function startTesting(){
         self::$tested[get_class($this)] = false;
 
@@ -89,9 +148,10 @@ abstract class UnitTest extends StrictObject {
                 /** @var $test UnitTest */
                 $test = new $require();
                 $test->startTesting();
-                if ( $options['needOk'] && !$test->isOk() )
+                if ( $options['needOk'] && (!$test->isOk() || self::$tested[$require] === false) )
                     return null;
             } else {
+
                 if ( self::$tested[$require] !== false &&
                     ($options['needOk'] && !self::$tested[$require]->isOk()) )
                     return null;
@@ -107,7 +167,11 @@ abstract class UnitTest extends StrictObject {
 
             $this->currentMethod = $method;
             $this->onBefore();
-            $method->invoke($this);
+            try {
+                $method->invoke($this);
+            } catch (\Exception $e){
+                $this->onException($e);
+            }
             $this->onAfter();
         }
         $this->onGlobalAfter();

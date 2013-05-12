@@ -105,7 +105,7 @@ class Project {
     }
 
     public function getTestPath(){
-        return self::getPath() . 'app/tests/';
+        return self::getPath() . 'tests/';
     }
 
     /**
@@ -335,6 +335,7 @@ class Project {
         $this->classLoader->addClassPath(ROOT . 'vendor/');
         $this->classLoader->addClassLibPath(ROOT . 'vendor/');
         $this->classLoader->addClassPath($this->getPath() . 'app/');
+        $this->classLoader->addNamespace('tests\\', $this->getPath());
 
         $this->classLoader->register();
     }
