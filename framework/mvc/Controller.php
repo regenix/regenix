@@ -4,10 +4,9 @@ namespace framework\mvc;
 
 use framework\Core;
 use framework\SDK;
-use framework\exceptions\ForbiddenException;
+use framework\exceptions\HttpException;
 use framework\exceptions\StrictObject;
 use framework\exceptions\CoreException;
-use framework\exceptions\NotFoundException;
 use framework\io\File;
 use framework\mvc\Response;
 use framework\mvc\providers\FileResponse;
@@ -57,6 +56,11 @@ abstract class Controller extends StrictObject {
      * @var string
      */
     public $actionMethod;
+
+    /**
+     * @var \ReflectionMethod
+     */
+    public $actionMethodReflection;
 
     /**
      * template arguments
@@ -119,8 +123,7 @@ abstract class Controller extends StrictObject {
     protected function onReturn($result){}
 
     protected function onException(\Exception $e){}
-    protected function onNotFound(NotFoundException $e){}
-    protected function onForbidden(ForbiddenException $e){}
+    protected function onHttpException(HttpException $e){}
 
     /**
      * @param $params
@@ -162,12 +165,8 @@ abstract class Controller extends StrictObject {
         $this->onException($e);
     }
 
-    final public function callNotFound(NotFoundException $e){
-        $this->onNotFound($e);
-    }
-
-    final public function callForbidden(ForbiddenException $e){
-        $this->onForbidden($e);
+    final public function callHttpException(HttpException $e){
+        $this->onHttpException($e);
     }
 
     /**
@@ -250,7 +249,8 @@ abstract class Controller extends StrictObject {
      */
     public function template($template = false){
         if (!$template){
-            $controller = str_replace('\\', '/', get_class($this));
+            $class = $this->actionMethodReflection->getDeclaringClass()->getName();
+            $controller = str_replace('\\', '/', $class);
 
             if ( String::startsWith($controller, 'controllers/') )
                 $controller = substr($controller, 12);
@@ -312,7 +312,7 @@ abstract class Controller extends StrictObject {
     
     public function renderHtml($html){
         $this->response
-                ->setContentType(MIMETypes::getByExt('html'))
+                ->setContentType('text/html')
                 ->setEntity($html);
         
         $this->send();
@@ -320,7 +320,7 @@ abstract class Controller extends StrictObject {
 
     public function renderJson($object){
         $this->response
-                ->setContentType(MIMETypes::getByExt('json'))
+                ->setContentType('application/json')
                 ->setEntity( json_encode($object) );
         
         $error = json_last_error();
@@ -356,7 +356,7 @@ abstract class Controller extends StrictObject {
      * @param $var
      */
     public function renderVar($var){
-        $this->renderHTML('<pre>' . print_r($var, true) . '</pre>');
+        $this->renderHtml('<pre>' . print_r($var, true) . '</pre>');
     }
 
     /**
@@ -369,7 +369,7 @@ abstract class Controller extends StrictObject {
         $str = ob_get_contents();
         ob_end_clean();
 
-        $this->renderHTML($str);
+        $this->renderHtml($str);
     }
 
     public function ok(){
@@ -386,18 +386,16 @@ abstract class Controller extends StrictObject {
 
     /**
      * @param string $message
-     * @throws \framework\exceptions\ForbiddenException
      */
     public function forbidden($message = ''){
-        throw new ForbiddenException($message);
+        throw new HttpException(HttpException::E_FORBIDDEN, $message);
     }
 
     /**
      * @param string $message
-     * @throws \framework\exceptions\NotFoundException
      */
     public function notFound($message = ''){
-        throw new NotFoundException($message);
+        throw new HttpException(HttpException::E_NOT_FOUND, $message);
     }
 
     /**

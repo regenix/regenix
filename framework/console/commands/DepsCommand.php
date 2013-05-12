@@ -15,6 +15,7 @@ use framework\deps\DependencyDownloadException;
 use framework\deps\DependencyNotFoundException;
 use framework\deps\Origin;
 use framework\deps\Repository;
+use framework\exceptions\HttpException;
 use framework\exceptions\NotFoundException;
 
 class DepsCommand extends ConsoleCommand {
@@ -207,12 +208,12 @@ class DepsCommand extends ConsoleCommand {
             $meta = $this->repository->getMeta($group[1]);
         } catch (\Exception $e){
             try {
-                if ($e instanceof NotFoundException){
+                if ($e instanceof HttpException){
                     throw $e;
                 }
 
                 $meta = $this->repository->getMeta($group[1]);
-            } catch(NotFoundException $ne){
+            } catch(HttpException $ne){
                 $this->writeln('    - not found');
                 return;
             } catch (\Exception $e2){
@@ -249,7 +250,6 @@ class DepsCommand extends ConsoleCommand {
 
                 $this->repository->setEnv($env);
                 $deps = $this->project->deps[$env];
-
                 foreach((array)$deps as $group => $dep){
                     $this->update($env, $group, $dep);
                 }

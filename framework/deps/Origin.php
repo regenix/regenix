@@ -2,7 +2,7 @@
 namespace framework\deps;
 
 use framework\exceptions\CoreException;
-use framework\exceptions\NotFoundException;
+use framework\exceptions\HttpException;
 use framework\io\File;
 use framework\lang\String;
 use framework\libs\WS;
@@ -143,7 +143,7 @@ class GithubOrigin extends Origin {
             return $response->asJson();
         } else {
             if ($response->status === 404){
-                throw NotFoundException::formated('Not found `%s` resource in repository', $path);
+                throw HttpException::formated(404, 'Not found `%s` resource in repository', $path);
             } else
                 throw ConnectException::formated("Can`t download `%s` resource from repository", $response->url);
         }

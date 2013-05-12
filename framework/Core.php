@@ -3,9 +3,7 @@ namespace framework {
 
     use framework\exceptions\CoreException;
     use framework\exceptions\CoreStrictException;
-    use framework\exceptions\ForbiddenException;
-    use framework\exceptions\NotFoundException;
-    use framework\exceptions\ResponseException;
+    use framework\exceptions\HttpException;
     use framework\lang\String;
     use framework\logger\Logger;
     use framework\mvc\Controller;
@@ -105,7 +103,7 @@ abstract class Core {
 
         try {
             if (!$router->action){
-                throw new NotFoundException('404 Not found');
+                throw new HttpException(404, 'Not found');
             }
 
             // TODO optimize ?
@@ -119,8 +117,9 @@ abstract class Core {
             $controller->routeArgs    = $router->args;
             try {
                 $reflection = new \ReflectionMethod($controller, $actionMethod);
+                $controller->actionMethodReflection = $reflection;
             } catch(\ReflectionException $e){
-                throw new NotFoundException($e->getMessage());
+                throw new HttpException(404, $e->getMessage());
             }
 
             $declClass = $reflection->getDeclaringClass();
@@ -143,11 +142,10 @@ abstract class Core {
             
             if ( $controller ){
                 try {
-                    if ($e instanceof NotFoundException){
-                        $controller->callNotFound($e);
-                    } else if ($e instanceof ForbiddenException){
-                        $controller->callForbidden($e);
+                    if ($e instanceof HttpException){
+                        $controller->callHttpException($e);
                     }
+
                     // if no result, do:
                     $controller->callException($e);
                 } catch (Result $result){
@@ -160,7 +158,7 @@ abstract class Core {
                 throw $e;
             else {
                 $response = $responseErr;
-                if ($e instanceof ResponseException)
+                if ($e instanceof HttpException)
                     $response->setStatus($e->getStatus());
             }
         }
@@ -227,7 +225,7 @@ abstract class Core {
     }
 
     private static function catchAny(\Exception $e){
-        if ( $e instanceof ResponseException ){
+        if ( $e instanceof HttpException ){
             $template = TemplateLoader::load('errors/' . $e->getStatus() . '.html');
             $template->putArgs(array('e' => $e));
 

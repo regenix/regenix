@@ -1,7 +1,7 @@
 <?php
 namespace framework\mvc\controllers;
 
-use framework\exceptions\NotFoundException;
+use framework\exceptions\HttpException;
 use framework\mvc\Controller;
 
 class RESTController extends Controller{
@@ -19,11 +19,16 @@ class RESTController extends Controller{
             $this->renderJson(array('status' => 'success', 'data' => $result));
     }
 
+
     /**
-     * @param NotFoundException $e
+     * @param HttpException $e
      */
-    protected function onNotFound(NotFoundException $e){
-        $this->addError('not_found');
+    protected function onHttpException(HttpException $e){
+        if ($e->getStatus() === HttpException::E_NOT_FOUND)
+            $this->addError('not_found');
+        else
+            $this->addError($e->getMessage());
+
         $this->onReturn(null);
     }
 
