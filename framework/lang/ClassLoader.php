@@ -7,9 +7,9 @@ use framework\SDK;
 use framework\exceptions\CoreException;
 use framework\lang\String;
 
-require 'framework\lang\String.php';
-require 'framework\exceptions\CoreException.php';
-require 'framework\exceptions\ClassNotFoundException.php';
+require 'framework/lang/String.php';
+require 'framework/exceptions/CoreException.php';
+require 'framework/exceptions/ClassNotFoundException.php';
 
 
 class ClassLoader {
