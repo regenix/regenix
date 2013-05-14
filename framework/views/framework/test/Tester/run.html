@@ -12,7 +12,11 @@
                 <th>_{'Methods'}</th>
             </tr>
             {foreach $result['tests'] as $code => $test}
+<<<<<<< HEAD
                 <tr>
+=======
+                <tr {if !$tesut['result']}style="color: red"{/if}>
+>>>>>>> Global local update
                     <td>
                         {if $test['skip']}
                         &#160;...
@@ -24,6 +28,10 @@
                         {if $test['skip']}
                             <span style="color: silver">{$code | substring(6)}</span>
                         {else}
+<<<<<<< HEAD
+=======
+
+>>>>>>> Global local update
                             <a href="{path id: $code}">{$code | substring(6)}</a>
                         {/if}
                     </td>

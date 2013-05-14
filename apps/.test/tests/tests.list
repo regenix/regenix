@@ -1,0 +1,8 @@
+Classloader
+LangTest
+LoggingTest
+I18nTest
+io.FileTest
+config.PropertiesTest
+config.RoutesTest
+mvc.SessionTest

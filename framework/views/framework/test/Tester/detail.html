@@ -8,17 +8,17 @@
         <tr>
             <th width="25px"></th>
             <th width="120px">_{'Method'}</th>
-            <th width="90px">_{'Assert'}</th>
+            <th width="180px">_{'Message'}</th>
             <th width="50px">_{'Line'}</th>
             <th>_{'Source'}</th>
         </tr>
 
         {foreach $detail['log'] as $method => $calls}
             {foreach $calls as $call}
-            <tr>
+            <tr  {if !$call['result']}style="color: red"{/if}>
                 <td><span class="ico {$call['result'] ? 'success' : 'fail'}">&#160;</span></td>
                 <td>{$method}</td>
-                <td>{$call['method']}</td>
+                <td>{$call['message'] ? $call['message'] : '-'}</td>
                 <td>[ <a href="{path id: $detail['class'], line: $call['line']}">{$call['line']}</a> ]</td>
                 <td><pre>{ trim(current($call['source'])) }</pre></td>
             </tr>

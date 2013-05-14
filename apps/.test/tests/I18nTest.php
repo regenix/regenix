@@ -40,6 +40,10 @@ class I18nTest extends  BaseTest {
         $this->eq('message 123 x abc z', I18n::get('message {0} x {1} z', array(123, 'abc')));
     }
 
+    public function formatNamed(){
+        $this->eq('message 123 x XYZ', I18n::get('message {id} x {code}', array('id' => 123, 'code' => 'XYZ')));
+    }
+
     public function multi(){
         $this->isTrue(I18n::availLang('xz'));
 

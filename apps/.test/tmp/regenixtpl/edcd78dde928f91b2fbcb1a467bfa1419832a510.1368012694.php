@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Testing: {get 'title', default: 'Home'}</title>
+    <title>Testing: <?php $_TPL->_renderTag("get", array('_arg' => 'title', 'default' => 'Home', ));?></title>
     <style type="text/css">
         html, body, pre {
             margin: 0;
@@ -72,7 +72,7 @@
     </style>
 </head>
 <body>
-    <h1>{get 'subTitle', default: ($subTitle ? $subTitle : 'Testing')}</h1>
-    {content}
+    <h1><?php $_TPL->_renderTag("get", array('_arg' => 'subTitle', 'default' => ($subTitle ? $subTitle : 'Testing'), ));?></h1>
+    %__BLOCK_content__%
 </body>
-</html>
+</html><?php if($__extends){ $_TPL->_renderContent(); } ?>

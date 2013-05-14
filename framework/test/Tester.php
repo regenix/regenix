@@ -18,7 +18,7 @@ class Tester extends Controller {
                 /** @var \SplFileInfo $file */
                 if ($file->isFile() && $file->getExtension() === 'php'){
                     $filename = str_replace(array('\\', $path), array('/', ''), $file->getRealPath());
-                    $class = 'tests\\' . substr(basename($filename), 0, -4);
+                    $class = 'tests\\' . str_replace('/', '\\', substr($filename, 0, -4));
 
                     if ($id){
                         if (str_replace('\\', '.', $class) !== $id)

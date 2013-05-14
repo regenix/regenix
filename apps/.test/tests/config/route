@@ -1,0 +1,7 @@
+*   /index      Application.index
+
+GET     /{controller}/{method<[A-Ba-c0-9]+>}/     {controller}.action{method}
+
+POST    /abs/       .Abs.method
+
+# Test comment

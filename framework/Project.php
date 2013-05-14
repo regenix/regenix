@@ -189,6 +189,7 @@ class Project {
                 throw CoreException::formated('Can`t find `Bootstrap` class at `%s`', $file);
             }
             $this->bootstrap = new \Bootstrap();
+            $this->bootstrap->setProject($this);
         }
 
         // config
@@ -336,7 +337,7 @@ class Project {
     }
 
     private function _registerTests(){
-        $this->router->addRoute('*', '/@test', 'framework.test.Tester.run');
+        $this->router->addRoute('*', '/@test/', 'framework.test.Tester.run');
         $this->router->addRoute('GET', '/@test.json', 'framework.test.Tester.runAsJson');
     }
 

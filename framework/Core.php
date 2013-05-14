@@ -366,6 +366,13 @@ abstract class Core {
 
     abstract class AbstractBootstrap {
 
+        /** @var Project */
+        protected $project;
+
+        public function setProject(Project $project){
+            $this->project = $project;
+        }
+
         public function onStart(){}
         public function onEnvironment(&$env){}
         public function onUseTemplates(){}

@@ -157,7 +157,7 @@ class Router extends StrictObject {
                     $project = Project::current();
                     $path    = $project ? $project->getUriPath() : '';
 
-                    return ($path === '/' ? '' : $path) . $url;
+                    return /*($path === '/' ? '' : $path) . */$url;
                 }
             }
         }

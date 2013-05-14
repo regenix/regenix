@@ -86,6 +86,13 @@ abstract class Logger implements IClassInitialization {
         self::$handlers[] = array('level' => $level, 'handler' => $handler);
     }
 
+    /**
+     * clear all handlers
+     */
+    public static function clearHandlers(){
+        self::$handlers = array();
+    }
+
     public static function initialize(){
         $project = Project::current();
 
