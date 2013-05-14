@@ -30,6 +30,9 @@ class CoreException extends \Exception {
     }
 
     public static function findProjectStack(\Exception $e){
+        if (self::$hideDebug)
+            return null;
+
         $project    = Project::current();
         if ($project){
             $projectDir = str_replace('\\', '/', Project::getSrcDir());
@@ -96,12 +99,17 @@ class CoreException extends \Exception {
     }
 
     private static $onlyPublic = false;
+    private static $hideDebug = false;
 
     /**
      * @param bool $value
      */
     public static function showOnlyPublic($value){
         self::$onlyPublic = $value;
+    }
+
+    public static function hideExceptionDebugInfo(){
+        self::$hideDebug = true;
     }
 
     /**
