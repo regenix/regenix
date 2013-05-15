@@ -4,6 +4,7 @@ namespace framework {
     use framework\exceptions\CoreException;
     use framework\exceptions\CoreStrictException;
     use framework\exceptions\HttpException;
+    use framework\io\File;
     use framework\lang\String;
     use framework\logger\Logger;
     use framework\mvc\Controller;
@@ -49,10 +50,13 @@ abstract class Core {
         $loader->register();
 
         self::_registerTriggers();
+        self::_deploy();
+
         self::_registerProjects();
 
-        if ( APP_MODE_STRICT )
-            set_error_handler(array(Core::type, 'errorHandler'));
+        // TODO may be remove?
+        /*if ( APP_MODE_STRICT )
+            set_error_handler(array(Core::type, 'errorHandler'));*/
 
         self::_registerCurrentProject();
         if (!self::$__project)
@@ -66,11 +70,39 @@ abstract class Core {
         SDK::registerTrigger('registerTemplateEngine');
     }
 
+    private static function _deployZip($zipFile){
+        $name   = basename($zipFile, '.zip');
+        $appDir = Project::getSrcDir() . $name . '/';
+
+        // check directory exists
+        if (file_exists($appDir)){
+            $dir = new File($appDir);
+            $dir->delete();
+            $dir->mkdirs();
+        }
+
+        $zip = new \ZipArchive();
+        if ($zip->open($zipFile)){
+            $zip->extractTo($appDir);
+            $zip->close();
+        }
+        $file = new File($zipFile);
+        $file->delete();
+    }
+
+    private static function _deploy(){
+        foreach (glob(Project::getSrcDir() . "*.zip") as $zipFile) {
+            self::_deployZip($zipFile);
+        }
+    }
+
     private static function _registerProjects(){
         $dirs = scandir(Project::getSrcDir());
+        $root = Project::getSrcDir();
         foreach ($dirs as $dir){
             if ($dir == '.' || $dir == '..') continue;
-            self::$projects[ $dir ] = new Project( $dir );
+            if (is_dir($root . $dir))
+                self::$projects[ $dir ] = new Project( $dir );
         }
     }
 
@@ -375,6 +407,7 @@ abstract class Core {
 
         public function onStart(){}
         public function onEnvironment(&$env){}
+        public function onTest(array &$tests){}
         public function onUseTemplates(){}
     }
 
