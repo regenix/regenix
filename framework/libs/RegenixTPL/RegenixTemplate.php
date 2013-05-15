@@ -260,6 +260,9 @@ class RegenixTemplate {
                     $str  = substr($str, 0, $mod ? -2 : -1);
 
                     switch($mod){
+                        case '%': {
+                            $str .= '<?php ' . $expr . '?>';
+                        } break;
                         case '@': {
                             $str .= '<?php echo ' . $expr . '?>';
                         } break;
