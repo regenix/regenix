@@ -1,12 +1,9 @@
-[submodule "vendor/Imagine"]
-	path = vendor/Imagine
-	url = git://github.com/avalanche123/Imagine.git
-[submodule "vendor/kcaptcha"]
-	path = vendor/kcaptcha
-	url = git://github.com/dim-s/kcaptcha.git
-[submodule "regenix-documentation"]
-	path = regenix-documentation
-	url = git://github.com/dim-s/regenix-documentation.git
 [submodule "documentation"]
 	path = documentation
 	url = git://github.com/dim-s/regenix-documentation.git
+[submodule "framework/vendor/Imagine"]
+	path = framework/vendor/Imagine
+	url = git://github.com/avalanche123/Imagine.git
+[submodule "framework/vendor/kcaptcha"]
+	path = framework/vendor/kcaptcha
+	url = git://github.com/dim-s/kcaptcha.git
