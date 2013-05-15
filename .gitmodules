@@ -7,3 +7,6 @@
 [submodule "framework/vendor/kcaptcha"]
 	path = framework/vendor/kcaptcha
 	url = git://github.com/dim-s/kcaptcha.git
+[submodule "framework/vendor/Jamm/Memory"]
+	path = framework/vendor/Jamm/Memory
+	url = git://github.com/jamm/Memory.git
