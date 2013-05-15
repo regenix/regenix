@@ -9,6 +9,7 @@ use framework\console\commands\HelpCommand;
 use framework\console\commands\InfoCommand;
 use framework\console\commands\LoadCommand;
 use framework\exceptions\CoreException;
+use framework\io\File;
 use framework\lang\IClassInitialization;
 
 class Commander implements IClassInitialization {
@@ -48,11 +49,17 @@ class Commander implements IClassInitialization {
     }
 
     private function _registerCurrentProject(){
-        $this->project = @getenv('REGENIX_CUR_PROJECT');
-        $this->project = $this->projects[$this->project];
+        $tmpFile = new File(sys_get_temp_dir() . '/regenix/.current');
+
+        if ($tmpFile->isFile()){
+            $this->project = @file_get_contents($tmpFile->getPath());
+            $this->project = $this->projects[$this->project];
+        }
+
         if (!$this->project){
             $this->project = current($this->projects);
-            putenv('REGENIX_CUR_PROJECT');
+            $tmpFile->getParent()->mkdirs();
+            file_put_contents($tmpFile->getPath(), $this->project->getName());
         }
     }
 

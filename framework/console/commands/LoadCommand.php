@@ -3,6 +3,7 @@ namespace framework\console\commands;
 
 use framework\console\Commander;
 use framework\console\ConsoleCommand;
+use framework\io\File;
 
 class LoadCommand extends ConsoleCommand {
 
@@ -16,8 +17,12 @@ class LoadCommand extends ConsoleCommand {
         if (!$cmd->projects[$name]){
             $this->writeln('[error: not exists]');
         } else {
-            putenv('REGENIX_CUR_PROJECT=' . $name);
-            $this->writeln('[success]');
+            $tmpFile = new File(sys_get_temp_dir() . '/regenix/.current');
+            $tmpFile->getParent()->mkdirs();
+            if (file_put_contents($tmpFile->getPath(), $name))
+                $this->writeln('[success]');
+            else
+                $this->writeln('[error: can`t write to temp directory');
         }
     }
 }
