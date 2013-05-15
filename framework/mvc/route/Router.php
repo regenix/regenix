@@ -40,7 +40,7 @@ class Router extends StrictObject {
     
     public function applyConfig(RouterConfiguration $config){
         foreach($config->getRouters() as $info){
-            $this->addRoute($info['method'], $info['path'], $info['action'], $info['params']);
+            $this->addRoute($info['method'], $info['path'], str_replace('\\', '.', $info['action']), $info['params']);
         }
     }
     
@@ -87,7 +87,7 @@ class Router extends StrictObject {
         $item = array(
                 'method'  => strtoupper($method),
                 'path'    => $path,
-                'action'  => $action,
+                'action'  => str_replace('\\', '.', $action),
                 'params'  => $params,
                 'types'   => $types,
                 'pattern' => '#^' . $pattern . '$#',
@@ -117,6 +117,21 @@ class Router extends StrictObject {
 
             $replace = array('_METHOD');
             $to      = array($method == '*' ? 'GET' : strtoupper($method));
+            $routeKeys = array_keys($route['types']);
+
+            $cur = $route['action'];
+            foreach($route['patterns'] as $param => $regex){
+                $cur = str_replace('{' . $param . '}', $regex, $cur);
+            }
+
+            // search args in route address
+            preg_match_all('#^' . $cur . '$#i', $action, $matches);
+            foreach($matches as $i => $el){
+                if ($i){
+                    $args[$routeKeys[$i-1]] = current($el);
+                }
+            }
+
             foreach($args as $key => $value){
                 if ($route['types'][$key]){
                     $replace[] = '{' . $key . '}';
@@ -124,6 +139,7 @@ class Router extends StrictObject {
                 }
             }
             $curAction = str_replace($replace, $to, $route['action']);
+
             if ( $action === null || $action === strtolower(str_replace('\\', '.', $curAction)) ){
                 $match = true;
 

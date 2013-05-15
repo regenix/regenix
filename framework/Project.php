@@ -364,7 +364,7 @@ class Project {
 
             $routeFiles   = array();
             foreach (modules\AbstractModule::$modules as $name => $module){
-                $routeFiles['\\modules\\' . $name . '\\controllers\\'] = $module->getRouteFile();
+                $routeFiles['.modules' . $name . '.controllers.'] = $module->getRouteFile();
             }
             $routeFiles[] = new File($routeFile);
 
