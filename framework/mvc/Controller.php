@@ -301,7 +301,7 @@ abstract class Controller extends StrictObject {
      * @return bool
      */
     public function templateExists($template){
-        $template = TemplateLoader::load($template);
+        $template = TemplateLoader::load($template, false);
         return !!$template;
     }
 

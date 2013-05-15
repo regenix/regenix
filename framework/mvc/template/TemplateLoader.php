@@ -63,7 +63,7 @@ class TemplateLoader {
      * @throws TemplateEngineNotFoundException
      * @return BaseTemplate
      */
-    public static function load($name){
+    public static function load($name, $throws = true){
         $name   = str_replace('\\', '/', $name);
         
         $ext = pathinfo($name, PATHINFO_EXTENSION);
@@ -77,12 +77,19 @@ class TemplateLoader {
         
         $engine = self::$engines[ $ext ];
         if ( !$engine ){
-            throw new TemplateEngineNotFoundException($ext);
+            if ($throws)
+                throw new TemplateEngineNotFoundException($ext);
+            else
+                return null;
         }
         
         $templateFile = self::findFile($name);
-        if ( $templateFile === false )
-            throw new TemplateNotFoundException( $name );
+        if ( $templateFile === false ){
+            if ($throws)
+                throw new TemplateNotFoundException( $name );
+            else
+                return null;
+        }
         
         $template = new $engine($templateFile, $templateName);
         return $template;
