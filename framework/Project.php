@@ -113,6 +113,10 @@ class Project {
         return self::getPath() . 'tests/';
     }
 
+    public function getLogPath(){
+        return ROOT . 'logs/' . $this->name . '/';
+    }
+
     /**
      * get public upload directory
      * @return string
@@ -215,7 +219,7 @@ class Project {
         }
         
         // temp
-        Core::setTempDir( $this->getPath() . 'tmp/' );
+        Core::setTempDir( sys_get_temp_dir() . '/regenix/' . $this->name . '/' );
         
         // cache
         /*if ( $this->config->getBoolean('cache.enable', true) ){
@@ -337,7 +341,7 @@ class Project {
     }
 
     private function _registerTests(){
-        $this->router->addRoute('*', '/@test/', 'framework.test.Tester.run');
+        $this->router->addRoute('*', '/@test', 'framework.test.Tester.run');
         $this->router->addRoute('GET', '/@test.json', 'framework.test.Tester.runAsJson');
     }
 

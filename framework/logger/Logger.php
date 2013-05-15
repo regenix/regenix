@@ -102,7 +102,7 @@ abstract class Logger implements IClassInitialization {
             $level    = $project->config->getString('logger.level', 'info');
             if ( $enable ){
                 self::registerHandler(self::getLevelOrd($level),
-                    new LoggerDefaultHandler($project->getPath() . 'log/', $division));
+                    new LoggerDefaultHandler($project->getLogPath(), $division));
             }
         }
     }
