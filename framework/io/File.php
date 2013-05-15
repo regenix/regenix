@@ -131,6 +131,27 @@ class File {
         return filemtime($this->path);
     }
 
+    /**
+     * Delete file or recursive remove directory
+     * @return bool
+     */
+    public function delete(){
+        if (is_dir($this->path)){
+            $files = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($this->path, \RecursiveDirectoryIterator::SKIP_DOTS),
+                \RecursiveIteratorIterator::CHILD_FIRST
+            );
+
+            foreach ($files as $fileInfo) {
+                $todo = ($fileInfo->isDir() ? 'rmdir' : 'unlink');
+                $todo($fileInfo->getRealPath());
+            }
+        } else {
+            unlink($this->path);
+        }
+        return file_exists($this->path);
+    }
+
     public function __toString() {
         return sprintf( 'io\\File("%s")', $this->path );
     }
