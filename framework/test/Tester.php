@@ -36,6 +36,9 @@ class Tester extends Controller {
                 }
             }
 
+            if ($project->bootstrap)
+                $project->bootstrap->onTest($tests);
+
             foreach($tests as $test){
                 $test->startTesting();
             }

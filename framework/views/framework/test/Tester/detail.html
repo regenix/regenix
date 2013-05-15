@@ -14,11 +14,11 @@
         </tr>
 
         {foreach $detail['log'] as $method => $calls}
-            {foreach $calls as $call}
+            {foreach $calls as $i => $call}
             <tr  {if !$call['result']}style="color: red"{/if}>
                 <td><span class="ico {$call['result'] ? 'success' : 'fail'}">&#160;</span></td>
-                <td>{$method}</td>
-                <td>{$call['message'] ? $call['message'] : '-'}</td>
+                <td>{$i ? '&#160;&#160;&#160; - - - >' : $method | raw}</td>
+                <td style="color: gray">{$call['message'] ? $call['message'] : '-'}</td>
                 <td>[ <a href="{path id: $detail['class'], line: $call['line']}">{$call['line']}</a> ]</td>
                 <td><pre>{ trim(current($call['source'])) }</pre></td>
             </tr>
