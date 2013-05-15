@@ -228,35 +228,37 @@ final class Cache implements IClassInitialization {
 
     public static function initialize(){
         $project = Project::current();
-        $driver  = $project->config->get('cache.driver', 'auto');
+        if ($project){
+            $driver  = $project->config->get('cache.driver', 'auto');
 
-        self::$defaultConfig = array(
-            'id'   => $project->config->getString('cache.id', ''),
-            'host' => $project->config->get('cache.host', 'localhost'),
-            'port' => $project->config->getNumber('cache.port'),
-            'size' => $project->config->getNumber('cache.size'),
-            'maxsize' => $project->config->getNumber('cache.maxsize')
-        );
+            self::$defaultConfig = array(
+                'id'   => $project->config->getString('cache.id', ''),
+                'host' => $project->config->get('cache.host', 'localhost'),
+                'port' => $project->config->getNumber('cache.port'),
+                'size' => $project->config->getNumber('cache.size'),
+                'maxsize' => $project->config->getNumber('cache.maxsize')
+            );
 
-        switch(trim(strtolower($driver))){
-            case '':
-            case 'none': self::setDriver(self::DRIVER_NONE);
-                break;
-            case 'apc': self::setDriver(self::DRIVER_APC); break;
-            case 'shm': self::setDriver(self::DRIVER_SHM); break;
-            case 'redis': self::setDriver(self::DRIVER_REDIS); break;
-            case 'memcache':
-            case 'memcached': self::setDriver(self::DRIVER_MEMCACHE); break;
-            case 'auto': {
-                if (extension_loaded('apc'))
-                    self::setDriver(self::DRIVER_APC);
-                else if (function_exists('shmop_open'))
-                    self::setDriver(self::DRIVER_SHM);
-                else
-                    self::setDriver(self::DRIVER_NONE);
-            } break;
-            default: {
-                throw CoreException::formated('Unknown cache driver type: #%s', $driver);
+            switch(trim(strtolower($driver))){
+                case '':
+                case 'none': self::setDriver(self::DRIVER_NONE);
+                    break;
+                case 'apc': self::setDriver(self::DRIVER_APC); break;
+                case 'shm': self::setDriver(self::DRIVER_SHM); break;
+                case 'redis': self::setDriver(self::DRIVER_REDIS); break;
+                case 'memcache':
+                case 'memcached': self::setDriver(self::DRIVER_MEMCACHE); break;
+                case 'auto': {
+                    if (extension_loaded('apc'))
+                        self::setDriver(self::DRIVER_APC);
+                    else if (function_exists('shmop_open'))
+                        self::setDriver(self::DRIVER_SHM);
+                    else
+                        self::setDriver(self::DRIVER_NONE);
+                } break;
+                default: {
+                    throw CoreException::formated('Unknown cache driver type: #%s', $driver);
+                }
             }
         }
     }
