@@ -2,6 +2,7 @@
 namespace {
 
     use framework\AbstractBootstrap;
+    use framework\cache\Cache;
     use framework\mvc\Request;
     use framework\mvc\template\BaseTemplate;
 
