@@ -156,7 +156,7 @@ class Repository implements IClassInitialization{
         $result = array();
         $this->setEnv($env);
 
-        foreach($this->deps[$env] as $group => $patternVersion){
+        foreach((array)$this->deps[$env] as $group => $patternVersion){
             $dep  = $this->findLocalVersion($group, $patternVersion['version']);
             if ($dep){
                 $this->_getAllDependencies($env, $group, $dep['version'], $result, $check);
@@ -274,7 +274,7 @@ class Repository implements IClassInitialization{
         $dir = ROOT . $this->env . '/';
 
         $result = array();
-        $dirs   = scandir($dir);
+        $dirs   = is_dir($dir) ? scandir($dir) : array();
         foreach($dirs as $item){
             if (is_dir($dir . $item)){
                 $tmp = explode('~', $item, 2);
