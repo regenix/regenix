@@ -1,3 +1,6 @@
+# Routes
 
-*       /                                                   Application.index
-*       /crop/{w}x{h}/                                      Application.crop
+
+
+*       /                               Application.index
+*       /{method}/                      Application.{method}

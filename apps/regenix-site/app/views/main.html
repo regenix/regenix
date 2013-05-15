@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{get 'title', default: 'Regenix'} - MVC Framework for PHP</title>
+    {html.asset 'main.css'}
+
+    {deps.asset 'jquery'}
+    {html.asset 'main.js'}
+</head>
+<body>
+    <header>
+        <nav>
+            {tag.links links: $links}
+            <img src="{asset 'img/logo.png'}">
+        </nav>
+    </header>
+    <aside>
+
+    </aside>
+    <article>
+
+    </article>
+
+    <footer>
+        {tag.copyright company: 'Dim-S Software'}
+    </footer>
+</body>
+</html>
