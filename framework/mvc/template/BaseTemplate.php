@@ -1,6 +1,7 @@
 <?php
 namespace framework\mvc\template;
 
+use framework\Project;
 use framework\exceptions\TypeException;
 use framework\lang\IClassInitialization;
 
@@ -33,7 +34,15 @@ abstract class BaseTemplate implements IClassInitialization {
         $this->args = $args;
     }
 
-    public function onBeforeRender(){}
+    public function put($name, $value){
+        $this->args[$name] = $value;
+    }
+
+    public function onBeforeRender(){
+        $project = Project::current();
+        if ($project->bootstrap)
+            $project->bootstrap->onTemplateRender($this);
+    }
 
 
     private static $assetsTpls = array();

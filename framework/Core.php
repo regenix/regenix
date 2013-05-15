@@ -11,6 +11,7 @@ namespace framework {
     use framework\mvc\Response;
     use framework\mvc\results\Result;
     use framework\lang\FrameworkClassLoader;
+    use framework\mvc\template\BaseTemplate;
     use framework\mvc\template\TemplateLoader;
 
 abstract class Core {
@@ -409,6 +410,7 @@ abstract class Core {
         public function onEnvironment(&$env){}
         public function onTest(array &$tests){}
         public function onUseTemplates(){}
+        public function onTemplateRender(BaseTemplate $template){}
     }
 
 }
