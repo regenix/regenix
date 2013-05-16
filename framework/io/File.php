@@ -14,7 +14,6 @@ class File extends StrictObject {
     private $extension;
 
     /**
-     * 
      * @param string $path
      * @param \framework\io\File $parent
      */

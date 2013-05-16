@@ -1,17 +1,24 @@
 <?php
-
 namespace framework\lang;
-
 
 abstract class String {
 
     const type = __CLASS__;
 
+    /**
+     * @param string $string
+     * @return string
+     */
     public static function format($string){
         $args = func_get_args();
         return vsprintf($string, array_slice($args, 1));
     }
 
+    /**
+     * @param string $string
+     * @param array $args
+     * @return string
+     */
     public static function formatArgs($string, array $args = array()){
         return vsprintf($string, $args);
     }
