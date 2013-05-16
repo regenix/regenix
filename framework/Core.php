@@ -84,9 +84,13 @@ abstract class Core {
 
         $zip = new \ZipArchive();
         if ($zip->open($zipFile)){
-            $zip->extractTo($appDir);
+            $result = $zip->extractTo($appDir);
+            if (!$result)
+                throw CoreException::formated('Can`t extract zip archive "%s" in apps directory', basename($zipFile));
+
             $zip->close();
         }
+
         $file = new File($zipFile);
         $file->delete();
     }
