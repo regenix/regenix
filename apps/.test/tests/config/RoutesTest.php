@@ -22,14 +22,14 @@ class RoutesTest extends BaseTest {
         $this->isType('array', $this->routes);
         $this->eq('*', $this->routes[0]['method']);
         $this->eq('/index', $this->routes[0]['path']);
-        $this->eq('\controllers\Application.index', $this->routes[0]['action']);
+        $this->eq('.controllers.Application.index', $this->routes[0]['action']);
 
         $this->arraySize(3, $this->routes);
     }
 
     public function regex(){
         $this->eq('/{controller}/{method<[A-Ba-c0-9]+>}/', $this->routes[1]['path']);
-        $this->eq('\controllers\{controller}.action{method}', $this->routes[1]['action']);
+        $this->eq('.controllers.{controller}.action{method}', $this->routes[1]['action']);
     }
 
     public function absolute(){
