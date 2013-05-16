@@ -3,6 +3,8 @@
 namespace framework\io;
 
 
+use framework\exceptions\CoreException;
+
 class File {
 
     const type = __CLASS__;
@@ -150,6 +152,98 @@ class File {
             unlink($this->path);
         }
         return file_exists($this->path);
+    }
+
+    private $handle = null;
+
+    /**
+     * @param string $mode
+     * @throws FileIOException
+     * @throws static
+     */
+    public function open($mode){
+        if ($this->handle)
+            throw CoreException::formated('File "%s" already open, close the file before opening', $this->getPath());
+
+        $handle = fopen($this->getPath(), $mode);
+        if (!$handle)
+            throw new FileIOException($this);
+
+        $this->handle = $handle;
+    }
+
+    /**
+     * @param int $length
+     * @return string
+     * @throws FileNotOpenException
+     * @return string
+     */
+    public function gets($length = 4096){
+        if ($this->handle)
+            return fgets($this->handle, $length);
+        else
+            throw new FileNotOpenException($this);
+    }
+
+    /**
+     * @param int $length
+     * @return string
+     * @throws FileNotOpenException
+     * @return string
+     */
+    public function read($length = 4096){
+        if ($this->handle)
+            return fread($this->handle, $length);
+        else
+            throw new FileNotOpenException($this);
+    }
+
+    /**
+     * @param $data
+     * @param null $length
+     * @return int
+     * @throws FileNotOpenException
+     */
+    public function write($data, $length = null){
+        if ($this->handle)
+            return fwrite($this->handle, (string)$data, $length);
+        else
+            throw new FileNotOpenException($this);
+    }
+
+    /**
+     * @param $offset
+     * @param int $whence
+     * @return int
+     * @throws FileNotOpenException
+     */
+    public function seek($offset, $whence = SEEK_SET){
+        if ($this->handle)
+            return fseek($this->handle, (int)$offset, $whence);
+        else
+            throw new FileNotOpenException($this);
+    }
+
+    /**
+     * @return bool
+     * @throws FileNotOpenException
+     */
+    public function isEof(){
+        if ($this->handle)
+            return feof($this->handle);
+        else
+            throw new FileNotOpenException($this);
+    }
+
+    /**
+     * @throws FileNotOpenException
+     * @return bool
+     */
+    public function close(){
+        if ($this->handle)
+            return fclose($this->handle);
+        else
+            throw new FileNotOpenException($this);
     }
 
     public function __toString() {
