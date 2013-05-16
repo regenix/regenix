@@ -14,13 +14,32 @@ class FileTest extends BaseTest {
     }
 
     public function simple(){
-        $this->isTrue($this->file->exists());
+        $this->assert($this->file->exists());
         $this->eq('test', $this->file->getExtension());
-        $this->isTrue($this->file->isFile());
+        $this->assert($this->file->isFile());
 
         $parent = $this->file->getParentFile();
         $this->isType(File::type, $parent);
         if ($parent)
-            $this->isTrue(is_dir($parent->getPath()));
+            $this->assert(is_dir($parent->getPath()));
+    }
+
+    public function read(){
+        $this->file->open('r+');
+        $this->file->gets();
+        $this->file->gets();
+        $this->file->gets();
+
+        // test content
+        $str =  $this->file->gets();
+        $this->assert($str === 'test content', 'Test .gets() method');
+        $this->assert($this->file->close(), 'Close file');
+    }
+
+    public function write(){
+        $file = new File(__FILE__ . '/file2.test');
+        $this->assert($file->open('w+'), 'Open for read');
+
+        $file->write('test content');
     }
 }

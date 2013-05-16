@@ -34,7 +34,10 @@ class LangTest extends BaseTest {
         $this->eqStrong('framework', String::substring('regenix framework', 8));
         $this->eqStrong('regenix', $result = String::substring('framework regenix v1.0', 10, 17));
 
-        $this->isTrue(String::endsWith('regenix', 'nix'));
-        $this->isTrue(String::startsWith('regenix', 'reg'));
+        $this->assert(String::endsWith('regenix', 'nix'));
+        $this->assert(String::startsWith('regenix', 'reg'));
+
+        $this->assert(strlen(String::random(5)) === 5);
+        $this->assert(7 - strlen(String::randomRandom(5, 7)) <= 2);
     }
 }
