@@ -12,19 +12,25 @@ class SystemCache {
 
     const type = __CLASS__;
 
+    private static $id = '';
+
+    public static function setId($id){
+        self::$id = $id;
+    }
+
     public static function get($name){
         return SYSTEM_CACHED === true ?
-            (FAST_SERIALIZE_ENABLE ? igbinary_unserialize(apc_fetch('$.fsys.' . $name)) :
-                apc_fetch('$.sys.' . $name)) :
+            (FAST_SERIALIZE_ENABLE ? igbinary_unserialize(apc_fetch('$.fsys.' . self::$id . '.' . $name)) :
+                apc_fetch('$.sys.' . self::$id . '.' . $name)) :
             null;
     }
     
     public static function set($name, $value, $lifetime = 3600){
         if ( SYSTEM_CACHED === true ){
             if ( FAST_SERIALIZE_ENABLE )
-                apc_store('$.fsys.' . $name, igbinary_serialize($value), $lifetime);
+                apc_store('$.fsys.' . self::$id . '.' . $name, igbinary_serialize($value), $lifetime);
             else
-                apc_store('$.sys.' . $name, $value, $lifetime);
+                apc_store('$.sys.' . self::$id . '.' . $name, $value, $lifetime);
         }
     }
     

@@ -65,13 +65,16 @@ class Project {
      */
     public function __construct($projectName, $inWeb = true){
         $this->name   = $projectName;
-        
+
+        SystemCache::setId($projectName);
+        $cacheName = 'appconf';
+
         $configFile   = $this->getPath() . 'conf/application.conf';
-        $this->config = SystemCache::getWithCheckFile('appconf', $configFile);
+        $this->config = SystemCache::getWithCheckFile($cacheName, $configFile);
         
         if ($this->config === null){
             $this->config = new PropertiesConfiguration(new File( $configFile ));
-            SystemCache::setWithCheckFile('appconf', $this->config, $configFile);            
+            SystemCache::setWithCheckFile($cacheName, $this->config, $configFile);
         }
 
         if ($inWeb){
@@ -185,6 +188,7 @@ class Project {
 
 
     public function register(){
+        SystemCache::setId($this->name);
         $request = Request::current();
 
         if (is_file($file = $this->getPath() . 'app/Bootstrap.php')){
