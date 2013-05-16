@@ -2,6 +2,7 @@
 namespace controllers;
 
 use framework\cache\Cache;
+use notifiers\ConfirmNotifier;
 
 class Application extends AppController {
 
@@ -14,6 +15,9 @@ class Application extends AppController {
     }
 
     public function getStarted(){
+        $confirms = new ConfirmNotifier();
+        var_dump($confirms->welcome('dz@dim-s.net'));
+
         $this->render();
     }
 
