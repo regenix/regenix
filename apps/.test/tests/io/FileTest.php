@@ -18,7 +18,7 @@ class FileTest extends BaseTest {
         $this->eq('test', $this->file->getExtension());
         $this->isTrue($this->file->isFile());
 
-        $parent = $this->file->getParent();
+        $parent = $this->file->getParentFile();
         $this->isType(File::type, $parent);
         if ($parent)
             $this->isTrue(is_dir($parent->getPath()));
