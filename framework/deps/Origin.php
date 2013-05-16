@@ -238,7 +238,7 @@ class FileOrigin extends Origin {
 
             $fileName = $toDir . $name;
             $file = new File($fileName);
-            $file->getParent()->mkdirs();
+            $file->getParentFile()->mkdirs();
 
             file_put_contents($fileName, $data);
             return true;

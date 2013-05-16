@@ -1,16 +1,17 @@
 <?php
-
 namespace framework\io;
 
-
+use framework\Core;
 use framework\exceptions\CoreException;
+use framework\exceptions\StrictObject;
+use framework\lang\String;
 
-class File {
+class File extends StrictObject {
 
     const type = __CLASS__;
 
     private $path;
-    private $extension = null;
+    private $extension;
 
     /**
      * 
@@ -25,11 +26,33 @@ class File {
     }
 
     /**
+     * @param null|string $prefix
+     * @return File
+     */
+    public static function createTempFile($prefix = null){
+        if ($prefix === null){
+            $prefix = String::random(5);
+        }
+
+        $path = tempnam(sys_get_temp_dir(), $prefix);
+        return new File($path);
+    }
+
+    /**
      * get basename of file
+     * @param null $suffix
      * @return string
      */
-    public function getName(){
-        return basename( $this->path );
+    public function getName($suffix = null){
+        return basename( $this->path, $suffix );
+    }
+
+    /**
+     * get basename of file without ext
+     * @return string
+     */
+    public function getNameWithoutExtension(){
+        return $this->getName('.' . $this->getExtension());
     }
 
     /**
@@ -41,11 +64,19 @@ class File {
     }
 
     /**
-     * get parent directory
+     * get parent directory as file object
      * @return File
      */
+    public function getParentFile(){
+       return new File(dirname($this->path));
+    }
+
+    /**
+     * get parent directory as string
+     * @return string
+     */
     public function getParent(){
-       return new File(dirname($this->getPath()));
+        return dirname($this->path);
     }
 
     /**
@@ -54,6 +85,14 @@ class File {
      */
     public function getAbsolutePath(){
         return realpath( $this->path );
+    }
+
+    /**
+     * get real path as file object
+     * @return File
+     */
+    public function getAbsoluteFile(){
+        return new File($this->getAbsolutePath());
     }
     
     /**
@@ -87,10 +126,25 @@ class File {
     }
     
     /**
-     * @return boolean
+     * @return bool
      */
     public function isFile(){
         return is_file($this->path);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDirectory(){
+        return is_dir($this->path);
+    }
+
+    /**
+     * @param File $new
+     * @return bool
+     */
+    public function renameTo(File $new){
+        return rename($this->getAbsolutePath(), $new->getAbsolutePath());
     }
 
     /**
@@ -246,7 +300,53 @@ class File {
             throw new FileNotOpenException($this);
     }
 
+    /**
+     * @param null|int $flags
+     * @return string
+     */
+    public function getContents($flags = null){
+        if ($this->exists() && $this->isFile())
+            return file_get_contents($this->path, $flags);
+        else
+            return '';
+    }
+
+    /**
+     * @param null|int $time
+     * @param null|int $atime
+     * @return bool
+     */
+    public function touch($time = null, $atime = null){
+        return touch($this->path, $time, $atime);
+    }
+
+
+    /**
+     * find files and dirs
+     * @param string $pattern
+     * @param int $flags
+     * @return string[]
+     */
+    public function find($pattern = '.*', $flags = 0){
+        $files = glob($this->path . '/' . $pattern, $flags);
+        return $files;
+    }
+
+    /**
+     * @param string $pattern
+     * @param int $flags
+     * @return File[]
+     */
+    public function findFiles($pattern = '.*', $flags = 0){
+        $files = $this->find($pattern, $flags);
+        if ($files)
+        foreach($files as &$file){
+            $file = new File($file);
+        }
+        return $files;
+    }
+
     public function __toString() {
-        return sprintf( 'io\\File("%s")', $this->path );
+        return String::format( 'io\\File("%s")', $this->path );
     }
 }

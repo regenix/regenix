@@ -18,7 +18,7 @@ class LoadCommand extends ConsoleCommand {
             $this->writeln('[error: not exists]');
         } else {
             $tmpFile = new File(sys_get_temp_dir() . '/regenix/.current');
-            $tmpFile->getParent()->mkdirs();
+            $tmpFile->getParentFile()->mkdirs();
             if (file_put_contents($tmpFile->getPath(), $name))
                 $this->writeln('[success]');
             else

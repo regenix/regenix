@@ -58,7 +58,7 @@ class Commander implements IClassInitialization {
 
         if (!$this->project){
             $this->project = current($this->projects);
-            $tmpFile->getParent()->mkdirs();
+            $tmpFile->getParentFile()->mkdirs();
             file_put_contents($tmpFile->getPath(), $this->project->getName());
         }
     }

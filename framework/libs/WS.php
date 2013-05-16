@@ -458,7 +458,7 @@ class WSResponse {
      * @return int
      */
     public function asFile(File $file){
-        $file->getParent()->mkdirs();
+        $file->getParentFile()->mkdirs();
         return file_put_contents($file->getPath(), $this->body);
     }
 }
