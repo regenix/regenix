@@ -17,7 +17,7 @@
             {foreach $calls as $i => $call}
             <tr  {if !$call['result']}style="color: red"{/if}>
                 <td><span class="ico {$call['result'] ? 'success' : 'fail'}">&#160;</span></td>
-                <td>{$i ? '&#160;&#160;&#160; - - - >' : $method | raw}</td>
+                <td {if $i}style="color: gray"{/if}>{$i ? '&#160;&#160;&#160; - - - >' : $method | raw}</td>
                 <td style="color: gray">{$call['message'] ? $call['message'] : '-'}</td>
                 <td>[ <a href="{path id: $detail['class'], line: $call['line']}">{$call['line']}</a> ]</td>
                 <td><pre>{ trim(current($call['source'])) }</pre></td>
