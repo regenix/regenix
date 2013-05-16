@@ -168,7 +168,7 @@ abstract class Mailer implements IClassInitialization {
      * @return void
      */
     protected function putTemplate($template, &$result){
-        $template = TemplateLoader::load('notifiers/' . ($this->context ? $this->context . '/' : '') . $template);
+        $template = TemplateLoader::load('.notifiers/' . ($this->context ? $this->context . '/' : '') . $template);
         $template->putArgs($this->args);
 
         $content = $template->getContent();

@@ -388,7 +388,7 @@ class RegenixTemplate {
 
     public function _renderHtmlTag($tag, array $args = array()){
         $tpl     = $this->duplicate();
-        $tplFile = 'tags/' . str_replace('.', '/', $tag) . '.html';
+        $tplFile = '.tags/' . str_replace('.', '/', $tag) . '.html';
 
         $args['flash'] = Flash::current();
         $args['request'] = Request::current();
