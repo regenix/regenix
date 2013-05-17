@@ -84,9 +84,10 @@ class Service extends AbstractService {
         $meta  = $this->getMeta();
         $data  = array();
 
+        $isNew = $document->isNew();
         foreach($meta['fields'] as $field => $info){
             if ( $skipId && $info['column'] == '_id' ) continue;
-            //if ( $operation === '$set' && !$document->__modified[$field] ) continue;
+            if ( !$isNew && !$document->__modified[$field] ) continue;
 
             $value = $this->typed($this->__callGetter($document, $field), $info);
 
