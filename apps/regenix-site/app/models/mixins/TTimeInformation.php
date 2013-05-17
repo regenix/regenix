@@ -1,9 +1,14 @@
 <?php
 namespace models\mixins;
 
-function TTimeInformation_callBeforeSave($self, $isNew){
-    if ($isNew)
-        $self->created = new \DateTime();
+abstract class TTimeHandle {
+
+    const type = __CLASS__;
+
+    public static function onBeforeSave($self, $isNew){
+       if ($isNew)
+           $self->created = new \DateTime();
+    }
 }
 
 trait TTimeInformation {
@@ -22,6 +27,6 @@ trait TTimeInformation {
     public $updated;
 
     public static function TTimeInformation_initialize($class){
-        $class::addHandle('beforeSave', __NAMESPACE__ . '\\TTimeInformation_callBeforeSave');
+        $class::addHandle('beforeSave', TTimeHandle::type . '::onBeforeSave');
     }
 }

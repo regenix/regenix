@@ -17,11 +17,15 @@ class Application extends AppController {
         if (!$user)
             $user = new User();
 
-        $user->login = 'dim-s';
-        $user->groups = array('admin');
-        $user->email = 'dz@dim-s.net';
-        $user->password = '123456';
-        $user->register();
+        $t = microtime(1);
+        for($i = 0; $i < 3500; $i++){
+            $user->login = 'dim-s';
+            $user->groups = array();
+            $user->email = 'dz@dim-s.net';
+            $user->password = '123456';
+            $user->register();
+        }
+        dump(microtime(1) - $t);
 
         $lang     = I18n::getLang();
         if ($lang === 'default' || $lang === 'en')
