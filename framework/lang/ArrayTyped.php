@@ -8,7 +8,7 @@ class ArrayTyped {
     /**
      * @param array $data
      */
-    public function __construct(array $data = array()){
+    public function __construct(array $data = null){
         $this->data = $data == null ? array() : $data;
     }
 

@@ -121,18 +121,21 @@ abstract class AbstractService extends StrictObject {
         foreach($data as $column => $value){
             $field = $meta['fields_rev'][ $column ];
             if ( $field ){
+                $info = $meta['fields'][$field];
+                $value = $this->typedFetch($value, $info);
+
                 $this->__callSetter($object, $field, $value, $lazyNeed);
             }
         }
 
         $valueId = $data[$meta['id_field']['column']];
         $this->setId($object, $valueId);
+        $object->__fetched = true;
 
         $object->__modified = array();
         if ( $object instanceof IHandleAfterLoad ){
             $object->onAfterLoad();
         }
-
         return $object;
     }
 
@@ -146,7 +149,7 @@ abstract class AbstractService extends StrictObject {
         $idField = $meta['id_field']['field'];
         if ( $idField ){
             return $typed
-                ? static::typed($object->__data[$idField], $meta['id_field']['type'])
+                ? $this->typed($object->__data[$idField], $meta['id_field'])
                 : $object->__data[$idField];
         } else
             return null;
@@ -177,7 +180,7 @@ abstract class AbstractService extends StrictObject {
     public function findById($id, array $fields = array(), $lazy = false){
         $meta    = $this->getMeta();
         $idField = $meta['id_field'];
-        $data  = $this->findDataById(static::typed($id, $idField['type']));
+        $data  = $this->findDataById($this->typed($id, $idField));
         if ( $data === null )
             return null;
 
@@ -206,8 +209,8 @@ abstract class AbstractService extends StrictObject {
     /**
      * @param AbstractActiveRecord $object
      * @param array $fields
+     * @throws static
      * @return bool
-     * @throws \framework\exceptions\CoreException
      */
     public function reload(AbstractActiveRecord $object, array $fields = array()){
         $id = $this->getId($object);
@@ -230,6 +233,24 @@ abstract class AbstractService extends StrictObject {
         if ( $info['ref'] && $info['ref']['lazy'] ){
             if ( $info['is_array'] ){
 
+                $type = $info['array_type'];
+                ClassLoader::load($type);
+                $service = $type::getService();
+
+                if (!is_array($value))
+                    $value = array($value);
+
+                $needSet = false;
+                foreach($value as &$el){
+                    if ($service->isReference($el)){
+                        $el = $service->findByRef($el);
+                        $needSet = true;
+                    }
+                }
+                unset($el);
+                if ($needSet)
+                    $this->__callSetter($object, $field, $value);
+
             } else {
                 $type = $info['type'];
                 ClassLoader::load($type);
@@ -250,35 +271,50 @@ abstract class AbstractService extends StrictObject {
         $info = $meta['fields'][$field];
 
         if ($info['ref'] && !$info['ref']['lazy'] && $lazy === false){
+            dump($info);
             ClassLoader::load($info['type']);
             $type = $info['type'];
             /** @var $service AbstractService */
-            $service = $type::getService();
-            $value   = $service->findByRef($value, array(), true);
+
+            if (String::endsWith($type, '[]')){
+                $type = substr($type, 0, -2);
+                $service = $type::getService();
+                if (!is_array($value))
+                    $value = array($value);
+
+                foreach($value as &$el){
+                    $el = $service->findByRef($el, array(), true);
+                }
+                unset($el);
+
+            } else {
+                $service = $type::getService();
+                $value   = $service->findByRef($value, array(), true);
+            }
         }
 
         if ($info['setter']){
             $method = 'set' . $field;
-            $object->__data[$field] = $object->{$method}($value);
-        } else {
-            $object->__data[$field] = $value;
+            $object->{$method}($value);
         }
 
+        $object->__data[$field] = $value;
         $object->__modified[$field] = true;
     }
 
     /**
      * @param AbstractActiveRecord $object
      * @param $id
+     * @throws static
      */
     public function setId(AbstractActiveRecord $object, $id){
         $meta    = $this->getMeta();
         $idField = $meta['id_field'];
         if ( $idField ){
             $field = $idField['field'];
-            $object->__data[$field] = static::typed($id, $idField['type']);
+            $object->__data[$field] = $this->typedFetch($id, $idField);
         } else
-            CoreException::formated('Document `%s` has no @id field', $meta['name']);
+            throw CoreException::formated('Document `%s` has no @id field', $meta['name']);
     }
 
     protected static function registerModelMetaClass(&$info, \ReflectionClass $class, Annotations $classInfo){
@@ -300,6 +336,7 @@ abstract class AbstractService extends StrictObject {
         $cur['name']   = $name;
         $cur['column'] = $property->get('column')->getDefault( $name );
         $cur['type']   = $property->get('var')->getDefault('mixed');
+        $cur['timestamp'] = $property->has('timestamp');
 
         if ( $property->has('ref') ){
             $cur['ref'] = array(1,
@@ -398,7 +435,7 @@ abstract class AbstractService extends StrictObject {
         }
 
         /** all indexes */
-        $anIndexed    = $classInfo->getAsArray('indexed');
+        $anIndexed = $classInfo->getAsArray('indexed');
 
         foreach($anIndexed as $indexed){
             $cur = array('options'=>array(), 'fields'=>array());
@@ -431,8 +468,12 @@ abstract class AbstractService extends StrictObject {
     }
 
     /****** UTILS *******/
-    public static function typed($value, $type, $ref = null){
+    public function typed($value, $fieldMeta){
         return $value; // TODO
+    }
+
+    public function typedFetch($value, $fieldMeta){
+        return $value;
     }
 }
 
@@ -531,11 +572,11 @@ abstract class AbstractQuery {
         $info = $this->meta['fields'][$field];
         if (is_array($value)){
             foreach($value as &$el){
-                $el = $this->service->typed($el, $info['type'], $info['ref']);
+                $el = $this->service->typed($el, $info);
             }
             return $value;
         } else
-            return $this->service->typed($value, $info['type'], $info['ref']);
+            return $this->service->typed($value, $info);
     }
 
     public function addOr(AbstractQuery $query){

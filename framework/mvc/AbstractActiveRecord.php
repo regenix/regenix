@@ -10,6 +10,8 @@ abstract class AbstractActiveRecord extends StrictObject
 
     const type = __CLASS__;
 
+    public $__fetched = false;
+
     /** @var array */
     public $__data = array();
 
@@ -52,7 +54,7 @@ abstract class AbstractActiveRecord extends StrictObject
      * @return bool
      */
     public function isNew(){
-        return $this->getId() === null;
+        return !$this->__fetched || $this->getId() === null;
     }
 
     /**
@@ -199,6 +201,11 @@ interface IHandleBeforeRemove {
 
         // @indexed .property
         Annotations::registerAnnotation('indexed', array(
+            'fields' => array()
+        ), 'property');
+
+        // @timestamp
+        Annotations::registerAnnotation('timestamp', array(
             'fields' => array()
         ), 'property');
 

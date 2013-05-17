@@ -39,6 +39,12 @@ class Service extends AbstractService {
         return $this->getCollection()->findOne(array('_id' => $id), $fields);
     }
 
+    protected function findByRef($value, array $fields = array(), $lazy = false){
+        if (\MongoDBRef::isRef($value))
+            $value = $value['$id'];
+
+        return parent::findByRef($value, $fields, $lazy);
+    }
     /**
      * @param AbstractQuery $query
      * @param array $fields
@@ -76,7 +82,7 @@ class Service extends AbstractService {
             if ( $skipId && $info['column'] == '_id' ) continue;
             //if ( $operation === '$set' && !$document->__modified[$field] ) continue;
 
-            $value = $this->typed($this->__callGetter($document, $field), $info['type'], $info['ref']);
+            $value = $this->typed($this->__callGetter($document, $field), $info);
 
             if ( $value !== null ){
                 if ( $value instanceof AtomicOperation ){
@@ -123,7 +129,7 @@ class Service extends AbstractService {
             unset($data['$atomic']);
             unset($data['$unset']);
 
-            $result = $this->getCollection()->insert($data);
+            $result = $this->getCollection()->save($data);
             $this->setId($document, $data['_id']);
 
             if ( $atomic != null ){
@@ -136,6 +142,7 @@ class Service extends AbstractService {
 
             if ($data){
                 $result = $this->getCollection()->update(array('_id' => $this->getId($document)), $data, $options );
+
                 if ($data['$inc'] || $data['$unset']){
                     $this->reload($document);
                 }
@@ -145,6 +152,7 @@ class Service extends AbstractService {
         if ($document instanceof IHandleAfterSave){
             $document->onAfterSave($isNew);
         }
+        $document->__fetched = true;
 
         return $result;
     }
@@ -166,11 +174,28 @@ class Service extends AbstractService {
     }
 
     /****** UTILS *******/
-    public function typed($value, $type, $ref = null){
+    public function typedFetch($value, $fieldMeta){
+        if ($value instanceof \MongoDate || $value instanceof \MongoTimestamp){
+            $return = new \DateTime();
+            $return->setTimestamp($value->sec);
+            return $return;
+        }
+
+        if ($value instanceof \MongoId){
+            return (string)$value;
+        }
+
+        return parent::typedFetch($value, $fieldMeta);
+    }
+
+    public function typed($value, $fieldMeta){
+        $type = $fieldMeta['type'];
+        $ref  = $fieldMeta['ref'];
+
         if ( $value === null ){
             // auto values
-            switch($type){
-                case 'timestamp': return new \MongoDate();
+            switch($fieldMeta['timestamp']){
+                case 'timestamp': return new \MongoTimestamp();
             }
             return null;
         }
@@ -201,8 +226,20 @@ class Service extends AbstractService {
 
             case '\MongoDate':
             case 'MongoDate':
+            case '\DateTime':
+            case 'DateTime':
             case 'date': {
-                return $value instanceof \MongoDate ? $value : new \MongoDate( (int)$value );
+                if ($fieldMeta['timestamp'])
+                    return new \MongoTimestamp();
+
+                if ($value instanceof \DateTime){
+                    $tz = $value->getTimezone();
+                    $value->setTimezone(\DateTimeZone::UTC);
+                    $ret = new \MongoDate($value->getTimestamp());
+                    $value->setTimezone($tz);
+                    return $ret;
+                } else
+                    return $value instanceof \MongoDate ? $value : new \MongoDate( (int)$value );
             }
 
             case 'oid':
@@ -211,8 +248,6 @@ class Service extends AbstractService {
             case 'ObjectId': {
                 return $value instanceof \MongoId ? $value : new \MongoId( $value );
             }
-
-            case 'timestamp': return $value instanceof \MongoTimestamp ? $value : new \MongoTimestamp();
 
             case 'code': return $value instanceof \MongoCode ? $value : new \MongoCode($value);
 
@@ -229,7 +264,7 @@ class Service extends AbstractService {
                     $value = (array)$value;
 
                     foreach($value as &$val){
-                        $val = $this->typed($val, $realType, $ref);
+                        $val = $this->typed($val, array('type' => $realType, 'ref' => $ref));
                     }
 
                     unset($val);
@@ -424,6 +459,16 @@ class Query extends AbstractQuery {
     public function exists($value){
         $this->data[$this->popField()]['$exists'] = $value;
         return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getData(){
+        $eq = $this->data['$eq'];
+        $data = array_merge($this->data, $eq);
+        unset($data['$eq']);
+        return $data;
     }
 
     /**
