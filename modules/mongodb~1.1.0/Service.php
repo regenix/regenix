@@ -17,6 +17,7 @@ use framework\mvc\IHandleAfterSave;
 use framework\mvc\IHandleBeforeLoad;
 use framework\mvc\IHandleBeforeRemove;
 use framework\mvc\IHandleBeforeSave;
+use framework\mvc\TActiveRecordHandle;
 
 class Service extends AbstractService {
 
@@ -45,6 +46,11 @@ class Service extends AbstractService {
 
         return parent::findByRef($value, $fields, $lazy);
     }
+
+    protected function isReference($value){
+        return parent::isReference($value) || \MongoDBRef::isRef($value);
+    }
+
     /**
      * @param AbstractQuery $query
      * @param array $fields
@@ -119,6 +125,10 @@ class Service extends AbstractService {
      */
     public function save(AbstractActiveRecord $document, array $options = array()){
         $isNew = $document->isNew();
+
+        $class = $this->getModelClass();
+        $class::callHandle('beforeSave', $document, $isNew);
+
         if ($document instanceof IHandleBeforeSave){
             $document->onBeforeSave($isNew);
         }
@@ -149,9 +159,10 @@ class Service extends AbstractService {
             }
         }
 
-        if ($document instanceof IHandleAfterSave){
+        $class::callHandle('afterSave', $document, $isNew);
+        if ($document instanceof IHandleAfterSave)
             $document->onAfterSave($isNew);
-        }
+
         $document->__fetched = true;
 
         return $result;
@@ -160,13 +171,15 @@ class Service extends AbstractService {
     public function remove(AbstractActiveRecord $object, array $options = array()){
         $id = $this->getId($object);
         if ( $id !== null ){
-            if ($object instanceof IHandleBeforeRemove){
+            $class = $this->getModelClass();
+            $class::callHandle('beforeRemove', $object);
+            if ($object instanceof IHandleBeforeRemove)
                 $object->onBeforeRemove();
-            }
 
             $this->getCollection()->remove(array('_id' => $id), $options);
             $object->setId(null);
 
+            $class::callHandle('afterRemove', $object);
             if ($object instanceof IHandleAfterRemove){
                 $object->onAfterRemove();
             }

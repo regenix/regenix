@@ -125,6 +125,10 @@ abstract class UnitTest extends StrictObject {
         $this->assertWrite($what === true, $message);
     }
 
+    protected function assert($what, $message = ''){
+        $this->assertWrite($what === true, $message);
+    }
+
     protected function isFalse($what, $message = ''){
         $this->assertWrite($what === false, $message);
     }

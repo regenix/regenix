@@ -11,20 +11,14 @@ class Application extends AppController {
 
     public function page($page = 'index'){
 
-        $group = new Group();
-        $group->code = 'admin';
-        $group->name = 'Admin';
-        $group->save();
-
         $user = User::find(User::query()->eq('email', 'dz@dim-s.net'))->first();
-        var_dump($user->isGroup('admin'));
         dump($user);
 
         if (!$user)
             $user = new User();
 
         $user->login = 'dim-s';
-        $user->groups = array($group);
+        $user->groups = array('admin');
         $user->email = 'dz@dim-s.net';
         $user->password = '123456';
         $user->register();

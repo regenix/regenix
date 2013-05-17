@@ -2,7 +2,8 @@
 namespace models;
 
 use framework\lang\String;
-use framework\mvc\IHandleBeforeSave;
+use models\mixins\TDefaultInformation;
+use models\mixins\TTimeInformation;
 use modules\mongodb\ActiveRecord;
 
 /**
@@ -10,32 +11,10 @@ use modules\mongodb\ActiveRecord;
  * @collection users
  * @package models
  */
-class User extends ActiveRecord implements IHandleBeforeSave {
+class User extends ActiveRecord {
 
-    /**
-     * @id
-     * @var \MongoId
-     */
-    public $id;
-
-    /**
-     * @column act
-     * @var boolean
-     */
-    public $active = true;
-
-    /**
-     * @column crd
-     * @var \DateTime
-     */
-    public $created;
-
-    /**
-     * @column upd
-     * @timestamp
-     * @var \DateTime
-     */
-    public $updated;
+    use TDefaultInformation;
+    use TTimeInformation;
 
     /** @var string */
     public $login;
@@ -59,11 +38,6 @@ class User extends ActiveRecord implements IHandleBeforeSave {
      * @var Group[]
      */
     public $groups;
-
-    public function onBeforeSave($isNew){
-        if ($isNew)
-            $this->created = new \DateTime();
-    }
 
     /**
      * @return $this

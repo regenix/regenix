@@ -2,6 +2,8 @@
 namespace models;
 
 use framework\mvc\IHandleBeforeSave;
+use models\mixins\TSaveAndUpdate;
+use models\mixins\TTimeInformation;
 use modules\mongodb\ActiveRecord;
 
 /**
@@ -10,6 +12,8 @@ use modules\mongodb\ActiveRecord;
  * @package models
  */
 class Group extends ActiveRecord implements IHandleBeforeSave {
+
+    use TTimeInformation;
 
     /**
      * @id
@@ -21,25 +25,12 @@ class Group extends ActiveRecord implements IHandleBeforeSave {
     public $name;
 
     /**
-     * @column crd
-     * @var \DateTime
-     */
-    public $created;
-
-    /**
-     * @column upd
-     * @var \DateTime
-     */
-    public $updated;
-
-    /**
      * @column acc
      * @var array
      */
     public $access = array();
 
     public function onBeforeSave($isNew){
-        if ($isNew)
-            $this->created = new \DateTime();
+        $this->initTimeInformation($isNew);
     }
 }

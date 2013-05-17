@@ -113,10 +113,6 @@ abstract class AbstractService extends StrictObject {
     }
 
     public function fetch(AbstractActiveRecord $object, $data, $lazyNeed = false){
-        if ( $object instanceof IHandleBeforeLoad ){
-            $object->onBeforeLoad($data);
-        }
-
         $meta = $this->getMeta();
         foreach($data as $column => $value){
             $field = $meta['fields_rev'][ $column ];
@@ -133,9 +129,6 @@ abstract class AbstractService extends StrictObject {
         $object->__fetched = true;
 
         $object->__modified = array();
-        if ( $object instanceof IHandleAfterLoad ){
-            $object->onAfterLoad();
-        }
         return $object;
     }
 

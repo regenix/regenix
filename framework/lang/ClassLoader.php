@@ -70,7 +70,8 @@ class ClassLoader {
         if ($file != null) {
             require $file;
 
-            if (!class_exists( $class, false ) && !interface_exists( $class, false ))
+            if (!class_exists( $class, false ) && !interface_exists( $class, false )
+                    && !trait_exists($class, false))
                 throw new ClassNotFoundException( $class );
 
             $implements = class_implements($class);

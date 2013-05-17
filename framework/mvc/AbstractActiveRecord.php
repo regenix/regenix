@@ -3,6 +3,7 @@ namespace framework\mvc;
 
 use framework\exceptions\CoreException;
 use framework\exceptions\StrictObject;
+use framework\exceptions\TypeException;
 use framework\lang\IClassInitialization;
 
 abstract class AbstractActiveRecord extends StrictObject
@@ -18,6 +19,9 @@ abstract class AbstractActiveRecord extends StrictObject
     /** @var array */
     public $__modified = array();
 
+    /** @var array */
+    private static $__handle = array();
+
     public function __construct(){
         $service = static::getService();
         $meta    = $service->getMeta();
@@ -25,6 +29,12 @@ abstract class AbstractActiveRecord extends StrictObject
         foreach($meta['fields'] as $name => $info){
             $this->__data[ $name ] = $this->{$name};
             unset($this->{$name});
+        }
+
+        $traits = class_uses_all($this);
+        foreach($traits as $trait){
+            if (method_exists($trait, 'construct'))
+                $trait::construct($this);
         }
     }
 
@@ -41,6 +51,7 @@ abstract class AbstractActiveRecord extends StrictObject
     }
 
     /**
+     * @param $value
      * @param mixed $value
      */
     public function setId($value){
@@ -55,6 +66,14 @@ abstract class AbstractActiveRecord extends StrictObject
      */
     public function isNew(){
         return !$this->__fetched || $this->getId() === null;
+    }
+
+    /**
+     * @param $other
+     * @return bool
+     */
+    public function equals($other){
+        return $other != null && $other instanceof AbstractActiveRecord && $this->getId() === $other->getId();
     }
 
     /**
@@ -146,8 +165,33 @@ abstract class AbstractActiveRecord extends StrictObject
         $service = static::getService();
 
         if ($service){
-            $service->registerModel(get_called_class());
+            $class = get_called_class();
+            $service->registerModel($class);
+
+            $traits = class_uses_all($class);
+            foreach($traits as $trait){
+                $simpleName = array_pop(explode('\\', $trait));
+                if (method_exists($trait, $simpleName . '_initialize')){
+                    call_user_func(array($trait, $simpleName . '_initialize'), $class);
+                }
+            }
         }
+    }
+
+    public static function addHandle($event, $callback){
+        if (IS_DEV && !is_callable($callback))
+            throw new TypeException('$callback', 'callable');
+
+        $class = get_called_class();
+        self::$__handle[$class][$event][] = $callback;
+    }
+
+    public static function callHandle($event){
+        $class = get_called_class();
+        $args  = array_slice(func_get_args(), 1);
+
+        foreach((array)self::$__handle[$class][$event] as $callback)
+            call_user_func_array($callback, $args);
     }
 }
 
@@ -158,14 +202,6 @@ interface IHandleAfterSave {
 
 interface IHandleBeforeSave {
     public function onBeforeSave($isNew);
-}
-
-interface IHandleAfterLoad {
-    public function onAfterLoad();
-}
-
-interface IHandleBeforeLoad {
-    public function onBeforeLoad(&$data);
 }
 
 interface IHandleAfterRemove {
