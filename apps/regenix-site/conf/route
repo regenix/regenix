@@ -1,6 +1,4 @@
 # Routes
 
-
-
-*       /                               Application.index
-*       /{method}/                      Application.{method}
+*       /{page}/                        Application.page
+*       /                               Application.page

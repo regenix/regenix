@@ -1,3 +1,5 @@
+%{ $i = 0; $cnt = count($links); }
 {foreach $links as $name => $link}
-    <a href="{$link}">{$name}</a>
+    <a href="{$link}" class="{if ($link != '/' && $request->isBase($link)) || ($link == '/' && $request->getUri() == '/')}selected{/if} {if !$i}first{elseif $i == $cnt-1}last{/if}">_{$name}</a>
+    %{ $i += 1 }
 {/foreach}
