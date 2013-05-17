@@ -238,6 +238,7 @@ class RegenixTemplate {
                     switch($source[$i-2]){
                         case '#':
                         case '_':
+                        case '%':
                         case '@':
                             $mod = $source[$i-2];
                     }
@@ -261,10 +262,10 @@ class RegenixTemplate {
 
                     switch($mod){
                         case '%': {
-                            $str .= '<?php ' . $expr . '?>';
+                            $str .= '<?php ' . $expr . ' ?>';
                         } break;
                         case '@': {
-                            $str .= '<?php echo ' . $expr . '?>';
+                            $str .= '<?php echo ' . $expr . ' ?>';
                         } break;
                         case '_': {
                             if ( class_exists('\\framework\\libs\\I18n') )
@@ -469,10 +470,12 @@ class RegenixSetTag extends RegenixTemplateTag {
     }
 
     public function call($args, RegenixTemplate $ctx){
-        list($key, $value) = each($args);
-        if ($key === 'content')
-            throw CoreException::formated('Block `content` can not be used');
-        $ctx->blocks[$key] = $value;
+        foreach($args as $key => $value){
+            if ($key === 'content')
+                throw CoreException::formated('Block `content` can not be used');
+
+            $ctx->blocks[$key] = $value;
+        }
     }
 }
 
