@@ -6,4 +6,4 @@ php:
 before_install:
   - chmod +x regenix
 
-script: ./regenix deps
+script: ./regenix deps update
