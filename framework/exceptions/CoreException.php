@@ -98,7 +98,7 @@ class CoreException extends \Exception {
         return 0;
     }
 
-    private static $onlyPublic = false;
+    private static $onlyPublic = true;
     private static $hideDebug = false;
 
     /**
@@ -119,6 +119,8 @@ class CoreException extends \Exception {
         return self::$onlyPublic;
     }
 }
+
+CoreException::showOnlyPublic(IS_CORE_DEBUG === false || !defined('IS_CORE_DEBUG'));
 
 abstract class StrictObject {
 

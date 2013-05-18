@@ -1,5 +1,5 @@
 <?php
-define('IS_CORE_DEBUG', true);
+// define('IS_CORE_DEBUG', true);
 
 require 'framework/Core.php';
 use framework\Core;
