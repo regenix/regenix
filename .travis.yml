@@ -3,6 +3,7 @@ php:
   - 5.4
   - 5.3
 
-script:
-  chmod +x ./regenix
-  ./regenix deps
+before_install:
+  - chmod +x regenix
+
+script: ./regenix deps
