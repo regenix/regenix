@@ -1,4 +1,6 @@
 <?php
+define('IS_CORE_DEBUG', true);
+
 require 'framework/Core.php';
 use framework\Core;
 define('ROOT', str_replace(DIRECTORY_SEPARATOR, '/', realpath(dirname(__FILE__))) . '/');

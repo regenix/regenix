@@ -1,10 +1,13 @@
 <?php
-
 namespace framework\cache;
 
 define('APC_ENABLED', extension_loaded('apc'));
 define('XCACHE_ENABLED', extension_loaded('xcache'));
-define('SYSTEM_CACHED', (!defined('IS_CORE_DEBUG') || IS_CORE_DEBUG === false) && (APC_ENABLED || XCACHE_ENABLED));
+
+if (IS_CORE_DEBUG === true)
+    define('SYSTEM_CACHED', false);
+else
+    define('SYSTEM_CACHED', (APC_ENABLED || XCACHE_ENABLED));
 
 define('FAST_SERIALIZE_ENABLE', extension_loaded('igbinary'));
 
