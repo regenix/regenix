@@ -238,6 +238,7 @@ class Annotations {
 
             if ( $result === null ){
                 /** @var $class \ReflectionClass */
+
                 $result = new Annotations($comments, $fileName, $line, $scope);
                 SystemCache::setWithCheckFile('annot.' . $cacheCode, $result, $fileName);
             }
@@ -257,8 +258,8 @@ class Annotations {
             $result = SystemCache::get('annot.' . $cacheCode);
 
             if ( $result === null ){
-
                 /** @var $class \ReflectionClass */
+
                 $result = new Annotations($comments, $fileName, $line, $scope);
                 SystemCache::set('annot.' . $cacheCode, $result);
             }
@@ -325,15 +326,15 @@ class Annotations {
      * @internal param string $comment
      * @return array
      */
-    private static function parseAnnotation($line){
-        $tmp = explode('@', $line);
+    private static function parseAnnotation($strline){
+        $tmp = explode('@', $strline);
         if ( sizeof($tmp) < 2 ) return null;
 
         $result = array();
 
         foreach ($tmp as $i => $line) {
+            $values = explode(' ', trim($line), 2);
 
-            $values = explode(' ', $line, 2);
             if ( $values[0] ){
                 $value = trim($values[1]);
                 $el = array();

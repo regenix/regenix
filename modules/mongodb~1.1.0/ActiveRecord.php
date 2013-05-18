@@ -48,6 +48,11 @@ abstract class ActiveRecord extends AbstractActiveRecord {
         /** @var $module Module */
         $module = Module::getCurrent();
         $module->initConnection();
+
+        /** register indexed */
+        /** @var $service Service */
+        $service = static::getService();
+        $service->registerIndexed();
     }
 
     /**

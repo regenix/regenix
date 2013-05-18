@@ -89,8 +89,9 @@ class Module extends AbstractModule {
         ), 'class');
 
         // @indexed .property
+        // todo fix remove _arg
         Annotations::registerAnnotation('indexed', array(
-            'fields' => array('background' => 'boolean', 'sort' => 'integer')
+            'fields' => array('_arg' => 'mixed', 'background' => 'boolean', 'sort' => 'integer')
         ), 'property');
     }
 }

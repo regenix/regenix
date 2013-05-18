@@ -28,6 +28,9 @@ class Service extends AbstractService {
         parent::__construct($modelClass);
     }
 
+    /**
+     * @return \MongoCollection
+     */
     protected function getCollection(){
         if ($this->collection_)
             return $this->collection_;
@@ -199,7 +202,7 @@ class Service extends AbstractService {
             return (string)$value;
         }
 
-        return parent::typedFetch($value, $fieldMeta);
+        return $value;
     }
 
     public function typed($value, $fieldMeta){
@@ -321,6 +324,23 @@ class Service extends AbstractService {
         return $value;
     }
 
+
+    public function registerIndexed(){
+        $meta = $this->getMeta();
+        $indexed = $meta['indexed'];
+        if ($indexed){
+            $collection = $this->getCollection();
+            foreach($indexed as $index){
+                foreach($index['fields'] as $column => &$sort){
+                    if ($sort == 'asc' || $sort == 'ASC') $sort = 1;
+                    else if ($sort == 'desc' || $sort == 'DESC') $sort = -1;
+                }
+                unset($sort);
+                $collection->ensureIndex($index['fields'], $index['options']);
+            }
+        }
+    }
+
     /**
      * @param $modelClass
      * @return AbstractService
@@ -337,12 +357,15 @@ class Service extends AbstractService {
      * @param ArrayTyped $indexed
      */
     protected static function registerModelMetaIndex(&$info, &$allInfo, Annotations $classInfo, $key, ArrayTyped $indexed){
-        if (in_array($info, array('$background', '$unique', '$dropDups', '$sparse'), true))
-            $info['options'][substr($key,1)] = true;
-        elseif ( $key === '$expire' ){
-            $info['options']['expireAfterSeconds'] = $indexed->getInteger($key, 0);
-        } elseif ( $key === '$w' ){
-            $val = $indexed->get($key);
+        foreach(array('$background', '$unique', '$dropDups', '$sparse') as $opt){
+            if ($indexed->has($opt))
+                $info['options'][substr($opt,1)] = true;
+        }
+
+        if ( $indexed->has('$expire') ){
+            $info['options']['expireAfterSeconds'] = $indexed->getInteger('$expire', 0);
+        } elseif ( $indexed->has('$w') ){
+            $val = $indexed->get('$w');
             if ( is_numeric($val) ) $val = (int)$val;
 
             $info['options']['w'] = $val;

@@ -365,14 +365,7 @@ abstract class AbstractService extends StrictObject {
      * @throws \framework\exceptions\AnnotationException
      */
     protected static function registerModelMetaIndex(&$infoIndex, &$allInfo, Annotations $classInfo, $key, ArrayTyped $indexed){
-        if ( $key[0] === '$' ) return;
 
-        $column = $allInfo['fields'][ $key ];
-        if ( !$column ){
-            throw new AnnotationException($classInfo, 'indexed',
-                String::format('Can\'t find `%s` field for index', $key));
-        }
-        $infoIndex['fields'][$column['column']] = $indexed->get($key, 0);
     }
 
     /**
@@ -404,7 +397,7 @@ abstract class AbstractService extends StrictObject {
                 $indexed = $property->get('indexed');
                 $index = array(
                     'options' => array(),
-                    'fields' => array($cur['column'] => $indexed->getInteger('sort', 0))
+                    'fields' => array($cur['column'] => $indexed->get('sort', 0))
                 );
 
                 //foreach($indexed->getKeys() as $key){
@@ -433,8 +426,15 @@ abstract class AbstractService extends StrictObject {
         foreach($anIndexed as $indexed){
             $cur = array('options'=>array(), 'fields'=>array());
             foreach($indexed->getKeys() as $key){
-                static::registerModelMetaIndex($cur, $info, $classInfo, $key, $indexed);
+                if ($key[0] == '$') continue;
+                if (!$info['fields'][$key])
+                    throw new AnnotationException($classInfo, 'indexed',
+                        String::format('Can\'t find `%s` field for index', $key));
+
+                $column = $info['fields'][$key]['column'];
+                $cur['fields'][$column] = $indexed->get($key);
             }
+            static::registerModelMetaIndex($cur, $info, $classInfo, null, $indexed);
             $info['indexed'][] = $cur;
         }
         self::$modelInfo[ $class->getName() ] = $info;
