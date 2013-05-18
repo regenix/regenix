@@ -221,6 +221,9 @@ abstract class AbstractService extends StrictObject {
     public function __callGetter(AbstractActiveRecord $object, $field){
         $meta  = $this->getMeta();
         $info  = $meta['fields'][$field];
+        if (!$info)
+            throw CoreException::formated('Property `%s` not defined in `%s` class', $field, get_class($this));
+
         $value = $object->__data[$field];
 
         if ( $info['ref'] && $info['ref']['lazy'] ){
@@ -231,9 +234,10 @@ abstract class AbstractService extends StrictObject {
                 $service = $type::getService();
 
                 if (!is_array($value))
-                    $value = array($value);
+                    $value = $value ? array($value) : array();
 
                 $needSet = false;
+                if (is_array($value))
                 foreach($value as &$el){
                     if ($service->isReference($el)){
                         $el = $service->findByRef($el);
@@ -264,16 +268,16 @@ abstract class AbstractService extends StrictObject {
         $info = $meta['fields'][$field];
 
         if ($info['ref'] && !$info['ref']['lazy'] && $lazy === false){
-            dump($info);
+
             ClassLoader::load($info['type']);
             $type = $info['type'];
             /** @var $service AbstractService */
 
-            if (String::endsWith($type, '[]')){
-                $type = substr($type, 0, -2);
+            if ($info['is_array']){
+                $type = $info['array_type'];
                 $service = $type::getService();
                 if (!is_array($value))
-                    $value = array($value);
+                    $value = $value ? array($value) : array();
 
                 foreach($value as &$el){
                     $el = $service->findByRef($el, array(), true);
@@ -330,6 +334,7 @@ abstract class AbstractService extends StrictObject {
         $cur['column'] = $property->get('column')->getDefault( $name );
         $cur['type']   = $property->get('var')->getDefault('mixed');
         $cur['timestamp'] = $property->has('timestamp');
+        $cur['readonly']  = $property->has('readonly');
 
         if ( $property->has('ref') ){
             $cur['ref'] = array(1,
@@ -384,8 +389,8 @@ abstract class AbstractService extends StrictObject {
         /** read properties */
         $idDefined = false;
         foreach($propertiesInfo as $nm => $property){
-
             if (String::startsWith($nm, '__')) continue;
+            if ($property->has('ignore')) continue;
 
             $info['fields'][$nm] = 1;
 

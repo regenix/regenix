@@ -11,12 +11,22 @@ abstract class AbstractActiveRecord extends StrictObject
 
     const type = __CLASS__;
 
+    /**
+     * @ignore
+     * @var bool
+     */
     public $__fetched = false;
 
-    /** @var array */
+    /**
+     * @ignore
+     * @var array
+     */
     public $__data = array();
 
-    /** @var array */
+    /**
+     * @ignore
+     * @var array
+     */
     public $__modified = array();
 
     /** @var array */
@@ -85,6 +95,10 @@ abstract class AbstractActiveRecord extends StrictObject
 
     public function __set($name, $value){
         $service = static::getService();
+        $meta    = $service->getMeta();
+        if ($meta['fields'][$name]['readonly'])
+            throw CoreException::formated('Property `%s` for read only, at `%s` class', $name, get_class($this));
+
         $service->__callSetter($this, $name, $value, true);
     }
 
@@ -93,6 +107,12 @@ abstract class AbstractActiveRecord extends StrictObject
         return $service->__callGetter($this, $name);
     }
 
+    public function getRawValue($name){
+        if (!array_key_exists($name, $this->__data))
+            return parent::__get($name);
+
+        return $this->__data[$name];
+    }
 
     public function __isset($name){
         return isset($this->__data[$name]);
@@ -237,12 +257,22 @@ interface IHandleBeforeRemove {
 
         // @indexed .property
         Annotations::registerAnnotation('indexed', array(
-            'fields' => array()
+            'fields' => array('_arg' => 'mixed')
         ), 'property');
 
         // @timestamp
         Annotations::registerAnnotation('timestamp', array(
-            'fields' => array()
+            'fields' => array('_arg' => 'mixed')
+        ), 'property');
+
+        // @ignore
+        Annotations::registerAnnotation('ignore', array(
+            'fields' => array('_arg' => 'mixed')
+        ), 'property');
+
+        // @readonly
+        Annotations::registerAnnotation('readonly', array(
+            'fields' => array('_arg' => 'mixed')
         ), 'property');
 
         // @column .property

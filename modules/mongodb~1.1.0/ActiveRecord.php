@@ -21,9 +21,9 @@ abstract class ActiveRecord extends AbstractActiveRecord {
     }
 
     /**
-     * @param Query $query
+     * @param AbstractQuery $query
      * @param array $fields
-     * @return DocumentCursor
+     * @return mixed|DocumentCursor
      */
     public static function find(AbstractQuery $query = null, array $fields = array()){
         return static::getService()->findByFilter($query, $fields);

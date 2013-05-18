@@ -91,6 +91,7 @@ class Service extends AbstractService {
         foreach($meta['fields'] as $field => $info){
             if ( $skipId && $info['column'] == '_id' ) continue;
             if ( !$isNew && !$document->__modified[$field] ) continue;
+            if ( $info['readonly'] ) continue;
 
             $value = $this->typed($this->__callGetter($document, $field), $info);
 
