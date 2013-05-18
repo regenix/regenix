@@ -43,6 +43,19 @@ class User extends ActiveRecord {
      */
     public $groups;
 
+
+    /**
+     * @ignore
+     * @var
+     */
+    public $ignore = 123;
+
+    /**
+     * @readonly
+     * @var string
+     */
+    public $readonly = '';
+
     /**
      * @return $this
      */
@@ -59,8 +72,9 @@ class User extends ActiveRecord {
      * @return bool
      */
     public function isGroup($code){
-        foreach($this->groups as $group){
-            if ($code == $group->code)
+        $groups = $this->getRawValue('groups');
+        foreach((array)$groups as $group){
+            if ($code == $group)
                 return true;
         }
         return false;
