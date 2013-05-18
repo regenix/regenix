@@ -10,24 +10,7 @@ use notifiers\ConfirmNotifier;
 class Application extends AppController {
 
     public function page($page = 'index'){
-
-        $user = User::find(User::query()->eq('email', 'dz@dim-s.net'))->first();
-        dump($user);
-
-        if (!$user)
-            $user = new User();
-
-        $t = microtime(1);
-        for($i = 0; $i < 3500; $i++){
-            $user->login = 'dim-s';
-            $user->groups = array();
-            $user->email = 'dz@dim-s.net';
-            $user->password = '123456';
-            $user->register();
-        }
-        dump(microtime(1) - $t);
-
-        $lang     = I18n::getLang();
+        $lang = I18n::getLang();
         if ($lang === 'default' || $lang === 'en')
             $lang = '';
 

@@ -10,13 +10,17 @@ use modules\mongodb\ActiveRecord;
  * Class User
  * @collection users
  * @package models
+ * @indexed login = asc, email = asc, $background, $sparse
  */
 class User extends ActiveRecord {
 
     use TDefaultInformation;
     use TTimeInformation;
 
-    /** @var string */
+    /**
+     * @indexed sort=asc, $unique, $background
+     * @var string
+     */
     public $login;
 
     /** @var string */
