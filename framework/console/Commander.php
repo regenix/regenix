@@ -43,7 +43,7 @@ class Commander implements IClassInitialization {
     private function _registerProjects(){
         $dirs = scandir(Project::getSrcDir());
         foreach ((array)$dirs as $dir){
-            if ($dir[0] == '.' || $dir == '..') continue;
+            if ($dir == '.' || $dir == '..') continue;
             $this->projects[ $dir ] = new Project( $dir, false );
         }
     }
@@ -57,7 +57,16 @@ class Commander implements IClassInitialization {
         }
 
         if (!$this->project){
-            $this->project = current($this->projects);
+            foreach($this->projects as $name => $project){
+                if ($name[0] == '.') continue;
+
+                $this->project = $project;
+                break;
+            }
+
+            if (!$this->project)
+                $this->project = current($this->projects);
+
             $tmpFile->getParentFile()->mkdirs();
             file_put_contents($tmpFile->getPath(), $this->project->getName());
         }
