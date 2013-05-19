@@ -2,15 +2,29 @@
 namespace framework\test;
 
 use framework\Project;
+use framework\exceptions\CoreException;
 use framework\lang\ClassLoader;
 use framework\mvc\Controller;
 
 class Tester extends Controller {
 
-    public static function startTesting($id = null){
+    public static function startTesting($id = null, $moduleWithVersion = null){
         $project = Project::current();
-        $path    = $project->getTestPath();
-        $tests   = array();
+
+        $prefix = '';
+        if ($moduleWithVersion){
+            if (!is_dir(ROOT . 'modules/' . $moduleWithVersion . '/'))
+                throw CoreException::formated('Module `%s` not found', $moduleWithVersion);
+            
+            $path   = ROOT . 'modules/' . $moduleWithVersion . '/tests/';
+
+            $module = explode('~', $moduleWithVersion, 2);
+            ClassLoader::$modulesLoader->addModule($module[0], $module[1]);
+            $prefix = 'modules\\' . $module[0] . '\\';
+        } else
+            $path = $project->getTestPath();
+
+        $tests = array();
 
         if (is_dir($path)){
             $it = new \RecursiveDirectoryIterator($path);
@@ -18,13 +32,12 @@ class Tester extends Controller {
                 /** @var \SplFileInfo $file */
                 if ($file->isFile() && $file->getExtension() === 'php'){
                     $filename = str_replace(array('\\', $path), array('/', ''), $file->getRealPath());
-                    $class = 'tests\\' . str_replace('/', '\\', substr($filename, 0, -4));
+                    $class = $prefix . 'tests\\' . str_replace('/', '\\', substr($filename, 0, -4));
 
                     if ($id){
                         if (str_replace('\\', '.', $class) !== $id)
                             continue;
                     }
-                    ClassLoader::load($class);
 
                     $reflection = new \ReflectionClass($class);
                     if ($reflection->isAbstract())

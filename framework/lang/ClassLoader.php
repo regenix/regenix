@@ -187,6 +187,9 @@ class FrameworkClassLoader extends ClassLoader {
     public function register($prepend = false) {
         parent::register( $prepend );
         ClassLoader::$frameworkLoader = $this;
+
+        $loader = new ModulesClassLoader();
+        $loader->register();
     }
 }
 

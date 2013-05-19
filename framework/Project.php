@@ -312,9 +312,6 @@ class Project {
     }
 
     private function _registerDeps(){
-        $loader = new ModulesClassLoader();
-        $loader->register();
-
         $this->loadDeps();
         $this->repository = new Repository($this->deps);
 

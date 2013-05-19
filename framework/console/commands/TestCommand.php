@@ -13,18 +13,26 @@ class TestCommand extends ConsoleCommand {
     const GROUP = 'test';
 
     public function __default(){
-        $this->project->register(false);
 
-        $this->writeln('Start "%s" testing ...', $this->project->getName());
+        if ($this->opts->has('module')){
+            $module = $this->opts->get('module');
+            Tester::startTesting(null, $module);
+
+            $this->writeln('Start module "%s" testing ...', $module);
+        } else {
+            $this->project->register(false);
+
+            $this->writeln('Start "%s" testing ...', $this->project->getName());
+            Tester::startTesting();
+        }
         $this->writeln();
 
-        Tester::startTesting();
         $result = Tester::getResults();
-
         foreach($result['tests'] as $name => $test){
-            $this->writeln('    - [%s] %s', $test['result'] ? 'ok' : 'fail', substr($name, 6));
-            if (!$test['result']){
+            $shortName = substr($name, strpos($name, 'tests.') + 6);
 
+            $this->writeln('    - [%s] %s', $test['result'] ? 'ok' : 'fail', $shortName);
+            if (!$test['result']){
                 foreach($test['log'] as $method => $logs){
                     foreach($logs as $log){
                         if (!$log['result']){

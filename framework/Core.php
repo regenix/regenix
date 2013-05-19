@@ -5,6 +5,7 @@ namespace framework {
     use framework\exceptions\CoreStrictException;
     use framework\exceptions\HttpException;
     use framework\io\File;
+    use framework\lang\ModulesClassLoader;
     use framework\lang\String;
     use framework\logger\Logger;
     use framework\mvc\Controller;
