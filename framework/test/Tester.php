@@ -15,7 +15,7 @@ class Tester extends Controller {
         if ($moduleWithVersion){
             if (!is_dir(ROOT . 'modules/' . $moduleWithVersion . '/'))
                 throw CoreException::formated('Module `%s` not found', $moduleWithVersion);
-            
+
             $path   = ROOT . 'modules/' . $moduleWithVersion . '/tests/';
 
             $module = explode('~', $moduleWithVersion, 2);
