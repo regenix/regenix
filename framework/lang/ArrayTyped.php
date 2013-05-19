@@ -1,23 +1,22 @@
 <?php
-/**
- * Created by JetBrains PhpStorm.
- * User: dim-s
- * Date: 14.03.13
- * Time: 12:26
- * To change this template use File | Settings | File Templates.
- */
-
 namespace framework\lang;
-
 
 class ArrayTyped {
 
     protected $data;
 
+    /**
+     * @param array $data
+     */
     public function __construct(array $data = null){
         $this->data = $data == null ? array() : $data;
     }
 
+    /**
+     * get value by '_arg' key
+     * @param mixed $def
+     * @return mixed
+     */
     public function getDefault($def = null){
         return $this->get('_arg', $def);
     }
@@ -40,6 +39,10 @@ class ArrayTyped {
         return isset($value) ? $value : $def;
     }
 
+    /**
+     * return all keys of array
+     * @return array
+     */
     public function getKeys(){
         return array_keys($this->data);
     }

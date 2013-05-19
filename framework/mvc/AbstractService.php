@@ -1,13 +1,7 @@
 <?php
-/**
- * Author: Dmitriy Zayceff
- * E-mail: dz@dim-s.net
- * Date: 17.03.13
- */
-
 namespace framework\mvc;
 
-use framework\StrictObject;
+use framework\exceptions\StrictObject;
 use framework\exceptions\AnnotationException;
 use framework\exceptions\CoreException;
 use framework\lang\ArrayTyped;
@@ -23,21 +17,30 @@ abstract class AbstractService extends StrictObject {
     protected $modelClass;
 
     /** @var array */
-    protected $meta;
+    private $meta_;
 
     /**
      * @param $modelClass string
      */
     protected function __construct($modelClass){
-        $this->meta = self::$modelInfo[$modelClass];
         $this->modelClass = $modelClass;
+    }
+
+    /**
+     * @return string
+     */
+    public function getModelClass(){
+        return $this->modelClass;
     }
 
     /**
      * @return array
      */
     public function getMeta(){
-        return $this->meta;
+        if (!$this->meta_)
+            $this->meta_ = self::$modelInfo[$this->modelClass];
+
+        return $this->meta_;
     }
 
     /**
@@ -53,6 +56,22 @@ abstract class AbstractService extends StrictObject {
      */
     private static $services = array();
 
+    public function beginTransaction(){
+        throw CoreException::formated('Transactions are not supported');
+    }
+
+    public function inTransaction(){
+        throw CoreException::formated('Transactions are not supported');
+    }
+
+    public function commit(){
+        throw CoreException::formated('Transactions are not supported');
+    }
+
+    public function rollback(){
+        throw CoreException::formated('Transactions are not supported');
+    }
+
     /**
      * @param $modelClass
      * @return AbstractService
@@ -64,11 +83,11 @@ abstract class AbstractService extends StrictObject {
         return self::$services[$modelClass] = static::newInstance($modelClass);
     }
 
-    abstract public function save(AbstractModel $object, array $options = array());
-    abstract public function remove(AbstractModel $object, array $options = array());
+    abstract public function save(AbstractActiveRecord $object, array $options = array());
+    abstract public function remove(AbstractActiveRecord $object, array $options = array());
 
     /**
-     * @param AbstractModel[] $documents
+     * @param AbstractActiveRecord[] $documents
      * @param array $options
      * @return array of bool
      */
@@ -93,35 +112,37 @@ abstract class AbstractService extends StrictObject {
         return $result;
     }
 
-    protected function fetch(AbstractModel $object, $data, $lazyNeed = false){
-        if ( $object instanceof IHandleBeforeLoad ){
-            $object->onBeforeLoad($data);
-        }
-
+    public function fetch(AbstractActiveRecord $object, $data, $lazyNeed = false){
+        $meta = $this->getMeta();
         foreach($data as $column => $value){
-            $field = $this->meta['fields_rev'][ $column ];
+            $field = $meta['fields_rev'][ $column ];
             if ( $field ){
+                $info = $meta['fields'][$field];
+                $value = $this->typedFetch($value, $info);
+
                 $this->__callSetter($object, $field, $value, $lazyNeed);
             }
         }
 
-        if ( $object instanceof IHandleAfterLoad ){
-            $object->onAfterLoad();
-        }
+        $valueId = $data[$meta['id_field']['column']];
+        $this->setId($object, $valueId);
+        $object->__fetched = true;
 
+        $object->__modified = array();
         return $object;
     }
 
     /**
-     * @param AbstractModel $object
+     * @param AbstractActiveRecord $object
      * @param bool $typed
      * @return mixed|null
      */
-    public function getId(AbstractModel $object, $typed = true){
-        $idField = $this->meta['id_field']['field'];
+    public function getId(AbstractActiveRecord $object, $typed = true){
+        $meta = $this->getMeta();
+        $idField = $meta['id_field']['field'];
         if ( $idField ){
             return $typed
-                ? static::typed($object->__data[$idField], $this->meta['id_field']['type'])
+                ? $this->typed($object->__data[$idField], $meta['id_field'])
                 : $object->__data[$idField];
         } else
             return null;
@@ -135,7 +156,6 @@ abstract class AbstractService extends StrictObject {
         return is_scalar($value);
     }
 
-
     /**
      * @param $value
      * @param array $fields
@@ -148,11 +168,12 @@ abstract class AbstractService extends StrictObject {
      * @param mixed $id
      * @param array $fields
      * @param bool $lazy
-     * @return AbstractModel
+     * @return AbstractActiveRecord
      */
     public function findById($id, array $fields = array(), $lazy = false){
-        $idField = $this->meta['id_field'];
-        $data  = $this->findDataById(static::typed($id, $idField['type']));
+        $meta    = $this->getMeta();
+        $idField = $meta['id_field'];
+        $data  = $this->findDataById($this->typed($id, $idField));
         if ( $data === null )
             return null;
 
@@ -161,22 +182,30 @@ abstract class AbstractService extends StrictObject {
     }
 
     /**
+     * @param AbstractQuery $query
+     * @param array $fields
+     * @param bool $lazy
+     * @return ActiveRecordCursor
+     */
+    abstract public function findByFilter(AbstractQuery $query, array $fields = array(), $lazy = false);
+
+    /**
      * @param mixed $value
      * @param array $fields
      * @param bool $lazy
-     * @return AbstractModel
+     * @return AbstractActiveRecord
      */
     protected function findByRef($value, array $fields = array(), $lazy = false){
         return $this->findById($value, $fields, $lazy);
     }
 
     /**
-     * @param AbstractModel $object
+     * @param AbstractActiveRecord $object
      * @param array $fields
+     * @throws static
      * @return bool
-     * @throws \framework\exceptions\CoreException
      */
-    public function reload(AbstractModel $object, array $fields = array()){
+    public function reload(AbstractActiveRecord $object, array $fields = array()){
         $id = $this->getId($object);
         if ( !$id )
             throw CoreException::formated('Can`t reload non-exist document');
@@ -189,23 +218,43 @@ abstract class AbstractService extends StrictObject {
             return false;
     }
 
-    public function __callGetter(AbstractModel $object, $field){
-        $info  = $this->meta['fields'][$field];
+    public function __callGetter(AbstractActiveRecord $object, $field){
+        $meta  = $this->getMeta();
+        $info  = $meta['fields'][$field];
+        if (!$info)
+            throw CoreException::formated('Property `%s` not defined in `%s` class', $field, get_class($this));
+
         $value = $object->__data[$field];
 
         if ( $info['ref'] && $info['ref']['lazy'] ){
-
             if ( $info['is_array'] ){
 
-            } else {
+                $type = $info['array_type'];
+                ClassLoader::load($type);
+                $service = $type::getService();
 
+                if (!is_array($value))
+                    $value = $value ? array($value) : array();
+
+                $needSet = false;
+                if (is_array($value))
+                foreach($value as &$el){
+                    if ($service->isReference($el)){
+                        $el = $service->findByRef($el);
+                        $needSet = true;
+                    }
+                }
+                unset($el);
+                if ($needSet)
+                    $this->__callSetter($object, $field, $value);
+
+            } else {
                 $type = $info['type'];
                 ClassLoader::load($type);
 
                 /** @var $service AbstractService */
                 $service = $type::getService();
                 if ( $service->isReference($value) ){
-
                     $value = $service->findByRef($value);
                     $this->__callSetter($object, $field, $value);
                 }
@@ -214,37 +263,55 @@ abstract class AbstractService extends StrictObject {
         return $value;
     }
 
-    public function __callSetter(AbstractModel $object, $field, $value, $lazy = false){
-        $info = $this->meta['fields'][$field];
+    public function __callSetter(AbstractActiveRecord $object, $field, $value, $lazy = false){
+        $meta = $this->getMeta();
+        $info = $meta['fields'][$field];
 
-        if ( $info['ref'] && !$info['ref']['lazy'] && $lazy === false){
+        if ($info['ref'] && !$info['ref']['lazy'] && $lazy === false){
+
             ClassLoader::load($info['type']);
             $type = $info['type'];
             /** @var $service AbstractService */
-            $service = $type::getService();
-            $value   = $service->findByRef($value, array(), true);
+
+            if ($info['is_array']){
+                $type = $info['array_type'];
+                $service = $type::getService();
+                if (!is_array($value))
+                    $value = $value ? array($value) : array();
+
+                foreach($value as &$el){
+                    $el = $service->findByRef($el, array(), true);
+                }
+                unset($el);
+
+            } else {
+                $service = $type::getService();
+                $value   = $service->findByRef($value, array(), true);
+            }
         }
 
         if ($info['setter']){
             $method = 'set' . $field;
             $object->{$method}($value);
-        } else {
-            $object->__data[$field] = $value;
         }
+
+        $object->__data[$field] = $value;
+        $object->__modified[$field] = true;
     }
 
-
     /**
-     * @param AbstractModel $object
+     * @param AbstractActiveRecord $object
      * @param $id
+     * @throws static
      */
-    public function setId(AbstractModel $object, $id){
-        $idField = $this->meta['id_field'];
+    public function setId(AbstractActiveRecord $object, $id){
+        $meta    = $this->getMeta();
+        $idField = $meta['id_field'];
         if ( $idField ){
             $field = $idField['field'];
-            $object->__data[$field] = static::typed($id, $idField['type']);
+            $object->__data[$field] = $this->typedFetch($id, $idField);
         } else
-            CoreException::formated('Document `%s` has no @id field', $this->meta['name']);
+            throw CoreException::formated('Document `%s` has no @id field', $meta['name']);
     }
 
     protected static function registerModelMetaClass(&$info, \ReflectionClass $class, Annotations $classInfo){
@@ -257,7 +324,8 @@ abstract class AbstractService extends StrictObject {
     protected static function registerModelMetaId(&$propInfo, &$allInfo,
                                                   \ReflectionClass $class, $name, Annotations $property){
         $allInfo['id_field'] = array(
-            'column' => $propInfo['column'], 'field' => $propInfo['name'], 'type' => $propInfo['type']
+            'column' => $propInfo['column'] ? $propInfo['column'] : 'id',
+            'field' => $propInfo['name'], 'type' => $propInfo['type']
         );
     }
 
@@ -265,6 +333,8 @@ abstract class AbstractService extends StrictObject {
         $cur['name']   = $name;
         $cur['column'] = $property->get('column')->getDefault( $name );
         $cur['type']   = $property->get('var')->getDefault('mixed');
+        $cur['timestamp'] = $property->has('timestamp');
+        $cur['readonly']  = $property->has('readonly');
 
         if ( $property->has('ref') ){
             $cur['ref'] = array(1,
@@ -300,14 +370,7 @@ abstract class AbstractService extends StrictObject {
      * @throws \framework\exceptions\AnnotationException
      */
     protected static function registerModelMetaIndex(&$infoIndex, &$allInfo, Annotations $classInfo, $key, ArrayTyped $indexed){
-        if ( $key[0] === '$' ) return;
 
-        $column = $allInfo['fields'][ $key ];
-        if ( !$column ){
-            throw new AnnotationException($classInfo, 'indexed',
-                String::format('Can\'t find `%s` field for index', $key));
-        }
-        $infoIndex['fields'][$column['column']] = $indexed->get($key, 0);
     }
 
     /**
@@ -326,8 +389,8 @@ abstract class AbstractService extends StrictObject {
         /** read properties */
         $idDefined = false;
         foreach($propertiesInfo as $nm => $property){
-
             if (String::startsWith($nm, '__')) continue;
+            if ($property->has('ignore')) continue;
 
             $info['fields'][$nm] = 1;
 
@@ -339,7 +402,7 @@ abstract class AbstractService extends StrictObject {
                 $indexed = $property->get('indexed');
                 $index = array(
                     'options' => array(),
-                    'fields' => array($cur['column'] => $indexed->getInteger('sort', 0))
+                    'fields' => array($cur['column'] => $indexed->get('sort', 0))
                 );
 
                 //foreach($indexed->getKeys() as $key){
@@ -353,6 +416,7 @@ abstract class AbstractService extends StrictObject {
                 if ( $idDefined ){
                     throw new AnnotationException($property, 'id', 'Can\'t redeclare id field');
                 }
+
                 static::registerModelMetaId($cur, $info, $class, $nm, $property);
                 $idDefined = true;
             }
@@ -362,13 +426,20 @@ abstract class AbstractService extends StrictObject {
         }
 
         /** all indexes */
-        $anIndexed    = $classInfo->getAsArray('indexed');
+        $anIndexed = $classInfo->getAsArray('indexed');
 
         foreach($anIndexed as $indexed){
             $cur = array('options'=>array(), 'fields'=>array());
             foreach($indexed->getKeys() as $key){
-                static::registerModelMetaIndex($cur, $info, $classInfo, $key, $indexed);
+                if ($key[0] == '$') continue;
+                if (!$info['fields'][$key])
+                    throw new AnnotationException($classInfo, 'indexed',
+                        String::format('Can\'t find `%s` field for index', $key));
+
+                $column = $info['fields'][$key]['column'];
+                $cur['fields'][$column] = $indexed->get($key);
             }
+            static::registerModelMetaIndex($cur, $info, $classInfo, null, $indexed);
             $info['indexed'][] = $cur;
         }
         self::$modelInfo[ $class->getName() ] = $info;
@@ -377,8 +448,8 @@ abstract class AbstractService extends StrictObject {
     /**
      * @param string $className
      */
-    public static function registerModel($className){
-        if ( $className === AbstractModel::type ) return;
+    public function registerModel($className){
+        if ( $className === AbstractActiveRecord::type ) return;
 
         /** @var $annotation Annotations */
         $class     = new \ReflectionClass($className);
@@ -395,7 +466,181 @@ abstract class AbstractService extends StrictObject {
     }
 
     /****** UTILS *******/
-    public static function typed($value, $type, $ref = null){
+    public function typed($value, $fieldMeta){
         return $value; // TODO
+    }
+
+    public function typedFetch($value, $fieldMeta){
+        return $value;
+    }
+}
+
+abstract class ActiveRecordCursor implements \Iterator {
+
+    /**
+     * @param array $fields
+     * @return $this
+     */
+    abstract public function sort(array $fields);
+
+    /**
+     * @param int $value
+     * @return $this
+     */
+    abstract public function skip($value);
+
+    /**
+     * @param int $value
+     * @return $this
+     */
+    abstract public function limit($value);
+
+    /**
+     * @return int
+     */
+    abstract public function count();
+
+    /**
+     * @return mixed
+     */
+    abstract public function explain();
+
+    /**
+     * @return AbstractActiveRecord
+     */
+    public function first(){
+        $this->rewind();
+        return $this->current();
+    }
+
+    /**
+     * @return AbstractActiveRecord[]
+     */
+    public function asArray(){
+        return iterator_to_array($this);
+    }
+}
+
+
+class QueryException extends CoreException {
+
+    public function __construct($message){
+        parent::__construct('Query build error: ' . $message);
+    }
+}
+
+abstract class AbstractQuery {
+
+    /** @var AbstractService */
+    protected $service;
+    protected $meta;
+
+    protected $data;
+    protected $stackField;
+
+    public function __construct(AbstractService $service){
+        $this->data    = array();
+        $this->service = $service;
+        $this->meta    = $service->getMeta();
+    }
+
+    public function field($name){
+        if ($this->stackField)
+            throw QueryException::formated('field `%s` set already', $this->stackField);
+
+        if (!$this->meta['fields'][$name])
+            throw QueryException::formated('field `%s` not exists in `%s` document type', $name, $this->service->getModelClass());
+
+        $this->stackField = $name;
+        return $this;
+    }
+
+    protected function popField(){
+        $name = $this->stackField;
+        $this->stackField = '';
+        if (!$name){
+            throw QueryException::formated('field is not set');
+        }
+
+        $column = $this->meta['fields'][$name]['column'];
+        return $column;
+    }
+
+    protected function getValue($field, $value){
+        $info = $this->meta['fields'][$field];
+        if (is_array($value)){
+            foreach($value as &$el){
+                $el = $this->service->typed($el, $info);
+            }
+            return $value;
+        } else
+            return $this->service->typed($value, $info);
+    }
+
+    public function addOr(AbstractQuery $query){
+        $this->data['$or'][] = $query;
+        return $this;
+    }
+
+    protected function popValue($field, $value, $prefix = '$eq'){
+        $this->field($field);
+        $this->data[$prefix][$field] = $this->getValue($field, $value);
+        return $this;
+    }
+
+    public function eq($field, $value){
+        return $this->popValue($field, $value);
+    }
+
+    public function notEq($field, $value){
+        return $this->popValue($field, $value, '$neq');
+    }
+
+    public function gt($field, $value){
+        return $this->popValue($field, $value, '$gt');
+    }
+
+    public function gte($field, $value){
+        return $this->popValue($field, $value, '$gte');
+    }
+
+    public function lt($field, $value){
+        return $this->popValue($field, $value, '$lt');
+    }
+
+    public function lte($field, $value){
+        return $this->popValue($field, $value, '$lte');
+    }
+
+    public function all($field, array $value){
+        return $this->popValue($field, $value, '$all');
+    }
+
+    public function in($field, array $value){
+        return $this->popValue($field, $value, '$in');
+    }
+
+    public function notIn($field, array $value){
+        return $this->popValue($field, $value, '$nin');
+    }
+
+    public function like($field, $expr){
+        return $this->popValue($field, $expr, '$like');
+    }
+
+    public function notLike($field, $expr){
+        return $this->popValue($field, $expr, '$nlike');
+    }
+
+    public function isNull($field){
+        return $this->popValue($field, true, '$null');
+    }
+
+    public function isNotNull($field){
+        return $this->popValue($field, true, '$nnull');
+    }
+
+    public function getData(){
+        return $this->data;
     }
 }

@@ -28,7 +28,7 @@ class ResponseBaseTemplateProvider extends ResponseProvider {
         return $this->template->getContent();
     }
 
-    public function render() { 
+    public function render() {
         $this->template->render();
     }
 }

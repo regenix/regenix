@@ -2,7 +2,7 @@
 
 namespace framework\config;
 
-use framework\StrictObject;
+use framework\exceptions\StrictObject;
 use framework\io\FileIOException;
 use framework\lang\String;
 use framework\io\File;

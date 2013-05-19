@@ -1,17 +1,25 @@
 Options +FollowSymlinks +Indexes
 
+php_flag display_errors on
+php_value error_reporting E_ALL
+
+AddDefaultCharset utf-8
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /
 
     # MODULES
-    RewriteRule ^modules/([a-z0-9-_A-Z]+)/assets/(.*)$ - [L]
+    RewriteRule ^assets/(.*)$ - [L]
+
+    # MODULES
+    RewriteRule ^modules/([a-z0-9-_A-Z\~\.]+)/assets/(.*)$ - [L]
 
     # PUBLIC
-    RewriteRule ^public/([a-z0-9-_A-Z]+)/(.*)$ - [L]
+    RewriteRule ^public/([a-z0-9-_A-Z\~\.]+)/(.*)$ - [L]
 
     # ASSETS
-    RewriteRule ^apps/([a-z0-9-_A-Z]+)/assets/(.*)$ - [L]
+    RewriteRule ^apps/([a-z0-9-_A-Z\~\.]+)/assets/(.*)$ - [L]
 
     # APPS
     RewriteRule ^(.*)$ index.php?/$1 [L]

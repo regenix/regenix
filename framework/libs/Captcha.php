@@ -2,6 +2,8 @@
 
 namespace framework\libs;
 
+use framework\exceptions\CoreException;
+use framework\lang\ClassLoader;
 use framework\lang\IClassInitialization;
 use framework\mvc\MIMETypes;
 use framework\mvc\Response;
@@ -61,6 +63,12 @@ class Captcha implements IClassInitialization {
     }
 
     public static function initialize(){
+        if (!extension_loaded('gd'))
+            throw CoreException::formated('Captcha feature needs installed and enabled `GD2` extension');
+
+        if (!ClassLoader::load('\\kcaptcha\\KCaptcha'))
+            throw CoreException::formated('KCaptcha vendor library not found, `vendor/kcaptcha/` not found');
+
         ResponseProvider::register(ResponseCaptchaProvider::type);
     }
 

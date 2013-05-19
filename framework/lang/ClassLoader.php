@@ -7,9 +7,9 @@ use framework\SDK;
 use framework\exceptions\CoreException;
 use framework\lang\String;
 
-require 'framework\lang\String.php';
-require 'framework\exceptions\CoreException.php';
-require 'framework\exceptions\ClassNotFoundException.php';
+require 'framework/lang/String.php';
+require 'framework/exceptions/CoreException.php';
+require 'framework/exceptions/ClassNotFoundException.php';
 
 
 class ClassLoader {
@@ -26,6 +26,11 @@ class ClassLoader {
     public static $frameworkLoader;
 
     /**
+     * @var ModulesClassLoader
+     */
+    public static $modulesLoader;
+
+    /**
      * @param $fileName string
      * @param $class string
      * @throws \framework\exceptions\CoreException
@@ -33,7 +38,7 @@ class ClassLoader {
     protected function checkCaseFilename($fileName, $class){
         $class = str_replace('\\', DIRECTORY_SEPARATOR, $class);
 
-        if ( !String::endsWith(realpath($fileName), $class . '.php') )
+        if ( !String::endsWith($fileName, $class . '.php') )
             throw CoreException::formated('Unable load `%s`, "%s.php" class file name case sensitive', $class,  $class);
     }
 
@@ -65,7 +70,8 @@ class ClassLoader {
         if ($file != null) {
             require $file;
 
-            if (!class_exists( $class, false ) && !interface_exists( $class, false ))
+            if (!class_exists( $class, false ) && !interface_exists( $class, false )
+                    && !trait_exists($class, false))
                 throw new ClassNotFoundException( $class );
 
             $implements = class_implements($class);
@@ -101,7 +107,6 @@ class ClassLoader {
                 $p = strpos( $class, $item['namespace'] );
 
             if ($p !== false && $p < 2) {
-
                 $file = $item['path'] . $class_rev . '.php';
                 if (file_exists( $file )) {
 
@@ -128,9 +133,8 @@ class ClassLoader {
     }
 
     public static function load($class) {
-        class_exists( $class, true );
+        return class_exists( $class, true );
     }
-
 }
 
 /**
@@ -145,11 +149,10 @@ class FrameworkClassLoader extends ClassLoader {
     public function loadClass($class) {
         // optimize
         $tmp = explode( '\\', $class, 3 );
-        $isModule = $tmp[0] == 'modules';
+        $isModule = false; // $tmp[0] == 'modules';
         $check = $isModule || $tmp[0] == 'framework';
 
         if ($check) {
-
             if ( IS_DEV ){
                 $this->checkCaseFilename(
                     str_replace( '\\', DIRECTORY_SEPARATOR, $class ) . '.php',
@@ -187,6 +190,35 @@ class FrameworkClassLoader extends ClassLoader {
     }
 }
 
+class ModulesClassLoader extends ClassLoader {
+
+    private $modules = array();
+
+    public function addModule($name, $version){
+        $this->modules[$name] = $version;
+    }
+
+    public function findFile($class){
+        $mod = explode('\\', $class, 3);
+        $mod = $mod[1];
+
+        $ver = $this->modules[$mod];
+        if (!$ver)
+            return null;
+
+        $file = ROOT . str_replace(
+            array(DIRECTORY_SEPARATOR, 'modules\\' . $mod . '\\'),
+            array('\\', 'modules/' . $mod . '~' . $ver . '/'),
+            $class) . '.php';
+
+        return file_exists($file) ? $file : null;
+    }
+
+    public function register($prepend = false) {
+        parent::register( $prepend );
+        ClassLoader::$modulesLoader = $this;
+    }
+}
 
 interface IClassInitialization {
 

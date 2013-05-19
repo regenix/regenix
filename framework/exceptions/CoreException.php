@@ -10,8 +10,6 @@ class CoreException extends \Exception {
 
     public function __construct($message){
         parent::__construct($message);
-
-        // TODO
     }
     
     public static function formated($message){
@@ -19,8 +17,8 @@ class CoreException extends \Exception {
         if (func_num_args() > 1){
             $args = array_slice(func_get_args(), 1);
         }
-        
-        return new CoreException(vsprintf($message, $args));
+
+        return new static(String::formatArgs($message, $args));
     }
 
     public function getSourceLine(){
@@ -32,12 +30,23 @@ class CoreException extends \Exception {
     }
 
     public static function findProjectStack(\Exception $e){
+        if (self::$hideDebug)
+            return null;
+
         $project    = Project::current();
-        $projectDir = str_replace('\\', '/', $project->getPath());
-        foreach($e->getTrace() as $stack){
-            $dir = str_replace('\\', '/', dirname($stack['file']));
-            if ( strpos($dir, $projectDir) === 0 ){
-                return $stack;
+        if ($project){
+            $projectDir = str_replace('\\', '/', Project::getSrcDir());
+            $moduleDir  = ROOT . 'modules/';
+            foreach($e->getTrace() as $stack){
+                $dir = str_replace('\\', '/', dirname($stack['file']));
+                if (strpos($dir, $projectDir) === 0){
+                    return $stack;
+                }
+                if (self::$onlyPublic) continue;
+
+                if (strpos($dir, $moduleDir) === 0){
+                    return $stack;
+                }
             }
         }
         return null; //current($e->getTrace());
@@ -87,5 +96,39 @@ class CoreException extends \Exception {
             return (int)$offset;
 
         return 0;
+    }
+
+    private static $onlyPublic = true;
+    private static $hideDebug = false;
+
+    /**
+     * @param bool $value
+     */
+    public static function showOnlyPublic($value){
+        self::$onlyPublic = $value;
+    }
+
+    public static function hideExceptionDebugInfo(){
+        self::$hideDebug = true;
+    }
+
+    /**
+     * @return bool
+     */
+    public static function isOnlyPublic(){
+        return self::$onlyPublic;
+    }
+}
+
+CoreException::showOnlyPublic(IS_CORE_DEBUG === false || !defined('IS_CORE_DEBUG'));
+
+abstract class StrictObject {
+
+    public function __set($name, $value){
+        throw CoreException::formated('Property `%s` not defined in `%s` class', $name, get_class($this));
+    }
+
+    public function __get($name){
+        throw CoreException::formated('Property `%s` not defined in `%s` class', $name, get_class($this));
     }
 }

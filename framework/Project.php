@@ -2,11 +2,17 @@
 
 namespace framework;
 
+use framework\deps\Repository;
+use framework\exceptions\CoreException;
+use framework\exceptions\JsonFileException;
 use framework\io\File;
 
 use framework\config\Configuration;
 use framework\config\PropertiesConfiguration;
+use framework\lang\ModulesClassLoader;
 use framework\libs\Captcha;
+use framework\modules\AbstractModule;
+use framework\mvc\Assets;
 use framework\mvc\ModelClassloader;
 use framework\mvc\Request;
 use framework\mvc\URL;
@@ -37,25 +43,48 @@ class Project {
 
     /** @var PropertiesConfiguration */
     public $config;
+
+    /** @var array */
+    public $deps;
     
     /** @var mvc\route\Router */
     public $router;
 
+    /** @var Repository */
+    public $repository;
+
+    /** @var AbstractBootstrap */
+    public $bootstrap;
+
+    /** @var array */
+    protected $assets;
+
     /**
-    * @param string $projectName root directory name of project
-    */
-    public function __construct($projectName){
-        Request::current();
+     * @param string $projectName root directory name of project
+     * @param bool $inWeb
+     */
+    public function __construct($projectName, $inWeb = true){
         $this->name   = $projectName;
-        
+
+        SystemCache::setId($projectName);
+        $cacheName = 'appconf';
+
         $configFile   = $this->getPath() . 'conf/application.conf';
-        $this->config = SystemCache::getWithCheckFile('appconf', $configFile);
+        $this->config = SystemCache::getWithCheckFile($cacheName, $configFile);
         
         if ($this->config === null){
             $this->config = new PropertiesConfiguration(new File( $configFile ));
-            SystemCache::setWithCheckFile('appconf', $this->config, $configFile);            
+            SystemCache::setWithCheckFile($cacheName, $this->config, $configFile);
         }
-        $this->applyConfig( $this->config ); 
+
+        //if ($inWeb){
+            $port = $this->config->getNumber('http.port', 0);
+            if ($port){
+                Request::current()->setPort($port);
+            } else
+                Request::current();
+
+        $this->applyConfig( $this->config );
     }
 
     /**
@@ -71,7 +100,7 @@ class Project {
      * @return string
      */
     public function getPath(){
-        return self::getSrcDir() . '/' . $this->name . '/';
+        return self::getSrcDir() . $this->name . '/';
     }
     
     public function getViewPath(){
@@ -83,7 +112,11 @@ class Project {
     }
 
     public function getTestPath(){
-        return self::getPath() . 'app/tests/';
+        return self::getPath() . 'tests/';
+    }
+
+    public function getLogPath(){
+        return ROOT . 'logs/' . $this->name . '/';
     }
 
     /**
@@ -123,7 +156,6 @@ class Project {
      */
     public function findCurrentPath(){
         $request = Request::current();
-        
         foreach ($this->paths as $url){
             if ( $request->isBase( $url ) )
                 return $url;
@@ -154,9 +186,29 @@ class Project {
     }
 
 
-    public function register(){
+    public function register($inWeb = true){
+        Project::$instance = $this;
+
+        SystemCache::setId($this->name);
+        $request = Request::current();
+
+        if (is_file($file = $this->getPath() . 'app/Bootstrap.php')){
+            require $file;
+            if (!class_exists('Bootstrap', false)){
+                throw CoreException::formated('Can`t find `Bootstrap` class at `%s`', $file);
+            }
+            $this->bootstrap = new \Bootstrap();
+            $this->bootstrap->setProject($this);
+        }
+
         // config
-        $this->mode   = strtolower($this->config->getString('app.mode', 'dev'));
+        $this->mode = strtolower($this->config->getString('app.mode', 'dev'));
+        if ($this->bootstrap)
+            $this->bootstrap->onEnvironment($this->mode);
+
+        if (!$this->mode)
+            throw CoreException::formated('App mode must be set in `conf/environment.php` or `conf/application.conf`');
+
         define('IS_PROD', $this->isProd());
         define('IS_DEV', $this->isDev());
         define('IS_CORE_DEBUG', $this->config->getBoolean('core.debug'));
@@ -172,7 +224,7 @@ class Project {
         }
         
         // temp
-        Core::setTempDir( $this->getPath() . 'tmp/' );
+        Core::setTempDir( sys_get_temp_dir() . '/regenix/' . $this->name . '/' );
         
         // cache
         /*if ( $this->config->getBoolean('cache.enable', true) ){
@@ -196,20 +248,90 @@ class Project {
         
         // classloader
         $this->_registerLoader();
-        
-        // template
-        //$this->_registerTemplates();
-        
-        // modules
-        $this->_registerModules();
-        
+
         // route
         $this->_registerRoute();
+
+        // module deps
+        $this->_registerDeps();
 
         if (IS_DEV)
             $this->_registerTests();
 
         $this->_registerSystemController();
+
+        if ($this->bootstrap){
+            $this->bootstrap->onStart();
+        }
+    }
+
+    public function loadDeps(){
+        $file = $this->getPath() . 'conf/deps.json';
+        $this->deps = array();
+
+        if (is_file($file)){
+            if (IS_DEV){
+                $this->deps = json_decode(file_get_contents($file), true);
+                if (json_last_error()){
+                    throw new JsonFileException('conf/deps.json');
+                }
+            } else {
+                $this->deps = SystemCache::getWithCheckFile('app.deps', $file);
+                if ($this->deps === null){
+                    $this->deps = json_decode(file_get_contents($file), true);
+                    if (json_last_error()){
+                        throw new JsonFileException('conf/deps.json', 'invalid json format');
+                    }
+                    SystemCache::setWithCheckFile('app.deps', $this->deps, $file, 60 * 5);
+                }
+            }
+        }
+    }
+
+    /**
+     * Get all assets of project
+     * @return array
+     * @throws
+     */
+    public function getAssets(){
+        if (is_array($this->assets))
+            return $this->assets;
+
+        $this->assets = $this->repository->getAll('assets');
+
+        if (IS_DEV){
+            foreach($this->assets as $group => $versions){
+                foreach($versions as $version => $el){
+                    if (!$this->repository->isValid($group, $version)){
+                        throw CoreException::formated('Asset `%s/%s` not valid or not exists, please run in console `regenix deps update`', $group, $version);
+                    }
+                }
+            }
+        }
+        return $this->assets;
+    }
+
+    private function _registerDeps(){
+        $loader = new ModulesClassLoader();
+        $loader->register();
+
+        $this->loadDeps();
+        $this->repository = new Repository($this->deps);
+
+        // modules
+        $this->repository->setEnv('modules');
+        foreach((array)$this->deps['modules'] as $name => $conf){
+            $dep = $this->repository->findLocalVersion($name, $conf['version']);
+            if (!$dep){
+                throw CoreException::formated('Can`t find `%s/%s` module, please run in console `regenix deps update`', $name, $conf['version']);
+            } elseif (IS_DEV && !$this->repository->isValid($name, $dep['version'])){
+                throw CoreException::formated('Module `%s` not valid or not exists, please run in console `regenix deps update`', $name);
+            }
+            AbstractModule::register($name, $dep['version']);
+        }
+
+        if (IS_DEV)
+            $this->getAssets();
     }
 
     private function _registerSystemController(){
@@ -227,20 +349,13 @@ class Project {
         $this->router->addRoute('*', '/@test', 'framework.test.Tester.run');
         $this->router->addRoute('GET', '/@test.json', 'framework.test.Tester.runAsJson');
     }
-    
-    private function _registerModules(){
-        $modules = $this->config->getArray('app.modules');
-        foreach ($modules as $module){
-            if (trim($module))
-                modules\AbstractModule::register($module);
-        }
-    }
 
     private function _registerLoader(){
         $this->classLoader = new ClassLoader();
-        $this->classLoader->addClassPath(ROOT . 'vendor/');
-        $this->classLoader->addClassLibPath(ROOT . 'vendor/');
+        $this->classLoader->addClassPath(ROOT . 'framework/vendor/');
+        $this->classLoader->addClassLibPath(ROOT . 'framework/vendor/');
         $this->classLoader->addClassPath($this->getPath() . 'app/');
+        $this->classLoader->addNamespace('tests\\', $this->getPath());
 
         $this->classLoader->register();
     }
@@ -254,7 +369,7 @@ class Project {
 
             $routeFiles   = array();
             foreach (modules\AbstractModule::$modules as $name => $module){
-                $routeFiles['\\modules\\' . $name . '\\controllers\\'] = $module->getRouteFile();
+                $routeFiles['.modules' . $name . '.controllers.'] = $module->getRouteFile();
             }
             $routeFiles[] = new File($routeFile);
 
@@ -265,18 +380,20 @@ class Project {
         }
     }
 
+    /** @var Project */
+    private static $instance;
     
     /**
      * @return Project
      */
     public static function current(){
-        return Core::$__project;
+        return self::$instance;
     }
 
     private static $srcDir = null;
     public static function getSrcDir(){
         if ( self::$srcDir ) return self::$srcDir;
 
-        return self::$srcDir = str_replace(DIRECTORY_SEPARATOR, '/', realpath('apps/'));
+        return self::$srcDir = str_replace(DIRECTORY_SEPARATOR, '/', ROOT . 'apps/');
     }
 }

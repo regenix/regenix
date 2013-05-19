@@ -4,9 +4,9 @@ namespace framework\mvc;
 
 use framework\Core;
 use framework\SDK;
-use framework\StrictObject;
+use framework\exceptions\HttpException;
+use framework\exceptions\StrictObject;
 use framework\exceptions\CoreException;
-use framework\exceptions\NotFoundException;
 use framework\io\File;
 use framework\mvc\Response;
 use framework\mvc\providers\FileResponse;
@@ -56,6 +56,11 @@ abstract class Controller extends StrictObject {
      * @var string
      */
     public $actionMethod;
+
+    /**
+     * @var \ReflectionMethod
+     */
+    public $actionMethodReflection;
 
     /**
      * template arguments
@@ -115,7 +120,15 @@ abstract class Controller extends StrictObject {
     protected function onBefore(){}
     protected function onAfter(){}
     protected function onFinally(){}
+    protected function onReturn($result){}
+
     protected function onException(\Exception $e){}
+    protected function onHttpException(HttpException $e){}
+
+    /**
+     * @param $params
+     */
+    protected function onBindParams(&$params){}
     
     public function callBefore(){
         $this->onBefore();
@@ -131,6 +144,14 @@ abstract class Controller extends StrictObject {
             $this->flash->touchAll();
     }
 
+    public function callReturn($result){
+        $this->onReturn($result);
+    }
+
+    public function callBindParams(&$params){
+        $this->onBindParams($params);
+    }
+
     /**
      * set use session, if true use session and flash features
      * default: true
@@ -142,6 +163,10 @@ abstract class Controller extends StrictObject {
     
     final public function callException(\Exception $e){
         $this->onException($e);
+    }
+
+    final public function callHttpException(HttpException $e){
+        $this->onHttpException($e);
     }
 
     /**
@@ -222,14 +247,17 @@ abstract class Controller extends StrictObject {
      * Work out the default template to load for the invoked action.
      * E.g. "controllers\Pages\index" returns "views/Pages/index.html".
      */
-    public function template(){
-        $controller = str_replace('\\', '/', get_class($this));
+    public function template($template = false){
+        if (!$template){
+            $class = $this->actionMethodReflection->getDeclaringClass()->getName();
+            $controller = str_replace('\\', '/', $class);
 
-        if ( String::startsWith($controller, 'controllers/') )
-            $controller = substr($controller, 12);
+            if ( String::startsWith($controller, 'controllers/') )
+                $controller = substr($controller, 12);
 
-        $template   = $controller . '/' . $this->actionMethod;
-        return $template;
+            $template   = $controller . '/' . $this->actionMethod;
+        }
+        return str_replace('\\', '/', $template);
     }
 
     /**
@@ -243,7 +271,7 @@ abstract class Controller extends StrictObject {
             $this->response->setEntity($template);
             $this->send();
         } else
-            $this->renderTemplate($template === false ? $this->template() : $template, $args);
+            $this->renderTemplate($template, $args);
     }
 
     /**
@@ -254,6 +282,8 @@ abstract class Controller extends StrictObject {
     public function renderTemplate($template, array $args = null){
         if ( $args )
             $this->putAll($args);
+
+        $template = $this->template($template);
 
         $this->put("flash", $this->flash);
         $this->put("session", $this->session);
@@ -271,7 +301,7 @@ abstract class Controller extends StrictObject {
      * @return bool
      */
     public function templateExists($template){
-        $template = TemplateLoader::load($template);
+        $template = TemplateLoader::load($template, false);
         return !!$template;
     }
 
@@ -280,17 +310,17 @@ abstract class Controller extends StrictObject {
         $this->send();
     }
     
-    public function renderHTML($html){
+    public function renderHtml($html){
         $this->response
-                ->setContentType(MIMETypes::getByExt('html'))
+                ->setContentType('text/html')
                 ->setEntity($html);
         
         $this->send();
     }
 
-    public function renderJSON($object){
+    public function renderJson($object){
         $this->response
-                ->setContentType(MIMETypes::getByExt('json'))
+                ->setContentType('application/json')
                 ->setEntity( json_encode($object) );
         
         $error = json_last_error();
@@ -301,7 +331,7 @@ abstract class Controller extends StrictObject {
         $this->send();
     }
     
-    public function renderXML($xml){
+    public function renderXml($xml){
         if ( $xml instanceof \SimpleXMLElement ){
             /** @var \SimpleXMLElement */
             /// TODO
@@ -326,7 +356,7 @@ abstract class Controller extends StrictObject {
      * @param $var
      */
     public function renderVar($var){
-        $this->renderHTML('<pre>' . print_r($var, true) . '</pre>');
+        $this->renderHtml('<pre>' . print_r($var, true) . '</pre>');
     }
 
     /**
@@ -339,7 +369,7 @@ abstract class Controller extends StrictObject {
         $str = ob_get_contents();
         ob_end_clean();
 
-        $this->renderHTML($str);
+        $this->renderHtml($str);
     }
 
     public function ok(){
@@ -356,21 +386,29 @@ abstract class Controller extends StrictObject {
 
     /**
      * @param string $message
-     * @throws \framework\exceptions\NotFoundException
      */
-    public function notFound($message = ''){
-        throw new NotFoundException($message);
+    public function forbidden($message = ''){
+        throw new HttpException(HttpException::E_FORBIDDEN, $message);
     }
 
     /**
-     * @param $what
      * @param string $message
      */
-    public function notFoundIfEmpty($what, $message = ''){
-        if (empty($what))
-            $this->notFound($message);
+    public function notFound($message = ''){
+        throw new HttpException(HttpException::E_NOT_FOUND, $message);
     }
 
+    /**
+     * Can use several what, notFoundIfEmpty(arg1, arg2, arg3 ...)
+     * @param mixed $whats..
+     */
+    public function notFoundIfEmpty($whats){
+        $args = func_get_args();
+        foreach($args as $arg){
+            if (empty($arg))
+                $this->notFound();
+        }
+    }
 
     /**
      * @return Controller

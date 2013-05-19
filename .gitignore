@@ -1,4 +1,8 @@
-/apps/project1/tmp/
-/apps/project1/log/
 /.idea/
-/public/project1/gen
+/public
+/tmp
+/assets
+tmp/
+log/
+/tools/
+/apps/.ide

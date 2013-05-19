@@ -1,0 +1,4 @@
+# Routes
+
+*       /{page}/                        Application.page
+*       /                               Application.page

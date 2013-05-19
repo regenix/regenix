@@ -12,7 +12,8 @@ use framework\lang\ClassLoader;
 use framework\lang\String;
 use framework\libs\Captcha;
 use framework\libs\RegenixTPL\RegenixTemplate as RegenixTPL;
-use framework\libs\RegenixTPL\RegenixTemplateTag;
+    use framework\libs\RegenixTPL\RegenixTemplate as RegenixTemplate0;
+    use framework\libs\RegenixTPL\RegenixTemplateTag;
 use framework\libs\ImageUtils;
 
 ClassLoader::load(RegenixTPL::type);
@@ -28,9 +29,11 @@ class RegenixTemplate extends BaseTemplate {
     private static $loaded = false;
 
     public function __construct($templateFile, $templateName){
-
         if (!self::$loaded){
             self::$tpl = new RegenixTPL();
+
+            self::$tpl->registerTag(new RegenixDepsAssetsTag());
+            self::$tpl->registerTag(new RegenixDepsAssetTag());
 
             self::$tpl->registerTag(new RegenixAssetTag());
             self::$tpl->registerTag(new RegenixHtmlAssetTag());
@@ -47,6 +50,7 @@ class RegenixTemplate extends BaseTemplate {
         }
 
         self::$tpl->setFile($templateFile);
+        self::$tpl->setRoot(TemplateLoader::getCurrentRoot());
     }
 
     public function render(){
@@ -76,7 +80,7 @@ class RegenixTemplate extends BaseTemplate {
             $path = TemplateLoader::$ASSET_PATH . $name;
             $path = str_replace('//', '/', $path);
 
-            if (!file_exists(ROOT . $path)){
+            if ($name && !is_file(ROOT . $path)){
                 throw new FileNotFoundException(new File($path));
             }
 
@@ -92,8 +96,8 @@ class RegenixTemplate extends BaseTemplate {
 
         public function call($args, RegenixTPL $ctx){
             $action = $args['_arg'] ? $args['_arg'] : $args['action'];
-            if (!$action)
-                throw CoreException::formated('Action argument of reverse is empty');
+            /*if (!$action)
+                throw CoreException::formated('Action argument of reverse is empty');*/
 
             unset($args['_arg'], $args['action']);
             $project = Project::current();
@@ -171,6 +175,85 @@ class RegenixTemplate extends BaseTemplate {
         }
     }
 
+    class RegenixDepsAssetsTag extends RegenixTemplateTag {
+
+        function getName(){
+            return 'deps.assets';
+        }
+
+        public function call($args, RegenixTPL $ctx) {
+            $project = Project::current();
+            $assets  = $project->getAssets();
+
+            $html    = '';
+            $included = array();
+            foreach($assets as $group => $dep){
+                $html .= RegenixDepsAssetTag::getOne($group, false, $included);
+            }
+            return $html;
+        }
+    }
+
+    class RegenixDepsAssetTag extends RegenixTemplateTag {
+
+        function getName(){
+            return 'deps.asset';
+        }
+
+        public static function getOne($group, $version = false, &$included = array()){
+            $project  = Project::current();
+            $all      = $project->getAssets();
+            $versions = $all[$group];
+
+            if (!$versions)
+                throw CoreException::formated('Asset `%s` not found', $group);
+
+            if ($version){
+                $info = $versions[$version];
+                if (!is_array($info)){
+                    throw CoreException::formated('Asset `%s/%s` not found', $group, $version);
+                }
+            } else {
+                list($version, $info) = each($versions);
+            }
+
+            $meta = $project->repository->getLocalMeta($group, $version);
+            if (!$meta)
+                throw CoreException::formated('Meta information not found for `%s` asset, please run deps update for fix it', $group);
+
+            if ($included[$group][$version])
+                return '';
+
+            $included[$group][$version] = true;
+
+            $result = '';
+            if (is_array($info['deps'])){
+                foreach($info['deps'] as $gr => $v){
+                    $result .= self::getOne($gr, $v, $included);
+                }
+            }
+
+            $path   = '/assets/' . $group . '~' . $version . '/';
+            foreach((array)$meta['files'] as $file){
+                $html = BaseTemplate::getAssetTemplate($path . $file);
+                if ($html){
+                    $result .= $html . "\n";
+                }
+
+                if (IS_DEV && !is_file(ROOT . $path . $file)){
+                    throw new FileNotFoundException(new File($path . $file));
+                }
+            }
+
+            return $result;
+        }
+
+        public function call($args, RegenixTPL $ctx) {
+            $included = array();
+            return self::getOne($args['_arg'], $included);
+        }
+    }
+
     class RegenixHtmlAssetTag extends RegenixTemplateTag {
 
         function getName(){
@@ -179,34 +262,18 @@ class RegenixTemplate extends BaseTemplate {
 
         public function call($args, RegenixTPL $ctx){
             $file = RegenixAssetTag::get($args['_arg']);
-            $ext  = $args['ext'] ? $args['ext'] : strtolower(pathinfo($file, PATHINFO_EXTENSION));
+            $tpl  = BaseTemplate::getAssetTemplate($file, $args['ext']);
+            if ($tpl)
+                return $tpl;
 
-            switch($ext){
-                case 'js': {
-                    return '<script type="text/javascript" src="' . $file . '"></script>' . "\n";
-                }
-                case 'dart': {
-                    return '<script type="application/dart" src="' . $file . '"></script>';
-                }
-                case 'coffee': {
-                    return '<script type="text/coffeescript" src="' . $file . '"></script>';
-                }
-                case 'ts': {
-                    return '<script type="text/typescript" src="' . $file . '"></script>';
-                }
-                case 'css': {
-                    return '<link rel="stylesheet" type="text/css" href="'. $file .'">' . "\n";
-                } break;
-            }
-
-            throw CoreException::formated('Unknown html asset extension `%s`, at `%s`', $ext, $file);
+            throw CoreException::formated('Unknown html asset for `%s`', $file);
         }
     }
 }
 
 namespace {
 
-    use framework\StrictObject;
+    use framework\exceptions\StrictObject;
     use framework\exceptions\CoreException;
     use framework\mvc\template\RegenixTemplate;
 
@@ -236,5 +303,14 @@ namespace {
             } else
                 throw CoreException::formated('TPL class may only be used in templates');
         }
+    }
+
+    use framework\libs\I18n;
+
+    function __($message, $args = ''){
+        if (is_array($args))
+            return I18n::get($message, $args);
+        else
+            return I18n::get($message, array_slice(func_get_args(), 1));
     }
 }

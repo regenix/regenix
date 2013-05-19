@@ -24,7 +24,7 @@ abstract class SDK {
      * @param string $trigger
      * @param callable $callback
      * @param bool $prepend
-     * @throws exceptions\CoreException
+     * @throws static
      */
     public static function addHandler($trigger, $callback, $prepend = false){
         if (IS_DEV && !self::$types[$trigger])
