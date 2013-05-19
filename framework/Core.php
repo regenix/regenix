@@ -18,7 +18,7 @@ abstract class Core {
 
     const type = __CLASS__;
 
-    const VERSION = '0.4';
+    const VERSION = '0.5';
     
     /** @var string */
     public static $tempDir;

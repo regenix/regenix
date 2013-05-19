@@ -16,3 +16,6 @@
 [submodule "modules/mongodb~0.5"]
 	path = modules/mongodb~0.5
 	url = git://github.com/dim-s/regenix-mongodb.git
+[submodule "modules/activerecord~0.5"]
+	path = modules/activerecord~0.5
+	url = git://github.com/dim-s/regenix-activerecord.git
