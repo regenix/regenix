@@ -16,8 +16,8 @@ class PropertiesConfiguration extends Configuration {
         foreach ($files as $file){
             if (!$file->exists()) continue;
             
-            $handle = fopen($file->getAbsolutePath(), "r+");
-            while (($buffer = fgets($handle, 4096)) !== false) {
+            $file->open("r+");
+            while (($buffer = $file->gets()) !== false) {
 
                 $buffer = str_replace('\\=', '@@11@@', $buffer);
                 $line = explode('=', $buffer, 2);
@@ -29,14 +29,13 @@ class PropertiesConfiguration extends Configuration {
 
                 $this->addProperty( trim($line[0]), trim($line[1]) );
             }
-            fclose($handle);
+            $file->close();
         }
     }
     
     public function setEnv($env){
         $this->env = $env;
     }
-
 
     public function addProperty($key, $value){
         $this->data[ $key ] = $value;

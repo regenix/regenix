@@ -1,7 +1,0 @@
-{
-    "modules": [],
-
-    "vendors": [
-        {"group": "any", "version": "1.2"}
-    ]
-}

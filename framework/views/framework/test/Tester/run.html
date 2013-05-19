@@ -1,9 +1,50 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title></title>
-</head>
-<body>
+{extends 'framework/test/base'}
 
-</body>
-</html>
+{if $detail}
+    {include 'framework/test/Tester/detail.html'}
+{else}
+    <h2>Status: <b>{$result['result'] ? 'SUCCESS' : 'FAIL'}</b></h2>
+    <div id="detail">
+        <table class="list">
+            <tr>
+                <th width="25px"></th>
+                <th width="140px">_{'Test class'}</th>
+                <th>_{'Methods'}</th>
+            </tr>
+            {foreach $result['tests'] as $code => $test}
+                <tr {if !$tesut['result']}style="color: red"{/if}>
+                    <td>
+                        {if $test['skip']}
+                        &#160;...
+                        {else}
+                            <span class="ico {$test['result'] ? 'success' : 'fail'}">&#160;</span>
+                        {/if}
+                    </td>
+                    <td>
+                        {if $test['skip']}
+                            <span style="color: silver">{$code | substring(6)}</span>
+                        {else}
+                            <a href="{path id: $code}">{$code | substring(6)}</a>
+                        {/if}
+                    </td>
+                    <td>
+                        {if $test['skip']}
+                            <span style="color: silver">SKIP
+
+                            </span>
+                        {else}
+                            {foreach $test['log'] as $code => $info}
+                                {if in_array($code, $test['fails'], true)}
+                                    <span style="color: red">.{$code}()</span>
+                                {else}
+                                    <span style="color: gray">.{$code}()</span>
+                                {/if}
+                            {/foreach}
+                        {/if}
+                    </td>
+                </tr>
+            {/foreach}
+        </table>
+    </div>
+    <h3>_{'Project'}: <b>{$project->getName()}</b></h3>
+{/if}

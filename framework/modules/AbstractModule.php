@@ -2,7 +2,11 @@
 
 namespace framework\modules;
 
+use framework\Core;
+use framework\Project;
 use framework\exceptions\ClassNotFoundException;
+use framework\lang\ClassLoader;
+use framework\mvc\Assets;
 use framework\mvc\route\Router;
 use framework\exceptions\CoreException;
 use framework\io\File;
@@ -11,13 +15,28 @@ abstract class AbstractModule {
 
     const type = __CLASS__;
     
-    protected $uid;
-
+    public $uid;
+    public $version;
 
     static $modules = array();
 
     // abstract
     abstract public function getName();
+
+    /**
+     * @return array
+     */
+    public static function getDeps(){
+        return array();
+    }
+
+    /**
+     * @return array
+     */
+    public static function getAssetDeps(){
+        return array();
+    }
+
     public function getDescription(){ return null; }
     
     
@@ -68,27 +87,61 @@ abstract class AbstractModule {
     /**
      * register module by name, all modules in module directory
      * @param string $moduleName
-     * @throws \framework\exceptions\CoreException
+     * @param $version
+     * @throws
      * @return boolean
      */
-    public static function register($moduleName){
+    public static function register($moduleName, $version){
         if ( self::$modules[ $moduleName ] )
             return false;
-        
+
+        ClassLoader::$modulesLoader->addModule($moduleName, $version);
+
         self::$modules[ $moduleName ] = true;
         $bootstrapName = '\\modules\\' . $moduleName . '\\Module';
-        
-        try {
-            $module = new $bootstrapName();
-            $module->uid = $moduleName;
-            self::$modules[ $moduleName ] = $module;
-            
-        } catch (ClassNotFoundException $e){
+        if (!ClassLoader::load($bootstrapName)){
             unset(self::$modules[ $moduleName ]);
-            throw CoreException::formated('Unload Module.php class of `%s` module', $module);
+            throw CoreException::formated('Unload bootstrap `%s` class of `%s` module', $bootstrapName, $moduleName . '~' . $version);
         }
-       
+
+        $assets = $bootstrapName::getAssetDeps();
+        /*
+         * TODO ??
+        Project::current()->assets->addDeps($assets);
+        */
+
+        /** @var $module AbstractModule */
+        $deps = $bootstrapName::getDeps();
+        foreach((array)$deps as $name => $ver){
+            self::register($name, $ver);
+        }
+
+        $module = new $bootstrapName();
+        $module->uid     = $moduleName;
+        $module->version = $version;
+
+        self::$modules[ $moduleName ] = $module;
         return true;
+    }
+
+
+    /**
+     * @return array
+     */
+    public static function getAllModules(){
+        $result = array();
+        $dirs   = scandir(ROOT . 'modules/');
+        foreach((array)$dirs as $dir){
+            $dir = basename($dir);
+            if ($dir){
+                $dir = explode('~', $dir);
+                if ($dir[1]){
+                    $result[$dir[0]][] = $dir[1];
+                }
+            }
+        }
+
+        return $result;
     }
 }
 

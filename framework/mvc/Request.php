@@ -2,7 +2,8 @@
 
 namespace framework\mvc;
 
-use framework\StrictObject;
+use framework\Core;
+use framework\exceptions\StrictObject;
 use framework\exceptions\CoreException;
 use framework\lang\ArrayTyped;
 use framework\lang\String;
@@ -200,11 +201,18 @@ class Request extends StrictObject {
     }
 
     public function setBasePath($path){
-        
         $this->basePath = $path;
         $this->setUri($this->getUri());
         
         return $this;
+    }
+
+    /**
+     * @param int $port
+     */
+    public function setPort($port){
+        $this->port = $port;
+        $this->currentUrl->setPort($port);
     }
 
     /**
@@ -247,9 +255,9 @@ class Request extends StrictObject {
      * @return boolean
      */
     public function isBase($baseUrl){
-        if ( !($baseUrl instanceof URL) )
+        if ( !($baseUrl instanceof URL) ){
             $baseUrl = new URL($baseUrl);
-        
+        }
         return $this->currentUrl->constaints($baseUrl);
     }
 
@@ -275,13 +283,20 @@ class Request extends StrictObject {
 class Session extends StrictObject {
 
     private $init = false;
+    private $id;
 
     protected function __construct(){
     }
 
     protected function check(){
         if (!$this->init){
-            session_start();
+            if (Core::isCLI()){
+                global $_SESSION;
+                $_SESSION = array();
+                $this->id = String::random(40);
+            } else
+                session_start();
+
             $this->init = true;
         }
     }
@@ -291,7 +306,7 @@ class Session extends StrictObject {
      */
     public function getId(){
         $this->check();
-        return session_id();
+        return Core::isCLI() ? $this->id : session_id();
     }
 
     /**
@@ -308,6 +323,7 @@ class Session extends StrictObject {
      * @return null|scalar
      */
     public function get($name, $def = null){
+        global $_SESSION;
         $this->check();
         return $this->has($name) ? $_SESSION[$name] : $def;
     }
@@ -317,6 +333,7 @@ class Session extends StrictObject {
      * @param $value string|int|float|null
      */
     public function put($name, $value){
+        global $_SESSION;
         $this->check();
         $_SESSION[$name] = $value;
     }
@@ -337,6 +354,7 @@ class Session extends StrictObject {
      */
     public function has($name){
         $this->check();
+        global $_SESSION;
         return isset($_SESSION[$name]);
     }
 
@@ -345,6 +363,7 @@ class Session extends StrictObject {
      */
     public function remove($name){
         $this->check();
+        global $_SESSION;
         unset($_SESSION[$name]);
     }
 
@@ -353,7 +372,11 @@ class Session extends StrictObject {
      */
     public function clear(){
         $this->check();
-        session_unset();
+        if (Core::isCLI()){
+            global $_SESSION;
+            $_SESSION = array();
+        } else
+            session_unset();
     }
 
     private static $current;
@@ -818,10 +841,17 @@ class RequestBody extends StrictObject {
 
     const type = __CLASS__;
 
-    protected $data = null;
+    private $data = null;
 
     public function __construct(){
-        $this->data = file_get_contents('php://input');
+        ;
+    }
+
+    protected function getData(){
+        if ($this->data)
+            return $this->data;
+
+        return $this->data = file_get_contents('php://input');
     }
 
     /**
@@ -829,7 +859,7 @@ class RequestBody extends StrictObject {
      * @return array
      */
     public function asJSON(){
-        return json_decode($this->data, true);
+        return json_decode($this->getData(), true);
     }
 
     /**
@@ -838,7 +868,7 @@ class RequestBody extends StrictObject {
      */
     public function asQuery(){
         $result = array();
-        parse_str((string)$this->data, $result);
+        parse_str((string)$this->getData(), $result);
         return new ArrayTyped($result);
     }
 
@@ -847,7 +877,7 @@ class RequestBody extends StrictObject {
      * @return string
      */
     public function asString(){
-        return (string)$this->data;
+        return (string)$this->getData();
     }
 }
 
@@ -985,6 +1015,70 @@ class URL extends StrictObject {
         }
     }
 
+    /**
+     * @param string $host
+     */
+    public function setHost($host)
+    {
+        $this->host = $host;
+    }
+
+    /**
+     * @return string
+     */
+    public function getHost()
+    {
+        return $this->host;
+    }
+
+    /**
+     * @param int $port
+     */
+    public function setPort($port)
+    {
+        $this->port = $port;
+    }
+
+    /**
+     * @return int
+     */
+    public function getPort()
+    {
+        return $this->port;
+    }
+
+    /**
+     * @param string $protocol
+     */
+    public function setProtocol($protocol)
+    {
+        $this->protocol = $protocol;
+    }
+
+    /**
+     * @return string
+     */
+    public function getProtocol()
+    {
+        return $this->protocol;
+    }
+
+    /**
+     * @param string $query
+     */
+    public function setQuery($query)
+    {
+        $this->query = $query;
+    }
+
+    /**
+     * @return string
+     */
+    public function getQuery()
+    {
+        return $this->query;
+    }
+
     public function getUrl(){
         return $this->url;
     }
@@ -1015,7 +1109,7 @@ class URL extends StrictObject {
 
         $url->url = $protocol  . '://'
             . $host
-            . ($port == 80 ? '' : $port)
+            . ($port == 80 ? '' : ':' . $port)
             . $path
             . ($query ? '?' . $query : '');
 

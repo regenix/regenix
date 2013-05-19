@@ -3,14 +3,13 @@
 namespace framework\mvc\route;
 
 use framework\Project;
-use framework\StrictObject;
+use framework\exceptions\StrictObject;
 use framework\cache\SystemCache;
 use framework\lang\String;
 use framework\mvc\Controller;
 use framework\mvc\Request;
 use framework\mvc\RequestBindParams;
 use framework\mvc\RequestBinder;
-use framework\mvc\RequestBody;
 
 class Router extends StrictObject {
 
@@ -41,7 +40,7 @@ class Router extends StrictObject {
     
     public function applyConfig(RouterConfiguration $config){
         foreach($config->getRouters() as $info){
-            $this->addRoute($info['method'], $info['path'], $info['action'], $info['params']);
+            $this->addRoute($info['method'], $info['path'], str_replace('\\', '.', $info['action']), $info['params']);
         }
     }
     
@@ -88,7 +87,7 @@ class Router extends StrictObject {
         $item = array(
                 'method'  => strtoupper($method),
                 'path'    => $path,
-                'action'  => $action,
+                'action'  => str_replace('\\', '.', $action),
                 'params'  => $params,
                 'types'   => $types,
                 'pattern' => '#^' . $pattern . '$#',
@@ -101,13 +100,16 @@ class Router extends StrictObject {
     }
 
     public function reverse($action, array $args = array(), $method = '*'){
-        $action = strtolower($action);
-        $action = str_replace('\\', '.', $action);
-        if ($action[0] != '.')
-            $action = '.' . $action;
 
-        if (!String::startsWith($action, '.controllers.'))
-            $action = '.controllers' . $action;
+        if ($action !== null){
+            $action = strtolower($action);
+            $action = str_replace('\\', '.', $action);
+            if ($action[0] != '.')
+                $action = '.' . $action;
+
+            if (!String::startsWith($action, '.controllers.'))
+                $action = '.controllers' . $action;
+        }
 
         foreach($this->routes as $route){
             if ($method != '*' && $route['method'] != '*' && strtoupper($method) != $route['method'])
@@ -115,6 +117,21 @@ class Router extends StrictObject {
 
             $replace = array('_METHOD');
             $to      = array($method == '*' ? 'GET' : strtoupper($method));
+            $routeKeys = array_keys($route['types']);
+
+            $cur = $route['action'];
+            foreach($route['patterns'] as $param => $regex){
+                $cur = str_replace('{' . $param . '}', $regex, $cur);
+            }
+
+            // search args in route address
+            preg_match_all('#^' . $cur . '$#i', $action, $matches);
+            foreach($matches as $i => $el){
+                if ($i){
+                    $args[$routeKeys[$i-1]] = current($el);
+                }
+            }
+
             foreach($args as $key => $value){
                 if ($route['types'][$key]){
                     $replace[] = '{' . $key . '}';
@@ -122,8 +139,11 @@ class Router extends StrictObject {
                 }
             }
             $curAction = str_replace($replace, $to, $route['action']);
-            if ( $action === strtolower(str_replace('\\', '.', $curAction)) ){
+
+            if ( $action === null || $action === strtolower(str_replace('\\', '.', $curAction)) ){
                 $match = true;
+
+                if ($action)
                 foreach($route['patterns'] as $name => $pattern){
                     if (!preg_match('#^'. $pattern . '$#', (string)$args[$name])){
                         $match = false;
@@ -132,7 +152,7 @@ class Router extends StrictObject {
                 }
 
                 if ($match){
-                    $url = str_replace($replace, $to, $route['url']);
+                    $url = str_replace($replace, $to, $action === null ? '' : $route['url']);
                     $i = 0;
                     foreach($args as $key => $value){
                         if (!$route['types'][$key]){
@@ -150,7 +170,10 @@ class Router extends StrictObject {
                         }
                     }
 
-                    return $url;
+                    $project = Project::current();
+                    $path    = $project ? $project->getUriPath() : '';
+
+                    return /*($path === '/' ? '' : $path) . */$url;
                 }
             }
         }
@@ -162,7 +185,12 @@ class Router extends StrictObject {
     }
 
     public function invokeMethod(Controller $controller, \ReflectionMethod $method){
-        $args = array();
+        $args       = array();
+        $parsedBody = null;
+
+        // bind params for method call
+        $controller->callBindParams($parsedBody);
+
         foreach($method->getParameters() as $param){
             $name = $param->getName();
             if ( isset($this->args[$name]) ){
@@ -186,11 +214,15 @@ class Router extends StrictObject {
                     $cls_name = $class->getName();
                     $value    = $cls_name::current();
                     $args[$name] = $value;
-                } else if ( $class && ($class->isSubclassOf(RequestBody::type) || $class->getName() == RequestBody::type) ){
-                    $args[$name] = $class->newInstance();
                 } else if ( $param->isArray() ){
                     $args[$name] = $controller->query->getArray($name);
-                } else if ( $controller->query->has($name) ){
+                } else if ( $parsedBody && ($v = $parsedBody[$name]) ){
+
+                    if ($class !== null)
+                        $args[$name] = RequestBinder::getValue($v, $class->getName());
+                    else
+                        $args[$name] = $v;
+                } else if ( !$parsedBody && $controller->query->has($name) ){
                     // получаем данные из GET
                     if ( $class !== null )
                         $value = $controller->query->getTyped($name, $class->getName());
@@ -200,11 +232,10 @@ class Router extends StrictObject {
                 }
             }
         }
-        $method->invokeArgs($controller, $args);
+        return $method->invokeArgs($controller, $args);
     }
 
     public function route(Request $request){
-        
         $isCached = IS_PROD;
         if ($isCached){
             $hash  = $request->getHash();

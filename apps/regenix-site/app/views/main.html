@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{get 'title', default: 'Regenix'} - MVC Framework for PHP</title>
+    <link href="{asset 'img/favicon.png'}" rel="shortcut icon" type="image/x-icon" />
+
+    {html.asset 'main.css'}
+
+    {deps.asset 'jquery'}
+    {html.asset 'main.js'}
+
+</head>
+<body>
+<div id="container">
+    <header>
+        <h3>{ __('Easy & Power <span>MVC</span> Framework') | raw }</h3>
+        <h4>_{'for PHP'} 5.3+</h4>
+        <nav class="top">
+            {tag.links links: $links}
+        </nav>
+        <div id="subdesc">
+            <h1>{get 'subtitle', default: ''}</h1>
+            &#160;
+
+                {tag.social}
+
+        </div>
+    </header>
+    <div id="main">
+        {content}
+        <aside>
+
+        </aside>
+        <article>
+
+        </article>
+    </div>
+    <footer>
+        <address>
+            {tag.copyright company: 'Dim-S Software'}
+        </address>
+    </footer>
+</div>
+</body>
+</html>

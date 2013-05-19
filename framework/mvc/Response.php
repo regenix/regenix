@@ -3,7 +3,8 @@
 namespace framework\mvc;
 
 use framework\Core;
-use framework\StrictObject;
+use framework\exceptions\CoreException;
+use framework\exceptions\StrictObject;
 use framework\libs\Time;
 use framework\mvc\providers\ResponseProvider;
 
@@ -90,19 +91,18 @@ class Response extends StrictObject {
     }
 
     public function sendHeaders(){
-        header('HTTP/' . $this->httpVersion . ' ' . (int)$this->status);
-        header('Content-type: '. $this->contentType . '; charset=' . $this->charset);
+        header('HTTP/' . $this->httpVersion . ' ' . (int)$this->status, true);
+        header('Content-type: '. $this->contentType . '; charset=' . $this->charset, true);
         
         foreach($this->headers as $name => $value){
-            header($name . ': ' . $value);
+            header($name . ': ' . $value, true);
         }
-        header('Powered-By: Regenix Framework v' . Core::VERSION);
+        header('Powered-By: Regenix Framework v' . Core::VERSION, true);
     }
 
     public function send($headers = true){
         if ( is_object($this->entity) ){
-            $providerClass = ResponseProvider::get(get_class($this->entity)); 
-            
+            $providerClass = ResponseProvider::get(get_class($this->entity));
             $provider = new $providerClass($this);
             if ( $headers )
                 $this->sendHeaders();
@@ -190,7 +190,6 @@ abstract class MIMETypes {
      * @return string
      */
     public static function getByExt($ext){
-
         if (strpos( $ext, '.' ) === 0){
             $ext = substr($ext, 1);
         }
@@ -204,7 +203,6 @@ abstract class MIMETypes {
      * @param string $mime mime type
      */
     public static function registerExtension($ext, $mime){
-
         self::$exts[ $ext ] = $mime;
     }
 }
