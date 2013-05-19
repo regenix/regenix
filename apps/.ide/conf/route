@@ -1,5 +1,0 @@
-
-*       /           IDE.index
-
-*       /api/{_group}/{_method}/?                  api.{_group}Api.{_method}
-POST       /api/{_plugin}/{_group}/{_method}/?        .plugins.{_plugin}.controllers.api.{_group}Api.{_method}
