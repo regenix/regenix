@@ -13,3 +13,6 @@
 [submodule "framework/vendor/PHPMailer"]
 	path = framework/vendor/PHPMailer
 	url = git://github.com/PHPMailer/PHPMailer.git
+[submodule "modules/mongodb~0.5"]
+	path = modules/mongodb~0.5
+	url = git://github.com/dim-s/regenix-mongodb.git
