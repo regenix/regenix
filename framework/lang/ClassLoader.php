@@ -210,8 +210,8 @@ class ModulesClassLoader extends ClassLoader {
             return null;
 
         $file = ROOT . str_replace(
-            array(DIRECTORY_SEPARATOR, 'modules\\' . $mod . '\\'),
-            array('\\', 'modules/' . $mod . '~' . $ver . '/'),
+            array(DIRECTORY_SEPARATOR, 'modules/' . $mod . '/'),
+            array('/', 'modules/' . $mod . '~' . $ver . '/'),
             $class) . '.php';
 
         return file_exists($file) ? $file : null;
