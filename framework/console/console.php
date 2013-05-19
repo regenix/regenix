@@ -1,6 +1,8 @@
 <?php
 namespace framework\console;
 
+    use framework\Core;
+    use framework\lang\ClassLoader;
     use framework\lang\FrameworkClassLoader;
 
 {
@@ -15,6 +17,8 @@ namespace framework\console;
     require 'framework/lang/ClassLoader.php';
     $loader = new FrameworkClassLoader();
     $loader->register();
+
+    ClassLoader::load(Core::type);
 
     defined('STDIN') or define('STDIN', fopen('php://stdin', 'r'));
     define('CONSOLE_STDOUT', fopen('php://stdout', 'w+'));

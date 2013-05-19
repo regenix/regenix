@@ -2,6 +2,7 @@
 
 namespace framework\mvc;
 
+use framework\Core;
 use framework\exceptions\StrictObject;
 use framework\exceptions\CoreException;
 use framework\lang\ArrayTyped;
@@ -282,13 +283,20 @@ class Request extends StrictObject {
 class Session extends StrictObject {
 
     private $init = false;
+    private $id;
 
     protected function __construct(){
     }
 
     protected function check(){
         if (!$this->init){
-            session_start();
+            if (Core::isCLI()){
+                global $_SESSION;
+                $_SESSION = array();
+                $this->id = String::random(40);
+            } else
+                session_start();
+
             $this->init = true;
         }
     }
@@ -298,7 +306,7 @@ class Session extends StrictObject {
      */
     public function getId(){
         $this->check();
-        return session_id();
+        return Core::isCLI() ? $this->id : session_id();
     }
 
     /**
@@ -315,6 +323,7 @@ class Session extends StrictObject {
      * @return null|scalar
      */
     public function get($name, $def = null){
+        global $_SESSION;
         $this->check();
         return $this->has($name) ? $_SESSION[$name] : $def;
     }
@@ -324,6 +333,7 @@ class Session extends StrictObject {
      * @param $value string|int|float|null
      */
     public function put($name, $value){
+        global $_SESSION;
         $this->check();
         $_SESSION[$name] = $value;
     }
@@ -344,6 +354,7 @@ class Session extends StrictObject {
      */
     public function has($name){
         $this->check();
+        global $_SESSION;
         return isset($_SESSION[$name]);
     }
 
@@ -352,6 +363,7 @@ class Session extends StrictObject {
      */
     public function remove($name){
         $this->check();
+        global $_SESSION;
         unset($_SESSION[$name]);
     }
 
@@ -360,7 +372,11 @@ class Session extends StrictObject {
      */
     public function clear(){
         $this->check();
-        session_unset();
+        if (Core::isCLI()){
+            global $_SESSION;
+            $_SESSION = array();
+        } else
+            session_unset();
     }
 
     private static $current;

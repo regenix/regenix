@@ -199,18 +199,19 @@ class File extends StrictObject {
 
             foreach ($files as $fileInfo) {
                 $todo = ($fileInfo->isDir() ? 'rmdir' : 'unlink');
-                $todo($fileInfo->getRealPath());
+                @$todo($fileInfo->getRealPath());
             }
         } else {
-            unlink($this->path);
+            @unlink($this->path);
         }
-        return file_exists($this->path);
+        return !file_exists($this->path);
     }
 
     private $handle = null;
 
     /**
      * @param string $mode
+     * @return resource
      * @throws FileIOException
      * @throws static
      */
@@ -218,11 +219,12 @@ class File extends StrictObject {
         if ($this->handle)
             throw CoreException::formated('File "%s" already open, close the file before opening', $this->getPath());
 
-        $handle = fopen($this->getPath(), $mode);
+        $handle = fopen($this->path, $mode);
         if (!$handle)
             throw new FileIOException($this);
 
         $this->handle = $handle;
+        return $handle;
     }
 
     /**
@@ -259,7 +261,10 @@ class File extends StrictObject {
      */
     public function write($data, $length = null){
         if ($this->handle)
-            return fwrite($this->handle, (string)$data, $length);
+            // wtf php ?
+            return $length !== null
+                ? fwrite($this->handle, (string)$data, $length)
+                : fwrite($this->handle, (string)$data);
         else
             throw new FileNotOpenException($this);
     }

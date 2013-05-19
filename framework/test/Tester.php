@@ -7,7 +7,7 @@ use framework\mvc\Controller;
 
 class Tester extends Controller {
 
-    protected function startTesting($id = null){
+    public static function startTesting($id = null){
         $project = Project::current();
         $path    = $project->getTestPath();
         $tests   = array();
@@ -45,7 +45,7 @@ class Tester extends Controller {
         }
     }
 
-    protected static function getResults(){
+    public static function getResults(){
         $all_result = true;
         $json = array('result' => $all_result, 'tests' => array());
         foreach(UnitTest::$tested as $class => &$test){
@@ -114,7 +114,7 @@ class Tester extends Controller {
     }
 
     public function run($id = null){
-        $this->startTesting($id);
+        self::startTesting($id);
         $result = static::getResults();
         $this->put('project', Project::current());
 
@@ -129,7 +129,7 @@ class Tester extends Controller {
     }
 
     public function runAsJson(){
-        $this->startTesting();
+        self::startTesting();
         $this->renderJSON(static::getResults());
     }
 }

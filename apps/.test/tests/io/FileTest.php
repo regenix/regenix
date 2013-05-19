@@ -14,14 +14,14 @@ class FileTest extends BaseTest {
     }
 
     public function simple(){
-        $this->assert($this->file->exists());
-        $this->eq('test', $this->file->getExtension());
-        $this->assert($this->file->isFile());
+        $this->assert($this->file->exists(), 'Check file exists');
+        $this->eq('test', $this->file->getExtension(), 'Check file extension');
+        $this->assert($this->file->isFile(), 'Is file type check');
 
         $parent = $this->file->getParentFile();
-        $this->isType(File::type, $parent);
+        $this->isType(File::type, $parent, 'Check class of get parent');
         if ($parent)
-            $this->assert(is_dir($parent->getPath()));
+            $this->assert(is_dir($parent->getPath()), 'Check parent of file for type as dir');
     }
 
     public function read(){
@@ -36,10 +36,17 @@ class FileTest extends BaseTest {
         $this->assert($this->file->close(), 'Close file');
     }
 
-    public function write(){
-        $file = new File(__FILE__ . '/file2.test');
-        $this->assert($file->open('w+'), 'Open for read');
+    public function writeAndDelete(){
+        $file = File::createTempFile('.test');
+        $this->req($file->open('w+'), 'Open for write');
 
-        $file->write('test content');
+        $this->assert($file->write('test content') === 12, 'Write string to file');
+        $this->assert($file->write('test content', 5) === 5, 'Write limit string to file');
+
+        $file->seek(0);
+        $this->assert($file->read() === 'test contenttest ', 'Read written string from file');
+
+        $this->assert($file->close(), 'Close file');
+        $this->assert($file->delete(), 'Check closed file');
     }
 }

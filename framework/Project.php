@@ -77,15 +77,14 @@ class Project {
             SystemCache::setWithCheckFile($cacheName, $this->config, $configFile);
         }
 
-        if ($inWeb){
+        //if ($inWeb){
             $port = $this->config->getNumber('http.port', 0);
             if ($port){
                 Request::current()->setPort($port);
             } else
                 Request::current();
 
-            $this->applyConfig( $this->config );
-        }
+        $this->applyConfig( $this->config );
     }
 
     /**
@@ -187,7 +186,9 @@ class Project {
     }
 
 
-    public function register(){
+    public function register($inWeb = true){
+        Project::$instance = $this;
+
         SystemCache::setId($this->name);
         $request = Request::current();
 
@@ -201,7 +202,7 @@ class Project {
         }
 
         // config
-        $this->mode   = strtolower($this->config->getString('app.mode', 'dev'));
+        $this->mode = strtolower($this->config->getString('app.mode', 'dev'));
         if ($this->bootstrap)
             $this->bootstrap->onEnvironment($this->mode);
 
@@ -379,12 +380,14 @@ class Project {
         }
     }
 
+    /** @var Project */
+    private static $instance;
     
     /**
      * @return Project
      */
     public static function current(){
-        return Core::$__project;
+        return self::$instance;
     }
 
     private static $srcDir = null;

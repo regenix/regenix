@@ -27,16 +27,11 @@ abstract class Core {
      * @var array
      */
     private static $projects = array();
-    
-    /**
-     * @var Project
-     */
-    public static $__project = null;
 
     /** @var AbstractBootstrap */
     public static $bootstrap;
 
-    static function init(){
+    public static function init(){
         define('PHP_TRAITS', function_exists('trait_exists'));
 
         // TODO
@@ -62,8 +57,8 @@ abstract class Core {
             set_error_handler(array(Core::type, 'errorHandler'));*/
 
         self::_registerCurrentProject();
-        if (!self::$__project)
-            register_shutdown_function(array(Core::type, 'shutdown'), self::$__project);
+        if (!Project::current())
+            register_shutdown_function(array(Core::type, 'shutdown'), null);
     }
 
     private static function _registerTriggers(){
@@ -120,8 +115,7 @@ abstract class Core {
         foreach (self::$projects as $project){
             $url = $project->findCurrentPath();
             if ( $url ){
-                self::$__project = $project;
-                register_shutdown_function(array(Core::type, 'shutdown'), self::$__project);
+                register_shutdown_function(array(Core::type, 'shutdown'), $project);
                 $project->setUriPath( $url );
                 $project->register();
                 return;
@@ -335,6 +329,13 @@ abstract class Core {
         return ROOT . 'framework/';
     }
 
+    /**
+     * @return bool
+     */
+    public static function isCLI(){
+        return PHP_SAPI === 'cli';
+    }
+
     public static function errorHandler($errno, $errstr, $errfile, $errline){
         if ( APP_MODE_STRICT ){
             $project = Project::current();
@@ -361,7 +362,6 @@ abstract class Core {
     }
     
     public static function shutdown(Project $project){
-
         $error = error_get_last();
         if ($error){
             switch($error['type']){

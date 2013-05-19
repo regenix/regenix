@@ -8,6 +8,7 @@ use framework\console\commands\DepsCommand;
 use framework\console\commands\HelpCommand;
 use framework\console\commands\InfoCommand;
 use framework\console\commands\LoadCommand;
+use framework\console\commands\TestCommand;
 use framework\exceptions\CoreException;
 use framework\io\File;
 use framework\lang\IClassInitialization;
@@ -124,6 +125,7 @@ class Commander implements IClassInitialization {
         self::register(new AboutCommand());
         self::register(new LoadCommand());
         self::register(new DepsCommand());
+        self::register(new TestCommand());
     }
 
     private static $instance;
