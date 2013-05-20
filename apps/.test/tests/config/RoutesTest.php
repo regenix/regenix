@@ -19,20 +19,20 @@ class RoutesTest extends BaseTest {
     }
 
     public function main(){
-        $this->isType('array', $this->routes);
-        $this->eq('*', $this->routes[0]['method']);
-        $this->eq('/index', $this->routes[0]['path']);
-        $this->eq('.controllers.Application.index', $this->routes[0]['action']);
+        $this->assertType('array', $this->routes);
+        $this->assertEqual('*', $this->routes[0]['method']);
+        $this->assertEqual('/index', $this->routes[0]['path']);
+        $this->assertEqual('.controllers.Application.index', $this->routes[0]['action']);
 
-        $this->arraySize(3, $this->routes);
+        $this->assertArraySize(3, $this->routes);
     }
 
     public function regex(){
-        $this->eq('/{controller}/{method<[A-Ba-c0-9]+>}/', $this->routes[1]['path']);
-        $this->eq('.controllers.{controller}.action{method}', $this->routes[1]['action']);
+        $this->assertEqual('/{controller}/{method<[A-Ba-c0-9]+>}/', $this->routes[1]['path']);
+        $this->assertEqual('.controllers.{controller}.action{method}', $this->routes[1]['action']);
     }
 
     public function absolute(){
-        $this->eq('.Abs.method', $this->routes[2]['action']);
+        $this->assertEqual('.Abs.method', $this->routes[2]['action']);
     }
 }

@@ -19,20 +19,20 @@ class LoggingTest extends BaseTest {
     public function simple(){
         Logger::registerHandler(Logger::LEVEL_DEBUG, new LoggerTestHandler());
         Logger::debug('Test');
-        $this->eqStrong('Test', LoggerTestHandler::$log[0]);
+        $this->assertStrongEqual('Test', LoggerTestHandler::$log[0]);
     }
 
     public function level(){
         Logger::registerHandler(Logger::LEVEL_INFO, new LoggerTestHandler());
 
         Logger::debug('Not write');
-        $this->notEq('Not write', LoggerTestHandler::$log[0]);
+        $this->assertNotEqual('Not write', LoggerTestHandler::$log[0]);
 
         Logger::info('Info Write');
-        $this->eq('Info Write', LoggerTestHandler::$log[0]);
+        $this->assertEqual('Info Write', LoggerTestHandler::$log[0]);
 
         Logger::warn('Warn Write');
-        $this->eq('Warn Write', LoggerTestHandler::$log[0]);
+        $this->assertEqual('Warn Write', LoggerTestHandler::$log[0]);
     }
 
     public function multi(){
@@ -40,15 +40,15 @@ class LoggingTest extends BaseTest {
         Logger::registerHandler(Logger::LEVEL_WARN, new LoggerMultiTestHandler());
 
         Logger::info('log info');
-        $this->arraySize(0, LoggerMultiTestHandler::$log);
+        $this->assertArraySize(0, LoggerMultiTestHandler::$log);
 
         Logger::warn('log warn');
-        $this->arraySize(1, LoggerMultiTestHandler::$log);
-        $this->eq('log warn', LoggerMultiTestHandler::$log[0][0]);
+        $this->assertArraySize(1, LoggerMultiTestHandler::$log);
+        $this->assertEqual('log warn', LoggerMultiTestHandler::$log[0][0]);
 
         Logger::error('log error');
-        $this->eq('log error', LoggerMultiTestHandler::$log[1][0]);
-        $this->eq('log error', LoggerMultiTestHandler::$log[2][0]);
+        $this->assertEqual('log error', LoggerMultiTestHandler::$log[1][0]);
+        $this->assertEqual('log error', LoggerMultiTestHandler::$log[2][0]);
     }
 }
 

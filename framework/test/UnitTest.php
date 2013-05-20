@@ -28,7 +28,7 @@ abstract class UnitTest extends StrictObject {
     protected function onGlobalBefore(){}
     protected function onGlobalAfter(){}
 
-    private function assertWrite($result, $message = ''){
+    protected function assertWrite($result, $message = ''){
         $trace = debug_backtrace();
         $trace = $trace[1];
         $this->results[$this->currentMethod->getName()][] = array(
@@ -57,9 +57,10 @@ abstract class UnitTest extends StrictObject {
      * @param string $class
      * @param callable $callback
      * @param array $args
+     * @return $this
      * @throws \framework\exceptions\TypeException
      */
-    protected function exception($class, $callback, array $args = array(), $message = ''){
+    protected function assertException($class, $callback, array $args = array(), $message = ''){
         if (!is_callable($callback))
             throw new TypeException('$callback', 'callable');
 
@@ -73,14 +74,24 @@ abstract class UnitTest extends StrictObject {
         } catch (\Exception $e){
             if ($meta->isSubclassOf($class) || $meta->getName() === $class){
                 $this->assertWrite(true, $message);
-                return;
+                return $this;
             }
             throw $e;
         }
         $this->assertWrite(false, $message);
+        return $this;
     }
 
-    protected function notException($class, $callback, array $args = array(), $message = ''){
+    /**
+     * @param $class
+     * @param $callback
+     * @param array $args
+     * @param string $message
+     * @return $this
+     * @throws \framework\exceptions\TypeException
+     * @throws \Exception
+     */
+    protected function assertNotException($class, $callback, array $args = array(), $message = ''){
         if (!is_callable($callback))
             throw new TypeException('$callback', 'callable');
 
@@ -94,50 +105,84 @@ abstract class UnitTest extends StrictObject {
         } catch (\Exception $e){
             if ($meta->isSubclassOf($class) || $meta->getName() === $class){
                 $this->assertWrite(false, $message);
-                return;
+                return $this;
             }
             throw $e;
         }
         $this->assertWrite(true, $message);
+        return $this;
     }
 
-    protected function eq($with, $what, $message = ''){
+    /**
+     * @param $with
+     * @param $what
+     * @param string $message
+     * @return $this
+     */
+    protected function assertEqual($with, $what, $message = ''){
         $this->assertWrite($what == $with, $message);
+        return $this;
     }
 
-    protected function notEq($with, $what, $message = ''){
+    /**
+     * @param $with
+     * @param $what
+     * @param string $message
+     * @return $this
+     */
+    protected function assertNotEqual($with, $what, $message = ''){
         $this->assertWrite($what != $with, $message);
+        return $this;
     }
 
-    protected function eqStrong($with, $what, $message = ''){
+    /**
+     * @param $with
+     * @param $what
+     * @param string $message
+     * @return $this
+     */
+    protected function assertStrongEqual($with, $what, $message = ''){
         $this->assertWrite($what === $with, $message);
+        return $this;
     }
 
-    protected function max($max, $what, $message = ''){
-        $this->assertWrite($what <= $max, $message);
-    }
-
-    protected function min($min, $what, $message = ''){
-        $this->assertWrite($what >= $min, $message);
-    }
-
-    protected function isTrue($what, $message = ''){
-        $this->assertWrite($what === true, $message);
-    }
-
+    /**
+     * @param $what
+     * @param string $message
+     * @return $this
+     */
     protected function assert($what, $message = ''){
         $this->assertWrite($what === true, $message);
+        return $this;
     }
 
-    protected function isFalse($what, $message = ''){
+    /**
+     * @param $what
+     * @param string $message
+     * @return $this
+     */
+    protected function assertNot($what, $message = ''){
         $this->assertWrite($what === false, $message);
+        return $this;
     }
 
-    protected function isNull($what, $message = ''){
+    /**
+     * @param $what
+     * @param string $message
+     * @return $this
+     */
+    protected function assertNull($what, $message = ''){
         $this->assertWrite($what === null, $message);
+        return $this;
     }
 
-    protected function isType($what, $object, $message = ''){
+    /**
+     * @param $what
+     * @param $object
+     * @param string $message
+     * @return $this
+     */
+    protected function assertType($what, $object, $message = ''){
         switch($what){
             case 'array': $this->assertWrite(is_array($object), $message); break;
             case 'string': $this->assertWrite(is_string($object), $message); break;
@@ -151,22 +196,47 @@ abstract class UnitTest extends StrictObject {
                 $this->assertWrite(is_a($object, $what), $message);
             }
         }
+        return $this;
     }
 
-    protected function arraySize($what, $array, $message = ''){
-        $this->isType('array', $array);
+    /**
+     * @param array $what
+     * @param $array
+     * @param string $message
+     * @return $this
+     */
+    protected function assertArraySize($what, $array, $message = ''){
         $this->assertWrite(is_array($array) && (sizeof($array) === (int)$what), $message);
+        return $this;
     }
 
-    protected function isNotNull($what, $message = ''){
+    /**
+     * @param $what
+     * @param string $message
+     * @return $this
+     */
+    protected function assertNotNull($what, $message = ''){
         $this->assertWrite($what, $message);
+        return $this;
     }
 
-    protected function req($what, $message = ''){
+    /**
+     * @param $what
+     * @param string $message
+     * @return $this
+     */
+    protected function assertRequire($what, $message = ''){
         $this->assertWrite(!!($what), $message);
+        return $this;
     }
 
-    protected function issetArray($what, array $keys, $message = ''){
+    /**
+     * @param $what
+     * @param array $keys
+     * @param string $message
+     * @return $this
+     */
+    protected function assertIssetArray($what, array $keys, $message = ''){
         if (!is_array($what))
             $this->assertWrite(false, $message);
 
@@ -177,10 +247,17 @@ abstract class UnitTest extends StrictObject {
             }
         }
         $this->assertWrite(true, $message);
+        return $this;
     }
 
-    protected function notReq($what, $message = ''){
+    /**
+     * @param $what
+     * @param string $message
+     * @return $this
+     */
+    protected function assertNotRequire($what, $message = ''){
         $this->assertWrite(!($what), $message);
+        return $this;
     }
 
     public function startTesting(){
@@ -201,21 +278,27 @@ abstract class UnitTest extends StrictObject {
             }
         }
 
-        $this->onGlobalAfter();
-        $class   = new \ReflectionClass($this);
-        $methods = $class->getMethods(\ReflectionMethod::IS_PUBLIC);
-        foreach($methods as $method){
-            $declClass = $method->getDeclaringClass();
-            if ( $declClass->isAbstract() ) continue;
+        $this->onGlobalBefore();
+        try {
+            $class   = new \ReflectionClass($this);
+            $methods = $class->getMethods(\ReflectionMethod::IS_PUBLIC);
+            foreach($methods as $method){
+                $declClass = $method->getDeclaringClass();
+                if ( $declClass->isAbstract() ) continue;
+                if (in_array(strtolower($method->getName()),
+                    array('onglobalbefore', 'onglobalafter', 'onafter', 'onbefore', 'onexception'))) continue;
 
-            $this->currentMethod = $method;
-            $this->onBefore();
-            try {
-                $method->invoke($this);
-            } catch (\Exception $e){
-                $this->onException($e);
+                $this->currentMethod = $method;
+                $this->onBefore();
+                try {
+                    $method->invoke($this);
+                } catch (\Exception $e){
+                    $this->onException($e);
+                }
+                $this->onAfter();
             }
-            $this->onAfter();
+        } catch (\Exception $e){
+            // todo .. ?
         }
         $this->onGlobalAfter();
         return self::$tested[ get_class($this) ] = $this;

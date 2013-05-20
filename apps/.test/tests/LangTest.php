@@ -20,19 +20,19 @@ class LangTest extends BaseTest {
         );
         $typed = new ArrayTyped($array);
 
-        $this->isTrue($typed->has('my'));
-        $this->eqStrong(123, $typed->get('my'));
-        $this->eqStrong('123', $typed->getString('my'));
-        $this->eqStrong(true, $typed->getBoolean('my'));
-        $this->eq('xyz', $typed->get('???', 'xyz'));
+        $this->assert($typed->has('my'));
+        $this->assertStrongEqual(123, $typed->get('my'));
+        $this->assertStrongEqual('123', $typed->getString('my'));
+        $this->assertStrongEqual(true, $typed->getBoolean('my'));
+        $this->assertEqual('xyz', $typed->get('???', 'xyz'));
     }
 
     public function strings(){
-        $this->eq('1 abc 3', String::format('%s abc %s', 1, 3));
-        $this->eq('1 abc 3', String::formatArgs('%s abc %s', array(1, 3)));
+        $this->assertEqual('1 abc 3', String::format('%s abc %s', 1, 3));
+        $this->assertEqual('1 abc 3', String::formatArgs('%s abc %s', array(1, 3)));
 
-        $this->eqStrong('framework', String::substring('regenix framework', 8));
-        $this->eqStrong('regenix', $result = String::substring('framework regenix v1.0', 10, 17));
+        $this->assertStrongEqual('framework', String::substring('regenix framework', 8));
+        $this->assertStrongEqual('regenix', $result = String::substring('framework regenix v1.0', 10, 17));
 
         $this->assert(String::endsWith('regenix', 'nix'));
         $this->assert(String::startsWith('regenix', 'reg'));

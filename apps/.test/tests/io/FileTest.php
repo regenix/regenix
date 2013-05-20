@@ -15,11 +15,11 @@ class FileTest extends BaseTest {
 
     public function simple(){
         $this->assert($this->file->exists(), 'Check file exists');
-        $this->eq('test', $this->file->getExtension(), 'Check file extension');
+        $this->assertEqual('test', $this->file->getExtension(), 'Check file extension');
         $this->assert($this->file->isFile(), 'Is file type check');
 
         $parent = $this->file->getParentFile();
-        $this->isType(File::type, $parent, 'Check class of get parent');
+        $this->assertType(File::type, $parent, 'Check class of get parent');
         if ($parent)
             $this->assert(is_dir($parent->getPath()), 'Check parent of file for type as dir');
     }
@@ -38,7 +38,7 @@ class FileTest extends BaseTest {
 
     public function writeAndDelete(){
         $file = File::createTempFile('.test');
-        $this->req($file->open('w+'), 'Open for write');
+        $this->assertRequire($file->open('w+'), 'Open for write');
 
         $this->assert($file->write('test content') === 12, 'Write string to file');
         $this->assert($file->write('test content', 5) === 5, 'Write limit string to file');

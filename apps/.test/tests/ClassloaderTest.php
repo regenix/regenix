@@ -9,22 +9,22 @@ class ClassloaderTest extends BaseTest {
     const type = __CLASS__;
 
     public function system(){
-        $this->req(ClassLoader::$modulesLoader);
+        $this->assertRequire(ClassLoader::$modulesLoader);
         $loader = ClassLoader::$frameworkLoader;
-        $this->req($loader);
+        $this->assertRequire($loader);
         if ($loader){
-            $this->req($loader->findFile('framework\\exceptions\\HttpException'));
+            $this->assertRequire($loader->findFile('framework\\exceptions\\HttpException'));
         }
     }
 
     public function project(){
         $loader = Project::current()->classLoader;
-        $this->req($loader);
+        $this->assertRequire($loader);
         if ($loader){
-            $this->req($loader->findFile('\\Bootstrap'));
-            $this->req($loader->findFile('Bootstrap'));
-            $this->req($loader->findFile('controllers\\Application'));
-            $this->notReq($loader->findFile('controllers\\Application.php'));
+            $this->assertRequire($loader->findFile('\\Bootstrap'));
+            $this->assertRequire($loader->findFile('Bootstrap'));
+            $this->assertRequire($loader->findFile('controllers\\Application'));
+            $this->assertNotRequire($loader->findFile('controllers\\Application.php'));
         }
     }
 }

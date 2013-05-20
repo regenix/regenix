@@ -26,32 +26,32 @@ class I18nTest extends  BaseTest {
     }
 
     public function simple(){
-        $this->eq('my', I18n::getLang());
+        $this->assertEqual('my', I18n::getLang());
 
-        $this->eq('message', I18n::get('key'));
-        $this->eq('message', I18n::get('message'));
+        $this->assertEqual('message', I18n::get('key'));
+        $this->assertEqual('message', I18n::get('message'));
     }
 
     public function format(){
-        $this->eq('message 123 x', I18n::get('message {0} x', 123));
-        $this->eq('message 123 x', I18n::get('message {0} x', array(123)));
+        $this->assertEqual('message 123 x', I18n::get('message {0} x', 123));
+        $this->assertEqual('message 123 x', I18n::get('message {0} x', array(123)));
 
-        $this->eq('message 123 x abc z', I18n::get('message {0} x {1} z', 123, 'abc'));
-        $this->eq('message 123 x abc z', I18n::get('message {0} x {1} z', array(123, 'abc')));
+        $this->assertEqual('message 123 x abc z', I18n::get('message {0} x {1} z', 123, 'abc'));
+        $this->assertEqual('message 123 x abc z', I18n::get('message {0} x {1} z', array(123, 'abc')));
     }
 
     public function formatNamed(){
-        $this->eq('message 123 x XYZ', I18n::get('message {id} x {code}', array('id' => 123, 'code' => 'XYZ')));
+        $this->assertEqual('message 123 x XYZ', I18n::get('message {id} x {code}', array('id' => 123, 'code' => 'XYZ')));
     }
 
     public function multi(){
-        $this->isTrue(I18n::availLang('xz'));
+        $this->assert(I18n::availLang('xz'));
 
         I18n::setLang('xz', false);
-        $this->eq('alert', I18n::get('field'));
-        $this->eq('key', I18n::get('key'));
+        $this->assertEqual('alert', I18n::get('field'));
+        $this->assertEqual('key', I18n::get('key'));
 
         I18n::setLang('my', false);
-        $this->eq('message', I18n::get('key'));
+        $this->assertEqual('message', I18n::get('key'));
     }
 }
