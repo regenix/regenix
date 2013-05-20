@@ -6,7 +6,7 @@ use framework\lang\ArrayTyped;
 use framework\lang\ClassLoader;
 use framework\lang\String;
 
-class LangTest extends BaseTest {
+class LangTest extends RegenixTest {
 
     const type = __CLASS__;
 

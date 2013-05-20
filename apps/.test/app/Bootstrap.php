@@ -22,7 +22,7 @@ namespace {
 
         }
 
-        public function onTest(&$tests){
+        public function onTest(array &$tests){
             $tests = array(
                 new ClassloaderTest(),
                 new LangTest(),
@@ -35,7 +35,12 @@ namespace {
                 new tests\config\RoutesTest(),
 
                 new tests\mvc\SessionTest(),
-                new tests\mvc\FlashTest()
+                new tests\mvc\FlashTest(),
+                new tests\mvc\RequestQueryTest(),
+                new tests\mvc\RequestBinderTest(),
+                new tests\mvc\URLTest(),
+
+                new tests\mvc\RequestTest()
             );
         }
     }

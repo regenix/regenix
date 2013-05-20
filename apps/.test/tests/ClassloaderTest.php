@@ -4,7 +4,7 @@ namespace tests;
 use framework\Project;
 use framework\lang\ClassLoader;
 
-class ClassloaderTest extends BaseTest {
+class ClassloaderTest extends RegenixTest {
 
     const type = __CLASS__;
 

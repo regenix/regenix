@@ -3,10 +3,10 @@ namespace tests\config;
 
 use framework\config\PropertiesConfiguration;
 use framework\io\File;
-use tests\BaseTest;
+use tests\RegenixTest;
 use tests\ClassloaderTest;
 
-class PropertiesTest extends BaseTest {
+class PropertiesTest extends RegenixTest {
 
     /** @var PropertiesConfiguration */
     protected $config;

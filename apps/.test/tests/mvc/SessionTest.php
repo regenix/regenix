@@ -2,9 +2,9 @@
 namespace tests\mvc;
 
 use framework\mvc\Session;
-use tests\BaseTest;
+use tests\RegenixTest;
 
-class SessionTest extends BaseTest {
+class SessionTest extends RegenixTest {
 
     const type = __CLASS__;
 

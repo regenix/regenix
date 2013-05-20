@@ -4,7 +4,7 @@ namespace tests;
 
 use framework\libs\I18n;
 
-class I18nTest extends  BaseTest {
+class I18nTest extends  RegenixTest {
 
     const type = __CLASS__;
 

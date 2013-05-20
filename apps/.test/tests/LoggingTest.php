@@ -6,7 +6,7 @@ use framework\logger\LoggerHandler;
 
 Logger::debug('Init logger test');
 
-class LoggingTest extends BaseTest {
+class LoggingTest extends RegenixTest {
 
     public function __construct(){
         $this->requiredOk(ClassloaderTest::type);

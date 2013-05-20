@@ -3,9 +3,9 @@ namespace tests\config;
 
 use framework\io\File;
 use framework\mvc\route\RouterConfiguration;
-use tests\BaseTest;
+use tests\RegenixTest;
 
-class RoutesTest extends BaseTest {
+class RoutesTest extends RegenixTest {
 
     /** @var RouterConfiguration */
     protected $config;

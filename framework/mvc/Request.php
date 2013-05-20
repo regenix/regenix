@@ -37,9 +37,9 @@ class Request extends StrictObject {
         $this->headers = $headers;
     }
 
-    public static function createFromGlobal(){
+    public static function createFromGlobal($headers = null){
 
-        $headers = array();
+        if ($headers === null)
         if ( function_exists('getallheaders') ){
             $headers = getallheaders();
         } else if ( function_exists('apache_request_headers') ){
@@ -186,7 +186,7 @@ class Request extends StrictObject {
                 $lang = explode('-', $lang);
                 $lang = $lang[0];
             }
-            $langs[] = $lang;
+            $langs[] = trim($lang);
         }
         return $langs;
     }
@@ -220,7 +220,7 @@ class Request extends StrictObject {
      * @return boolean
      */
     public function isMethod($method){
-        return $this->method === $method;
+        return $this->method === strtoupper($method);
     }
     
     /**
@@ -230,7 +230,7 @@ class Request extends StrictObject {
      */
     public function isMethods(array $methods){
         foreach ($methods as $value) {
-            if ( $value === $this->method )
+            if ( strtoupper($value) === $this->method )
                 return true;
         }
         return false;
@@ -258,7 +258,7 @@ class Request extends StrictObject {
         if ( !($baseUrl instanceof URL) ){
             $baseUrl = new URL($baseUrl);
         }
-        return $this->currentUrl->constaints($baseUrl);
+        return $this->currentUrl->constraints($baseUrl);
     }
 
     private static $instance;
@@ -616,9 +616,9 @@ class RequestQuery extends StrictObject {
     private $args = null;
 
 
-    public function __construct() {
+    public function __construct($query = null) {
         $this->request = Request::current();
-        $this->args = URL::parseQuery( $this->request->getQuery() );
+        $this->args = URL::parseQuery( $query !== null ? $query : $this->request->getQuery() );
     }
     
     /**
@@ -771,6 +771,9 @@ abstract class RequestBinder extends StrictObject {
     /**
      * @param $value string
      * @param $type string
+     * @throws BindValueException
+     * @throws BindValueInstanceException
+     * @return array|bool|float|\framework\mvc\RequestBindValue|int|string
      */
     public static function getValue($value, $type){
         switch($type){
@@ -816,12 +819,18 @@ abstract class RequestBinder extends StrictObject {
 }
 
 class BindValueException extends CoreException {
+
+    const type = __CLASS__;
+
     public function __construct($value, $type){
         parent::__construct(String::format('Can\'t bind `%s` value as `%s` type', (string)$value, $type));
     }
 }
 
 class BindValueInstanceException extends CoreException {
+
+    const type = __CLASS__;
+
     public function __construct($type){
         parent::__construct(String::format(
             'Bind error: `%s` class must be implements \framework\mvc\RequestBindValue interface for bind value', $type
@@ -858,8 +867,9 @@ class RequestBody extends StrictObject {
      * parse data as json
      * @return array
      */
-    public function asJSON(){
-        return json_decode($this->getData(), true);
+    public function asJson(){
+        $json = json_decode($this->getData(), true);
+        return $json;
     }
 
     /**
@@ -994,6 +1004,7 @@ class URL extends StrictObject {
             if (is_string( $url )){
 
                 $info = parse_url($url);
+
                 $this->protocol = $info['scheme'] ? $info['scheme'] : 'http';
                 $this->host     = $info['host'];
                 $this->port     = $info['port'] ? (int)$info['port'] : 80;
@@ -1003,14 +1014,13 @@ class URL extends StrictObject {
                 $this->url = $url;
 
             } else if ( $url instanceof URL ) {
-
                 $this->protocol = $url->protocol;
                 $this->host     = $url->host;
                 $this->port     = $url->port;
                 $this->path     = $url->path;
                 $this->query    = $url->query;
 
-                $this->url = $url;
+                $this->url = $url->url;
             }
         }
     }
@@ -1091,7 +1101,7 @@ class URL extends StrictObject {
      * @param URL $url
      * @return boolean
      */
-    public function constaints(URL $url){
+    public function constraints(URL $url){
         return $this->port === $url->port
             && $this->protocol === $url->protocol
             && (!$url->host || $this->host === $url->host)

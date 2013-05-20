@@ -2,9 +2,9 @@
 namespace tests\io;
 
 use framework\io\File;
-use tests\BaseTest;
+use tests\RegenixTest;
 
-class FileTest extends BaseTest {
+class FileTest extends RegenixTest {
 
     /** @var File */
     protected $file;
