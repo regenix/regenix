@@ -6,6 +6,7 @@ namespace framework\console;
     use framework\lang\FrameworkClassLoader;
 
 {
+    ini_set('display_errors', 'Off');
     set_time_limit(0);
     error_reporting(E_ALL ^ E_NOTICE);
     header_remove();
