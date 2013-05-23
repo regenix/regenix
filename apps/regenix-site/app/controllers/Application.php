@@ -1,13 +1,21 @@
 <?php
 namespace controllers;
 
+use framework\Project;
 use framework\cache\Cache;
+use framework\lang\ClassFileScanner;
+use framework\lang\ClassScanner;
 use framework\libs\I18n;
-use models\Group;
-use models\User;
-use notifiers\ConfirmNotifier;
+use framework\widgets\Widget;
 
 class Application extends AppController {
+
+    public function test(){
+        $meta = ClassScanner::find('controllers\\Application');
+        dump($meta->getFilename());
+
+        $this->ok();
+    }
 
     public function page($page = 'index'){
         $lang = I18n::getLang();

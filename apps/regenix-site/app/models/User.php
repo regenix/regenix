@@ -43,19 +43,6 @@ class User extends ActiveRecord {
      */
     public $groups;
 
-
-    /**
-     * @ignore
-     * @var
-     */
-    public $ignore = 123;
-
-    /**
-     * @readonly
-     * @var string
-     */
-    public $readonly = '';
-
     /**
      * @return $this
      */

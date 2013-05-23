@@ -1,4 +1,8 @@
 # Routes
 
+*   /test/                              Application.test
+
+*       /admin/                         module:admin
+
 *       /{page}/                        Application.page
 *       /                               Application.page

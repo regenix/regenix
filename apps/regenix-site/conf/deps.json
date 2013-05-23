@@ -6,6 +6,7 @@
     },
 
     "modules": {
-        "mongodb": {"version": "1.*"}
+        "mongodb": {"version": ".*"},
+        "admin"  : {"version": ".*"}
     }
 }

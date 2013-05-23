@@ -1,17 +1,25 @@
 <?php
 namespace {
 
-    use framework\AbstractBootstrap;
+    use framework\AbstractBootstrap as BaseBootstrap, framework\Project;
     use framework\cache\Cache;
+    use framework\lang\IClassInitialization;
     use framework\libs\I18n;
     use framework\mvc\Request;
     use framework\mvc\route\Router;
     use framework\mvc\template\BaseTemplate;
 
-    class Bootstrap extends AbstractBootstrap {
+    class XXX implements IClassInitialization {
+
+        public static function initialize()
+        {
+            // TODO: Implement initialize() method.
+        }
+    }
+
+    class Bootstrap extends BaseBootstrap {
 
         public function onStart(){
-
             $request = Request::current();
             if ($request->isBase('http://regenix.ru') || $request->isBase('http://localhost'))
                 I18n::setLang('ru');
