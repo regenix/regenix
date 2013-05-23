@@ -21,7 +21,6 @@ class TestCommand extends ConsoleCommand {
             $this->writeln('Start module "%s" testing ...', $module);
         } else {
             $this->project->register(false);
-
             $this->writeln('Start "%s" testing ...', $this->project->getName());
             Tester::startTesting();
         }

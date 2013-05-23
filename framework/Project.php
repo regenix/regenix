@@ -9,13 +9,15 @@ use framework\io\File;
 
 use framework\config\Configuration;
 use framework\config\PropertiesConfiguration;
-use framework\lang\ModulesClassLoader;
+use framework\io\FileNotFoundException;
+use framework\lang\ClassScanner;
 use framework\libs\Captcha;
 use framework\modules\AbstractModule;
 use framework\mvc\Assets;
 use framework\mvc\ModelClassloader;
 use framework\mvc\Request;
 use framework\mvc\URL;
+use framework\mvc\route\Router;
 use framework\mvc\route\RouterConfiguration;
 use framework\config\ConfigurationReadException;
 
@@ -172,6 +174,72 @@ class Project {
     public function getUriPath(){
         return $this->currentPath;
     }
+
+    /**
+     * @param string $group
+     * @param bool $version, if false return last version
+     * @return array
+     * @throws static
+     */
+    public function getAsset($group, $version = false){
+        $all      = $this->getAssets();
+        $versions = $all[$group];
+
+        if (!$versions)
+            throw CoreException::formated('Asset `%s` not found', $group);
+
+        if ($version){
+            $info = $versions[$version];
+            if (!is_array($info)){
+                throw CoreException::formated('Asset `%s/%s` not found', $group, $version);
+            }
+        } else {
+            list($version, $info) = each($versions);
+        }
+
+        $meta = $this->repository->getLocalMeta($group, $version);
+        if (!$meta)
+            throw CoreException::formated('Meta information not found for `%s` asset, please run `deps update` for fix it', $group);
+
+        $info['version'] = $version;
+        return $info + $meta;
+    }
+
+    /**
+     * Get files all assets
+     * @param string $group
+     * @param bool $version
+     * @param array $included
+     * @return array
+     * @throws static
+     * @throws io\FileNotFoundException
+     */
+    public function getAssetFiles($group, $version = false, &$included = array()){
+        $info = $this->getAsset($group, $version);
+
+        if ($included[$group][$info['version']])
+            return array();
+
+        $included[$group][$info['version']] = true;
+
+        $result = array();
+        if (is_array($info['deps'])){
+            foreach($info['deps'] as $gr => $v){
+                $result = array_merge($result, $this->getAssetFiles($gr, $v, $included));
+            }
+        }
+
+        $path   = '/assets/' . $group . '~' . $info['version'] . '/';
+        foreach((array)$info['files'] as $file){
+            $result[] = $path . $file;
+
+            if (IS_DEV && !is_file(ROOT . $path . $file)){
+                throw new FileNotFoundException(new File($path . $file));
+            }
+        }
+
+        return $result;
+    }
     
     public function isDev(){
         return $this->mode != 'prod';
@@ -187,10 +255,12 @@ class Project {
 
 
     public function register($inWeb = true){
-        Project::$instance = $this;
+        ClassScanner::current()->addClassPath($this->getPath());
 
+        Project::$instance = $this;
         SystemCache::setId($this->name);
         $request = Request::current();
+
 
         if (is_file($file = $this->getPath() . 'app/Bootstrap.php')){
             require $file;
@@ -216,7 +286,7 @@ class Project {
 
         define('APP_MODE', $this->mode);     
         $this->config->setEnv( $this->mode );
-        
+
         define('APP_PUBLIC_PATH', $this->config->get('app.public', '/public/' . $this->name . '/'));
         $this->secret = $this->config->getString('app.secret');
         if ( !$this->secret ){
@@ -225,35 +295,23 @@ class Project {
         
         // temp
         Core::setTempDir( sys_get_temp_dir() . '/regenix/' . $this->name . '/' );
-        
-        // cache
-        /*if ( $this->config->getBoolean('cache.enable', true) ){
-            $done = false;
-            $detect = $this->config->getArray('cache.detect');
-            foreach ($detect as $el){
-                $class = '\\framework\\cache\\' . $el . 'Cache';
-                if ( $class::canUse() ){
-                    DI::define('Cache', $class, true);
-                    $done = true;
-                    break;
-                }
-            }
-            
-            if ( !$done )
-                DI::define('Cache', '\\framework\\cache\\DisableCache', true);
-            
-        } else {
-            DI::define('Cache', '\\framework\\cache\\DisableCache', true);
-        }*/
-        
-        // classloader
-        $this->_registerLoader();
 
-        // route
-        $this->_registerRoute();
+        // todo delete ? refactoring
+        $this->classLoader = Core::$classLoader;
 
         // module deps
         $this->_registerDeps();
+
+        $scanner = ClassScanner::current();
+        if (IS_PROD)
+            $scanner->scanCached();
+        else
+            $scanner->scan();
+
+        AbstractModule::doRegister();
+
+        // route
+        $this->_registerRoute();
 
         if (IS_DEV)
             $this->_registerTests();
@@ -290,8 +348,8 @@ class Project {
 
     /**
      * Get all assets of project
+     * @throws static
      * @return array
-     * @throws
      */
     public function getAssets(){
         if (is_array($this->assets))
@@ -347,31 +405,23 @@ class Project {
         $this->router->addRoute('GET', '/@test.json', 'framework.test.Tester.runAsJson');
     }
 
-    private function _registerLoader(){
-        $this->classLoader = new ClassLoader();
-        $this->classLoader->addClassPath(ROOT . 'framework/vendor/');
-        $this->classLoader->addClassLibPath(ROOT . 'framework/vendor/');
-        $this->classLoader->addClassPath($this->getPath() . 'app/');
-        $this->classLoader->addNamespace('tests\\', $this->getPath());
-
-        $this->classLoader->register();
-    }
-
     private function _registerRoute(){
         // routes
         $routeFile = $this->getPath() . 'conf/route';
         $this->router = SystemCache::getWithCheckFile('route', $routeFile);
 
         if ( $this->router === null ){
+            $this->router = new Router();
 
-            $routeFiles   = array();
+            $routeConfig  = new RouterConfiguration();
+
             foreach (modules\AbstractModule::$modules as $name => $module){
-                $routeFiles['.modules' . $name . '.controllers.'] = $module->getRouteFile();
+                $routeConfig->addModule($name, '.modules.' . $name . '.controllers.', $module->getRouteFile());
             }
-            $routeFiles[] = new File($routeFile);
 
-            $routeConfig  = new RouterConfiguration($routeFiles);
-            $this->router = new mvc\route\Router();
+            $routeConfig->setFile(new File($routeFile));
+            $routeConfig->load();
+
             $this->router->applyConfig($routeConfig);
             SystemCache::setWithCheckFile('route', $this->router, $routeFile, 60 * 2);
         }

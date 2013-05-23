@@ -107,6 +107,10 @@ abstract class AbstractActiveRecord extends StrictObject
         return $service->__callGetter($this, $name);
     }
 
+    /**
+     * @param $name
+     * @return mixed
+     */
     public function getRawValue($name){
         if (!array_key_exists($name, $this->__data))
             return parent::__get($name);
@@ -174,8 +178,39 @@ abstract class AbstractActiveRecord extends StrictObject
      */
     abstract static function find(AbstractQuery $query = null, array $fields = array());
 
-    /** @return AbstractQuery */
-    abstract public static function query();
+    /**
+     * @param string $where
+     * @internal param $values ...
+     * @return ActiveRecordCursor
+     */
+    public static function filter($where = ''){
+        $query = static::query();
+        if ($where)
+            call_user_func_array(array($query, 'filter'), func_get_args());
+
+        return static::find($query);
+    }
+
+    /**
+     * @param string $key
+     * @param string|AbstractQuery $whereOrQuery
+     * @return array
+     */
+    public static function distinct($key, $whereOrQuery = ''){
+        if (!($whereOrQuery instanceof AbstractQuery)){
+            $query = static::query();
+            if ($whereOrQuery)
+                call_user_func_array(array($query, 'filter'), array_slice(func_get_args(),1));
+        }
+
+        return static::getService()->distinct($whereOrQuery, $key);
+    }
+
+    /**
+     * @param string $where
+     * @return AbstractQuery
+     */
+    abstract public static function query($where = '');
 
     public function __clone(){
         $this->setId(null);

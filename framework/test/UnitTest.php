@@ -11,6 +11,8 @@ use framework\lang\ClassLoader;
  */
 abstract class UnitTest extends StrictObject {
 
+    const type = __CLASS__;
+
     /** @var UnitTest[] */
     public static $tested = array();
 

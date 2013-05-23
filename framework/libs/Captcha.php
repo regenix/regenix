@@ -66,7 +66,7 @@ class Captcha implements IClassInitialization {
         if (!extension_loaded('gd'))
             throw CoreException::formated('Captcha feature needs installed and enabled `GD2` extension');
 
-        if (!ClassLoader::load('\\kcaptcha\\KCaptcha'))
+        if (!class_exists('\\kcaptcha\\KCaptcha'))
             throw CoreException::formated('KCaptcha vendor library not found, `vendor/kcaptcha/` not found');
 
         ResponseProvider::register(ResponseCaptchaProvider::type);

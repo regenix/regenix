@@ -2,6 +2,7 @@
 
 namespace framework\deps;
 
+use framework\Project;
 use framework\exceptions\CoreException;
 use framework\io\File;
 use framework\lang\IClassInitialization;

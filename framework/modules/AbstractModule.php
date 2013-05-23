@@ -6,6 +6,7 @@ use framework\Core;
 use framework\Project;
 use framework\exceptions\ClassNotFoundException;
 use framework\lang\ClassLoader;
+use framework\lang\ClassScanner;
 use framework\mvc\Assets;
 use framework\mvc\route\Router;
 use framework\exceptions\CoreException;
@@ -38,11 +39,6 @@ abstract class AbstractModule {
     }
 
     public function getDescription(){ return null; }
-    
-    
-    // on route reload
-    public function onRoute(Router $router){}
-    
 
     public static function getCurrent(){
         $tmp = explode('\\', get_called_class(), 3);
@@ -62,7 +58,7 @@ abstract class AbstractModule {
      * @return string
      */
     final public function getPath(){
-        return 'modules/' . $this->uid . '/';
+        return ROOT . 'modules/' . $this->uid . '~' . $this->version . '/';
     }
 
     /**
@@ -88,42 +84,35 @@ abstract class AbstractModule {
      * register module by name, all modules in module directory
      * @param string $moduleName
      * @param $version
-     * @throws
+     * @throws static
      * @return boolean
      */
     public static function register($moduleName, $version){
         if ( self::$modules[ $moduleName ] )
             return false;
 
-        ClassLoader::$modulesLoader->addModule($moduleName, $version);
+        ClassScanner::current()->addClassPath(ROOT . 'modules/' . $moduleName . '~' . $version . '/');
+        // ClassLoader::$modulesLoader->addModule($moduleName, $version);
 
-        self::$modules[ $moduleName ] = true;
-        $bootstrapName = '\\modules\\' . $moduleName . '\\Module';
-        if (!ClassLoader::load($bootstrapName)){
-            unset(self::$modules[ $moduleName ]);
-            throw CoreException::formated('Unload bootstrap `%s` class of `%s` module', $bootstrapName, $moduleName . '~' . $version);
-        }
-
-        $assets = $bootstrapName::getAssetDeps();
-        /*
-         * TODO ??
-        Project::current()->assets->addDeps($assets);
-        */
-
-        /** @var $module AbstractModule */
-        $deps = $bootstrapName::getDeps();
-        foreach((array)$deps as $name => $ver){
-            self::register($name, $ver);
-        }
-
-        $module = new $bootstrapName();
-        $module->uid     = $moduleName;
-        $module->version = $version;
-
-        self::$modules[ $moduleName ] = $module;
+        self::$modules[ $moduleName ] = array('version' => $version);
         return true;
     }
 
+    public static function doRegister(){
+        foreach(self::$modules as $moduleName => &$module){
+            $bootstrapName = '\\modules\\' . $moduleName . '\\Module';
+            $version = $module['version'];
+
+            if (!ClassLoader::load($bootstrapName)){
+                unset(self::$modules[ $moduleName ]);
+                throw CoreException::formated('Unload bootstrap `%s` class of `%s` module', $bootstrapName, $moduleName . '~' . $version);
+            }
+
+            $module = new $bootstrapName();
+            $module->uid     = $moduleName;
+            $module->version = $version;
+        }
+    }
 
     /**
      * @return array

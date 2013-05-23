@@ -4,6 +4,7 @@ namespace framework\test;
 use framework\Project;
 use framework\exceptions\CoreException;
 use framework\lang\ClassLoader;
+use framework\lang\ClassScanner;
 use framework\mvc\Controller;
 
 class Tester extends Controller {
@@ -11,50 +12,38 @@ class Tester extends Controller {
     public static function startTesting($id = null, $moduleWithVersion = null){
         $project = Project::current();
 
-        $prefix = '';
         if ($moduleWithVersion){
             if (!is_dir(ROOT . 'modules/' . $moduleWithVersion . '/'))
                 throw CoreException::formated('Module `%s` not found', $moduleWithVersion);
 
-            $path   = ROOT . 'modules/' . $moduleWithVersion . '/tests/';
+            $scanner = ClassScanner::current();
+            $scanner->addClassPath(ROOT . 'modules/' . $moduleWithVersion . '/');
+            $scanner->scan();
 
             $module = explode('~', $moduleWithVersion, 2);
-            ClassLoader::$modulesLoader->addModule($module[0], $module[1]);
-            $prefix = 'modules\\' . $module[0] . '\\';
-        } else
-            $path = $project->getTestPath();
+            $namespace = 'modules\\' . $module[0] . '\\';
+        } else {
+            $namespace = 'tests\\';
+        }
 
         $tests = array();
 
-        if (is_dir($path)){
-            $it = new \RecursiveDirectoryIterator($path);
-            foreach(new \RecursiveIteratorIterator($it) as $file){
-                /** @var \SplFileInfo $file */
-                if ($file->isFile() && $file->getExtension() === 'php'){
-                    $filename = str_replace(array('\\', $path), array('/', ''), $file->getRealPath());
-                    $class = $prefix . 'tests\\' . str_replace('/', '\\', substr($filename, 0, -4));
+        $testClass = ClassScanner::find(UnitTest::type);
+        foreach($testClass->getChildrens($namespace) as $child){
+            $class = $child->getName();
+            $reflection = new \ReflectionClass($class);
+            if ($reflection->isAbstract())
+                continue;
 
-                    if ($id){
-                        if (str_replace('\\', '.', $class) !== $id)
-                            continue;
-                    }
+            $test    = new $class;
+            $tests[] = $test;
+        }
 
-                    $reflection = new \ReflectionClass($class);
-                    if ($reflection->isAbstract())
-                        continue;
+        if (!$module && $project && $project->bootstrap)
+            $project->bootstrap->onTest($tests);
 
-                    /** @var $test UnitTest */
-                    $test    = new $class;
-                    $tests[] = $test;
-                }
-            }
-
-            if ($project->bootstrap)
-                $project->bootstrap->onTest($tests);
-
-            foreach($tests as $test){
-                $test->startTesting();
-            }
+        foreach($tests as $test){
+            $test->startTesting();
         }
     }
 

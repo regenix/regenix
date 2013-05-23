@@ -16,10 +16,9 @@ namespace framework\console;
     define('APP_MODE', 'dev');
 
     require 'framework/lang/ClassLoader.php';
-    $loader = new FrameworkClassLoader();
-    $loader->register();
+    require 'framework/Core.php';
 
-    ClassLoader::load(Core::type);
+    Core::registerSystemClassLoader();
 
     defined('STDIN') or define('STDIN', fopen('php://stdin', 'r'));
     define('CONSOLE_STDOUT', fopen('php://stdout', 'w+'));

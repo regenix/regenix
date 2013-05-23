@@ -190,6 +190,13 @@ abstract class AbstractService extends StrictObject {
     abstract public function findByFilter(AbstractQuery $query, array $fields = array(), $lazy = false);
 
     /**
+     * @param AbstractQuery $query
+     * @param string $key
+     * @return array
+     */
+    abstract public function distinct(AbstractQuery $query, $key);
+
+    /**
      * @param mixed $value
      * @param array $fields
      * @param bool $lazy
@@ -573,18 +580,113 @@ abstract class AbstractQuery {
                 $el = $this->service->typed($el, $info);
             }
             return $value;
-        } else
+        } else {
+
             return $this->service->typed($value, $info);
+        }
     }
 
-    public function addOr(AbstractQuery $query){
-        $this->data['$or'][] = $query;
+    protected function addOR(AbstractQuery $query){
+        $this->data['$or'][] = $query->getData();
         return $this;
     }
 
-    protected function popValue($field, $value, $prefix = '$eq'){
+    protected function addAND(AbstractQuery $query){
+        $this->data['$and'][] = $query->getData();
+        return $this;
+    }
+
+    /**
+     * @param string|AbstractQuery $whereOrQuery
+     * @return $this
+     */
+    public function _OR($whereOrQuery){
+        if ($whereOrQuery instanceof AbstractQuery)
+            return $this->addOR($whereOrQuery);
+
+        $query = clone $this;
+        $query->clear();
+        call_user_func_array(array($query, 'filter'), func_get_args());
+
+        return $this->addOR($query);
+    }
+
+    /**
+     * @param string|AbstractQuery $whereOrQuery
+     * @return $this
+     */
+    public function _AND($whereOrQuery){
+        if ($whereOrQuery instanceof AbstractQuery)
+            return $this->addAND($whereOrQuery);
+
+        $query = clone $this;
+        $query->clear();
+        call_user_func_array(array($query, 'filter'), func_get_args());
+
+        return $this->addAND($query);
+    }
+
+    public function clear(){
+        $this->data = array();
+    }
+
+    protected function popValue($field, $value, $prefix = '$eq', $typed = true){
         $this->field($field);
-        $this->data[$prefix][$field] = $this->getValue($field, $value);
+
+        if ($prefix == '$eq'){
+            $this->data[$field] = $typed ? $this->getValue($field, $value) : $value;
+        } else
+            $this->data[$field][$prefix] = $typed ? $this->getValue($field, $value) : $value;
+
+        return $this;
+    }
+
+    protected function filterCustomOperator($field, $value, $operator){
+        throw QueryException::formated('unknown filter operator - "%s %s"', $field, $operator);
+    }
+
+    /**
+     * Example: ->where('name, age >', "my name", 18);
+     *
+     * @param string $fields
+     * @param mixed[] values ...
+     * @throws static
+     * @return $this
+     */
+    public function filter($fields, $values){
+        $values = array_slice(func_get_args(), 1);
+        $fields = explode(',', (string)$fields);
+        array_map('trim', $fields);
+
+        if (sizeof($values) !== sizeof($fields))
+            throw QueryException::formated('number of fields and values ​​are not the same');
+
+        foreach($fields as $i => $field){
+            $value = $values[$i];
+            $field = explode(' ', $field, 2);
+            $operator = trim($field[1]);
+            $field    = $field[0];
+
+            switch($operator){
+                case '':
+                case '=': $this->eq($field, $value); break;
+
+                case '!=':
+                case '<>': $this->notEq($field, $value); break;
+
+                case '>': $this->gt($field, $value); break;
+                case '<': $this->lt($field, $value); break;
+                case '>=': $this->gte($field, $value); break;
+                case '<=': $this->lte($field, $value); break;
+                case 'in': $this->in($field, $value); break;
+                case 'nin': $this->notIn($field, $value); break;
+                case '%':
+                case 'like': $this->like($field, $value); break;
+                default: {
+                    $this->filterCustomOperator($field, $value, $operator);
+                }
+            }
+        }
         return $this;
     }
 
@@ -593,7 +695,7 @@ abstract class AbstractQuery {
     }
 
     public function notEq($field, $value){
-        return $this->popValue($field, $value, '$neq');
+        return $this->popValue($field, $value, '$ne');
     }
 
     public function gt($field, $value){
@@ -613,7 +715,7 @@ abstract class AbstractQuery {
     }
 
     public function all($field, array $value){
-        return $this->popValue($field, $value, '$all');
+        return $this->popValue($field, $value, '$all', false);
     }
 
     public function in($field, array $value){
@@ -625,19 +727,19 @@ abstract class AbstractQuery {
     }
 
     public function like($field, $expr){
-        return $this->popValue($field, $expr, '$like');
+        return $this->popValue($field, $expr, '$like', false);
     }
 
     public function notLike($field, $expr){
-        return $this->popValue($field, $expr, '$nlike');
+        return $this->popValue($field, $expr, '$nlike', false);
     }
 
     public function isNull($field){
-        return $this->popValue($field, true, '$null');
+        return $this->popValue($field, true, '$null', false);
     }
 
     public function isNotNull($field){
-        return $this->popValue($field, true, '$nnull');
+        return $this->popValue($field, true, '$nnull', false);
     }
 
     public function getData(){

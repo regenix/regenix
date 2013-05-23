@@ -29,6 +29,9 @@ class TemplateLoader {
     /** @var string */
     public static $ASSET_PATH;
 
+    /** @var string */
+    public static $CONTROLLER_NAMESPACE = '.controllers.';
+
     public static function __lazyLoad(){
         if ( !self::$lazyLoaded ){
 
@@ -59,6 +62,7 @@ class TemplateLoader {
 
     /**
      * @param string $name
+     * @param bool $throws
      * @throws TemplateNotFoundException
      * @throws TemplateEngineNotFoundException
      * @return BaseTemplate
@@ -96,7 +100,6 @@ class TemplateLoader {
     }
     
     public static function getReflection($templateClass){
-        
         $reflection = new \ReflectionClass($templateClass);
         
         if ( IS_DEV ){
@@ -111,7 +114,6 @@ class TemplateLoader {
     }
     
     public static function switchEngine($templateEngine){
-        
         if ( !class_exists($templateEngine) ){
             $templateEngine = '\\framework\\mvc\\template\\' . $templateEngine . 'Template';
         }
@@ -125,8 +127,11 @@ class TemplateLoader {
     }
     
     public static function setAssetPath($path){
-        
         self::$ASSET_PATH = $path;
+    }
+
+    public static function setControllerNamespace($namespace){
+        self::$CONTROLLER_NAMESPACE = $namespace;
     }
 
     public static function register($templateClass, $asDefault = FALSE){

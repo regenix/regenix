@@ -6,6 +6,7 @@ use framework\Project;
 use framework\exceptions\StrictObject;
 use framework\cache\SystemCache;
 use framework\lang\String;
+use framework\logger\Logger;
 use framework\mvc\Controller;
 use framework\mvc\Request;
 use framework\mvc\RequestBindParams;
@@ -99,19 +100,25 @@ class Router extends StrictObject {
         return $item;
     }
 
+    /**
+     * @param $action
+     * @param array $args
+     * @param string $method
+     * @return mixed|null|string
+     */
     public function reverse($action, array $args = array(), $method = '*'){
-
         if ($action !== null){
             $action = strtolower($action);
             $action = str_replace('\\', '.', $action);
-            if ($action[0] != '.')
-                $action = '.' . $action;
 
-            if (!String::startsWith($action, '.controllers.'))
-                $action = '.controllers' . $action;
+            if ($action[0] != '.')
+                $action = '.controllers.' . $action;
         }
 
+        $originArgs = $args;
         foreach($this->routes as $route){
+            $args = $originArgs;
+
             if ($method != '*' && $route['method'] != '*' && strtoupper($method) != $route['method'])
                 continue;
 
@@ -119,26 +126,28 @@ class Router extends StrictObject {
             $to      = array($method == '*' ? 'GET' : strtoupper($method));
             $routeKeys = array_keys($route['types']);
 
-            $cur = $route['action'];
-            foreach($route['patterns'] as $param => $regex){
-                $cur = str_replace('{' . $param . '}', $regex, $cur);
-            }
-
-            // search args in route address
-            preg_match_all('#^' . $cur . '$#i', $action, $matches);
-            foreach($matches as $i => $el){
-                if ($i){
-                    $args[$routeKeys[$i-1]] = current($el);
+            if ($action){
+                $cur = $route['action'];
+                foreach($route['patterns'] as $param => $regex){
+                    $cur = str_replace('{' . $param . '}', $regex, $cur);
                 }
-            }
 
-            foreach($args as $key => $value){
-                if ($route['types'][$key]){
-                    $replace[] = '{' . $key . '}';
-                    $to[]      = $value;
+                // search args in route address
+                preg_match_all('#^' . $cur . '$#i', $action, $matches);
+                foreach($matches as $i => $el){
+                    if ($i){
+                        $args[$routeKeys[$i-1]] = current($el);
+                    }
                 }
+
+                foreach($args as $key => $value){
+                    if ($route['types'][$key]){
+                        $replace[] = '{' . $key . '}';
+                        $to[]      = $value;
+                    }
+                }
+                $curAction = str_replace($replace, $to, $route['action']);
             }
-            $curAction = str_replace($replace, $to, $route['action']);
 
             if ( $action === null || $action === strtolower(str_replace('\\', '.', $curAction)) ){
                 $match = true;
@@ -257,13 +266,11 @@ class Router extends StrictObject {
         $path   = $request->getPath();
         $format = '';
         $domain = $request->getHost();
-        
+
         foreach($this->routes as $route){
-            
             $args = self::routeMatches($route, $method, $path, $format, $domain);
             
             if ( $args !== null ){
-                
                 $this->args    = $args;
                 $this->current = $route;
                 $this->action  = $route['action'];
@@ -309,6 +316,7 @@ class Router extends StrictObject {
      * @return null|string URL of action
      */
     public static function path($action, array $args = array(), $method = '*'){
-        return Project::current()->router->reverse($action, $args, $method);
+        $router = Project::current()->router;
+        return $router ? $router->reverse($action, $args, $method) : null;
     }
 }

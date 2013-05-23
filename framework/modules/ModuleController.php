@@ -3,6 +3,7 @@
 namespace framework\modules;
 
 use framework\exceptions\CoreException;
+use framework\lang\String;
 use framework\mvc\Controller;
 use framework\mvc\template\TemplateLoader;
 
@@ -22,7 +23,18 @@ abstract class ModuleController extends Controller {
         if (!$this->module)
             throw CoreException::formated('Can`t find module for %s ModuleController', $class);
         
-        TemplateLoader::setAssetPath($this->module->uid . '~' . $this->module->version . '/assets/');
+        TemplateLoader::setAssetPath('/modules/' . $this->module->uid . '~' . $this->module->version . '/assets/');
+        TemplateLoader::setControllerNamespace('.modules.' . $this->module->uid . '.controllers.');
         TemplateLoader::registerPath(ROOT . 'modules/' . $this->module->uid . '~' . $this->module->version . '/views/');
+    }
+
+    public function template($template = false){
+        if (!$template){
+            return str_replace(
+                'modules/' . $this->module->uid . '/controllers/',
+                '',
+                parent::template($template));
+        } else
+            return parent::template($template);
     }
 }

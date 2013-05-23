@@ -5,6 +5,8 @@ namespace framework {
     use framework\exceptions\CoreStrictException;
     use framework\exceptions\HttpException;
     use framework\io\File;
+    use framework\lang\ClassLoader;
+    use framework\lang\ClassScanner;
     use framework\lang\ModulesClassLoader;
     use framework\lang\String;
     use framework\logger\Logger;
@@ -23,7 +25,10 @@ abstract class Core {
     
     /** @var string */
     public static $tempDir;
-    
+
+    /** @var ClassLoader */
+    public static $classLoader;
+
     /**
      * @var array
      */
@@ -45,21 +50,30 @@ abstract class Core {
 
         // register class loader
         require 'framework/lang/ClassLoader.php';
-        $loader = new FrameworkClassLoader();
-        $loader->register();
+        self::registerSystemClassLoader();
 
         self::_registerTriggers();
         self::_deploy();
 
         self::_registerProjects();
-
-        // TODO may be remove?
-        /*if ( APP_MODE_STRICT )
-            set_error_handler(array(Core::type, 'errorHandler'));*/
-
         self::_registerCurrentProject();
+
         if (!Project::current())
             register_shutdown_function(array(Core::type, 'shutdown'), null);
+    }
+
+    public static function registerSystemClassLoader(){
+        $scanner = ClassScanner::current();
+        $scanner->setIncludePath(ROOT);
+        $scanner->addClassPath(ROOT . 'framework/');
+
+        $loader = new FrameworkClassLoader();
+        $loader->register();
+
+        self::$classLoader = new ClassLoader();
+        self::$classLoader->addClassPath(ROOT . 'framework/vendor/');
+        self::$classLoader->addClassLibPath(ROOT . 'framework/vendor/');
+        self::$classLoader->register();
     }
 
     private static function _registerTriggers(){
@@ -301,6 +315,7 @@ abstract class Core {
 
         $hash = substr(md5(rand()), 12);
         $template = TemplateLoader::load('system/errors/exception.html');
+
         $template->putArgs(array('exception' => $e,
             'stack' => $stack, 'info' => $info, 'hash' => $hash,
             'desc' => $e->getMessage(), 'file' => $file, 'source' => $source

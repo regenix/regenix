@@ -1,15 +1,16 @@
 <?php
 namespace tests;
 
+use framework\Core;
 use framework\Project;
 use framework\lang\ClassLoader;
+use framework\lang\ClassScanner;
 
 class ClassloaderTest extends RegenixTest {
 
     const type = __CLASS__;
 
     public function system(){
-        $this->assertRequire(ClassLoader::$modulesLoader);
         $loader = ClassLoader::$frameworkLoader;
         $this->assertRequire($loader);
         if ($loader){
@@ -18,13 +19,16 @@ class ClassloaderTest extends RegenixTest {
     }
 
     public function project(){
-        $loader = Project::current()->classLoader;
+        $loader = Core::$classLoader;
+        $scanner = ClassScanner::current();
+
         $this->assertRequire($loader);
+        $this->assertRequire($scanner);
         if ($loader){
-            $this->assertRequire($loader->findFile('\\Bootstrap'));
-            $this->assertRequire($loader->findFile('Bootstrap'));
-            $this->assertRequire($loader->findFile('controllers\\Application'));
-            $this->assertNotRequire($loader->findFile('controllers\\Application.php'));
+            $this->assertRequire(ClassScanner::find('\\Bootstrap'));
+            $this->assertRequire(ClassScanner::find('Bootstrap'));
+            $this->assertRequire(ClassScanner::find('controllers\\Application'));
+            $this->assertNotRequire(ClassScanner::find('controllers\\Application.php'));
         }
     }
 }

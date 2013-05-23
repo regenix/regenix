@@ -12,11 +12,12 @@ use framework\lang\ClassLoader;
 use framework\lang\String;
 use framework\libs\Captcha;
 use framework\libs\RegenixTPL\RegenixTemplate as RegenixTPL;
-    use framework\libs\RegenixTPL\RegenixTemplate as RegenixTemplate0;
-    use framework\libs\RegenixTPL\RegenixTemplateTag;
+use framework\libs\RegenixTPL\RegenixTemplateTag;
 use framework\libs\ImageUtils;
+    use framework\mvc\route\Router;
+    use framework\widgets\Widget;
 
-ClassLoader::load(RegenixTPL::type);
+    ClassLoader::load(RegenixTPL::type);
 
 class RegenixTemplate extends BaseTemplate {
 
@@ -39,6 +40,8 @@ class RegenixTemplate extends BaseTemplate {
             self::$tpl->registerTag(new RegenixHtmlAssetTag());
             self::$tpl->registerTag(new RegenixPathTag());
             self::$tpl->registerTag(new RegenixPublicTag());
+
+            self::$tpl->registerTag(new RegenixWidgetTag());
 
             self::$tpl->registerTag(new RegenixImageCropTag());
             self::$tpl->registerTag(new RegenixImageResizeTag());
@@ -95,13 +98,13 @@ class RegenixTemplate extends BaseTemplate {
         }
 
         public function call($args, RegenixTPL $ctx){
-            $action = $args['_arg'] ? $args['_arg'] : $args['action'];
+            $action = $args['_arg'];
             /*if (!$action)
                 throw CoreException::formated('Action argument of reverse is empty');*/
 
-            unset($args['_arg'], $args['action']);
-            $project = Project::current();
-            $url = $project->router->reverse($action, $args);
+            unset($args['_arg']);
+            $url = Router::path($action ? TemplateLoader::$CONTROLLER_NAMESPACE . $action : null, $args);
+
             if ($url === null)
                 throw CoreException::formated('Can`t reverse url for action "%s(%s)"',
                     $action, implode(', ', array_keys($args)));
@@ -125,6 +128,21 @@ class RegenixTemplate extends BaseTemplate {
             }
 
             return $file;
+        }
+    }
+
+    class RegenixWidgetTag extends RegenixTemplateTag {
+
+        function getName(){
+            return 'widget';
+        }
+
+        public function call($args, RegenixTPL $ctx){
+            $name = $args['_arg'];
+            unset($args['_arg']);
+
+            $widget = Widget::createByUID($name, $args);
+            return $widget->render();
         }
     }
 
@@ -185,7 +203,7 @@ class RegenixTemplate extends BaseTemplate {
             $project = Project::current();
             $assets  = $project->getAssets();
 
-            $html    = '';
+            $html     = '';
             $included = array();
             foreach($assets as $group => $dep){
                 $html .= RegenixDepsAssetTag::getOne($group, false, $included);
@@ -202,46 +220,13 @@ class RegenixTemplate extends BaseTemplate {
 
         public static function getOne($group, $version = false, &$included = array()){
             $project  = Project::current();
-            $all      = $project->getAssets();
-            $versions = $all[$group];
-
-            if (!$versions)
-                throw CoreException::formated('Asset `%s` not found', $group);
-
-            if ($version){
-                $info = $versions[$version];
-                if (!is_array($info)){
-                    throw CoreException::formated('Asset `%s/%s` not found', $group, $version);
-                }
-            } else {
-                list($version, $info) = each($versions);
-            }
-
-            $meta = $project->repository->getLocalMeta($group, $version);
-            if (!$meta)
-                throw CoreException::formated('Meta information not found for `%s` asset, please run deps update for fix it', $group);
-
-            if ($included[$group][$version])
-                return '';
-
-            $included[$group][$version] = true;
+            $assets   = $project->getAssetFiles($group, $version, $included);
 
             $result = '';
-            if (is_array($info['deps'])){
-                foreach($info['deps'] as $gr => $v){
-                    $result .= self::getOne($gr, $v, $included);
-                }
-            }
-
-            $path   = '/assets/' . $group . '~' . $version . '/';
-            foreach((array)$meta['files'] as $file){
-                $html = BaseTemplate::getAssetTemplate($path . $file);
+            foreach((array)$assets as $file){
+                $html = BaseTemplate::getAssetTemplate($file);
                 if ($html){
                     $result .= $html . "\n";
-                }
-
-                if (IS_DEV && !is_file(ROOT . $path . $file)){
-                    throw new FileNotFoundException(new File($path . $file));
                 }
             }
 
@@ -249,8 +234,7 @@ class RegenixTemplate extends BaseTemplate {
         }
 
         public function call($args, RegenixTPL $ctx) {
-            $included = array();
-            return self::getOne($args['_arg'], $included);
+            return self::getOne($args['_arg']);
         }
     }
 

@@ -32,18 +32,18 @@ class Configuration extends StrictObject {
      * 
      * @param \framework\io\File $file|array files
      */
-    public function __construct($file){
+    public function __construct($file = null){
         if (is_array($file)){
-            
             $this->file = null;
             $this->files = $file;
             if (count($file) > 0)
                 $this->load();
             
         } else {
-            $this->setFile($file);
-            if ( $file != null )
+            if ($file !== null){
+                $this->setFile($file);
                 $this->load();
+            }
         }
     }
 

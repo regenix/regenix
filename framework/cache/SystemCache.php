@@ -6,10 +6,21 @@ define('XCACHE_ENABLED', extension_loaded('xcache'));
 
 if (IS_CORE_DEBUG === true)
     define('SYSTEM_CACHED', false);
-else
-    define('SYSTEM_CACHED', (APC_ENABLED || XCACHE_ENABLED));
+else {
+    if (APC_ENABLED){
+        if (PHP_SAPI === 'cli')
+            define('SYSTEM_CACHED', ini_get('apc.enable_cli') === 'On');
+        else
+            define('SYSTEM_CACHED', true);
+    } else
+        define('SYSTEM_CACHED', (XCACHE_ENABLED));
+}
 
 define('FAST_SERIALIZE_ENABLE', extension_loaded('igbinary'));
+define('SYSTEM_CACHE_TMP_DIR', sys_get_temp_dir() . '/regenix/syscache/');
+
+if (!is_dir(SYSTEM_CACHE_TMP_DIR))
+    mkdir(SYSTEM_CACHE_TMP_DIR, 0777, true);
 
 class SystemCache {
 
@@ -17,33 +28,54 @@ class SystemCache {
 
     private static $id = '';
 
+    public static function isCached(){
+        return SYSTEM_CACHED === true;
+    }
+
     public static function setId($id){
         self::$id = $id;
     }
 
-    public static function get($name){
-        return SYSTEM_CACHED === true ?
-            (FAST_SERIALIZE_ENABLE ? igbinary_unserialize(apc_fetch('$.fsys.' . self::$id . '.' . $name)) :
-                apc_fetch('$.sys.' . self::$id . '.' . $name)) :
-            null;
+    protected static function getFromFile($name){
+        $file = SYSTEM_CACHE_TMP_DIR . sha1(self::$id . '.' . $name);
+        if (file_exists($file)){
+            $result = unserialize(file_get_contents($file));
+            return $result ? $result : null;
+        }
+        return null;
+    }
+
+    protected static function setToFile($name, $value){
+        $file = SYSTEM_CACHE_TMP_DIR . sha1(self::$id . '.' . $name);
+        file_put_contents($file, serialize($value));
+    }
+
+    public static function get($name, $cacheInFiles = false){
+        return SYSTEM_CACHED === true ? apc_fetch('$.s.' . self::$id . '.' . $name)
+            : ($cacheInFiles ? self::getFromFile($name) : null);
     }
     
-    public static function set($name, $value, $lifetime = 3600){
+    public static function set($name, $value, $lifetime = 3600, $cacheInFiles = false){
         if ( SYSTEM_CACHED === true ){
-            if ( FAST_SERIALIZE_ENABLE )
-                apc_store('$.fsys.' . self::$id . '.' . $name, igbinary_serialize($value), $lifetime);
-            else
-                apc_store('$.sys.' . self::$id . '.' . $name, $value, $lifetime);
+            apc_store('$.s.' . self::$id . '.' . $name, $value, $lifetime);
+        } elseif ($cacheInFiles){
+            self::setToFile($name, $value);
         }
     }
+
+    public static function remove($name){
+        if (SYSTEM_CACHED === true)
+            apc_delete($name);
+    }
     
-    public static function getWithCheckFile($name, $filePath){
-        if ( !SYSTEM_CACHED )
+    public static function getWithCheckFile($name, $filePath, $cacheInFiles = false){
+        if ( !SYSTEM_CACHED && !$cacheInFiles )
             return null;
 
-        $result = self::get($name);
+        $result = self::get($name, $cacheInFiles);
+
         if ( $result ){
-            $upd    = (int)self::get($name . '.$upd');
+            $upd    = (int)self::get($name . '.$upd', $cacheInFiles);
             if ($upd === 0)
                 return null;
             
@@ -54,22 +86,21 @@ class SystemCache {
         return null;
     }
     
-    public static function setWithCheckFile($name, $value, $filePath, $lifetime = 3600){
-        if ( !SYSTEM_CACHED )
+    public static function setWithCheckFile($name, $value, $filePath, $lifetime = 3600, $cacheInFiles = false){
+        if ( !SYSTEM_CACHED && !$cacheInFiles )
             return;
 
-        self::set($name, $value, $lifetime);
+        self::set($name, $value, $lifetime, $cacheInFiles);
         
         if (file_exists($filePath)){
-            $mtime  = filemtime($filePath);
-            self::set($name.'.$upd', $mtime, $lifetime);
+            $mtime = filemtime($filePath);
+            self::set($name.'.$upd', $mtime, $lifetime, $cacheInFiles);
         }
     }
     
     public static function getFileContents($filePath, $lifetime = 3600){
-        
         if ( SYSTEM_CACHED ){
-            $sha1  = '$.sys.file.' . sha1($filePath);
+            $sha1  = '$.s.file.' . sha1($filePath);
             $inmem = apc_fetch($sha1 . '.$upd');
             if ( $inmem ){
                 $mtime = file_exists($filePath) ? filemtime($filePath) : -1;

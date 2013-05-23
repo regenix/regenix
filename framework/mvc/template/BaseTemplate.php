@@ -29,6 +29,16 @@ abstract class BaseTemplate implements IClassInitialization {
     public function getContent(){ return null; }
     public function render(){}
 
+    public function __toString(){
+        $content = $this->getContent();
+        if ($content === null){
+            ob_start();
+            $this->render();
+            $content = ob_get_contents();
+            ob_end_clean();
+        }
+        return $content;
+    }
 
     public function putArgs(array $args = array()){
         $this->args = $args;
