@@ -6,15 +6,13 @@ use framework\cache\Cache;
 use framework\lang\ClassFileScanner;
 use framework\lang\ClassScanner;
 use framework\libs\I18n;
+use framework\mvc\Controller;
 use framework\widgets\Widget;
 
-class Application extends AppController {
+class Application extends Controller {
 
     public function test(){
-        $meta = ClassScanner::find('controllers\\Application');
-        dump($meta->getFilename());
-
-        $this->ok();
+        $this->renderText('OK');
     }
 
     public function page($page = 'index'){
