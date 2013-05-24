@@ -136,12 +136,13 @@ abstract class Controller extends StrictObject {
     
     public function callAfter(){
         $this->onAfter();
+        if ($this->useSession){
+            $this->flash->touchAll();
+        }
     }
     
     public function callFinally(){
         $this->onFinally();
-        if ($this->useSession)
-            $this->flash->touchAll();
     }
 
     public function callReturn($result){
@@ -193,7 +194,7 @@ abstract class Controller extends StrictObject {
     }
 
     public function send(){
-        throw new results\Result($this->response);
+        throw new Result($this->response);
     }
 
     /**
@@ -415,5 +416,20 @@ abstract class Controller extends StrictObject {
      */
     public static function current(){
         return self::$current;
+    }
+}
+
+class Result extends \Exception {
+
+    const type = __CLASS__;
+
+    private $response;
+
+    public function __construct($response) {
+        $this->response = $response;
+    }
+
+    public function getResponse(){
+        return $this->response;
     }
 }

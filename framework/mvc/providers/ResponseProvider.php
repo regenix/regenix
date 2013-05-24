@@ -3,9 +3,9 @@
 namespace framework\mvc\providers;
 
 use framework\exceptions\CoreException;
+use framework\lang\ClassScanner;
 use framework\mvc\Response;
 use framework\lang\String;
-use framework\lang\ClassLoader;
 
 abstract class ResponseProvider {
 
@@ -56,15 +56,14 @@ abstract class ResponseProvider {
     }
 
     public static function register($providerClass, $type = false){
-        ClassLoader::load($providerClass);
-        ClassLoader::load($type);
-
+        ClassScanner::loadClass($providerClass);
         if ( !$type ){
             $reflect = new \ReflectionClass($providerClass);
             $type = $reflect->getConstant('CLASS_TYPE');
             if ( $type[0] !== '\\' )
                 $type = '\\' . $type;
         }
+
         self::$providers[ $type ] = $providerClass;
     }
 }

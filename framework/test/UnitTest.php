@@ -3,8 +3,6 @@ namespace framework\test;
 
 use framework\exceptions\StrictObject;
 use framework\exceptions\TypeException;
-use framework\lang\ClassLoader;
-
 /**
  * Class UnitTest
  * @package framework\test
@@ -59,14 +57,15 @@ abstract class UnitTest extends StrictObject {
      * @param string $class
      * @param callable $callback
      * @param array $args
-     * @return $this
+     * @param string $message
      * @throws \framework\exceptions\TypeException
+     * @throws \Exception
+     * @return $this
      */
     protected function assertException($class, $callback, array $args = array(), $message = ''){
         if (!is_callable($callback))
             throw new TypeException('$callback', 'callable');
 
-        ClassLoader::load($class);
         $meta = new \ReflectionClass($class);
         if (!$meta->isSubclassOf("\\Exception") && $meta->getName() !== '\\Exception')
             throw new TypeException('$class', 'Exception class');
@@ -97,7 +96,6 @@ abstract class UnitTest extends StrictObject {
         if (!is_callable($callback))
             throw new TypeException('$callback', 'callable');
 
-        ClassLoader::load($class);
         $meta = new \ReflectionClass($class);
         if (!$meta->isSubclassOf("\\Exception") && $meta->getName() !== '\\Exception')
             throw new TypeException('$class', 'Exception class');

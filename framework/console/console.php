@@ -2,8 +2,7 @@
 namespace framework\console;
 
     use framework\Core;
-    use framework\lang\ClassLoader;
-    use framework\lang\FrameworkClassLoader;
+    use framework\lang\ClassScanner;
 
 {
     ini_set('display_errors', 'Off');
@@ -15,10 +14,8 @@ namespace framework\console;
     define('IS_PROD', false);
     define('APP_MODE', 'dev');
 
-    require 'framework/lang/ClassLoader.php';
-    require 'framework/Core.php';
-
-    Core::registerSystemClassLoader();
+    require 'framework/lang/ClassScanner.php';
+    ClassScanner::registerDefault(ROOT);
 
     defined('STDIN') or define('STDIN', fopen('php://stdin', 'r'));
     define('CONSOLE_STDOUT', fopen('php://stdout', 'w+'));

@@ -14,17 +14,16 @@ use framework\lang\ClassScanner;
 use framework\libs\Captcha;
 use framework\modules\AbstractModule;
 use framework\mvc\Assets;
-use framework\mvc\ModelClassloader;
 use framework\mvc\Request;
 use framework\mvc\URL;
 use framework\mvc\route\Router;
 use framework\mvc\route\RouterConfiguration;
 use framework\config\ConfigurationReadException;
 
+use framework\mvc\session\APCSession;
 use framework\mvc\template\TemplateLoader;
 
 use framework\cache\SystemCache;
-use framework\lang\ClassLoader;
 
 class Project {
 
@@ -33,9 +32,6 @@ class Project {
     
     /** @var string */
     private $currentPath;
-
-    /** @var ClassLoader */
-    public $classLoader;
     
     /** @var string */
     private $mode = 'dev';
@@ -80,11 +76,10 @@ class Project {
         }
 
         //if ($inWeb){
-            $port = $this->config->getNumber('http.port', 0);
-            if ($port){
-                Request::current()->setPort($port);
-            } else
-                Request::current();
+        $port = $this->config->getNumber('http.port', 0);
+        if ($port){
+            Request::current()->setPort($port);
+        }
 
         $this->applyConfig( $this->config );
     }
@@ -255,12 +250,10 @@ class Project {
 
 
     public function register($inWeb = true){
-        ClassScanner::current()->addClassPath($this->getPath());
+        ClassScanner::addClassPath($this->getPath());
 
         Project::$instance = $this;
         SystemCache::setId($this->name);
-        $request = Request::current();
-
 
         if (is_file($file = $this->getPath() . 'app/Bootstrap.php')){
             require $file;
@@ -296,19 +289,11 @@ class Project {
         // temp
         Core::setTempDir( sys_get_temp_dir() . '/regenix/' . $this->name . '/' );
 
-        // todo delete ? refactoring
-        $this->classLoader = Core::$classLoader;
+        $sessionDriver = new APCSession();
+        $sessionDriver->register();
 
         // module deps
-        $this->_registerDeps();
-
-        $scanner = ClassScanner::current();
-        if (IS_PROD)
-            $scanner->scanCached();
-        else
-            $scanner->scan();
-
-        AbstractModule::doRegister();
+        $this->_registerDependencies();
 
         // route
         $this->_registerRoute();
@@ -316,7 +301,8 @@ class Project {
         if (IS_DEV)
             $this->_registerTests();
 
-        $this->_registerSystemController();
+        if ($inWeb)
+            $this->_registerSystemController();
 
         if ($this->bootstrap){
             $this->bootstrap->onStart();
@@ -369,7 +355,7 @@ class Project {
         return $this->assets;
     }
 
-    private function _registerDeps(){
+    private function _registerDependencies(){
         $this->loadDeps();
         $this->repository = new Repository($this->deps);
 

@@ -52,7 +52,7 @@ class Request extends StrictObject {
                 }
             }
         }
-        $headers = array_change_key_case($headers, CASE_LOWER);
+        $headers = array_change_key_case((array)$headers, CASE_LOWER);
 
         $req = new Request($headers);
         $req->setMethod($_SERVER['REQUEST_METHOD']);
@@ -294,11 +294,18 @@ class Session extends StrictObject {
                 global $_SESSION;
                 $_SESSION = array();
                 $this->id = String::random(40);
-            } else
-                session_start();
+            } else {
+                $this->id = session_id();
+                if (!$this->id)
+                    session_start();
+            }
 
             $this->init = true;
         }
+    }
+
+    public function isInit(){
+        return $this->init;
     }
 
     /**
@@ -390,6 +397,23 @@ class Session extends StrictObject {
     }
 }
 
+abstract class SessionDriver {
+
+    abstract public function open($savePath, $sessionName);
+    abstract public function close();
+    abstract public function read($id);
+    abstract public function write($id, $value);
+    abstract public function destroy($id);
+    abstract public function gc($lifetime);
+
+    public function register(){
+        session_set_save_handler(
+            array($this, 'open'), array($this, 'close'),
+            array($this, 'read'), array($this, 'write'),
+            array($this, 'destroy'), array($this, 'gc')
+        );
+    }
+}
 
 class Flash extends StrictObject {
 

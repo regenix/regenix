@@ -3,7 +3,6 @@
 namespace framework\libs;
 
 use framework\exceptions\CoreException;
-use framework\lang\ClassLoader;
 use framework\lang\IClassInitialization;
 use framework\mvc\MIMETypes;
 use framework\mvc\Response;

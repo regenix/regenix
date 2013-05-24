@@ -8,16 +8,13 @@ use framework\exceptions\CoreException;
 use framework\exceptions\CoreStrictException;
 use framework\io\File;
 use framework\io\FileNotFoundException;
-use framework\lang\ClassLoader;
 use framework\lang\String;
 use framework\libs\Captcha;
 use framework\libs\RegenixTPL\RegenixTemplate as RegenixTPL;
 use framework\libs\RegenixTPL\RegenixTemplateTag;
 use framework\libs\ImageUtils;
-    use framework\mvc\route\Router;
-    use framework\widgets\Widget;
-
-    ClassLoader::load(RegenixTPL::type);
+use framework\mvc\route\Router;
+use framework\widgets\Widget;
 
 class RegenixTemplate extends BaseTemplate {
 

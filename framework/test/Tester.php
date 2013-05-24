@@ -3,7 +3,6 @@ namespace framework\test;
 
 use framework\Project;
 use framework\exceptions\CoreException;
-use framework\lang\ClassLoader;
 use framework\lang\ClassScanner;
 use framework\mvc\Controller;
 
@@ -16,9 +15,7 @@ class Tester extends Controller {
             if (!is_dir(ROOT . 'modules/' . $moduleWithVersion . '/'))
                 throw CoreException::formated('Module `%s` not found', $moduleWithVersion);
 
-            $scanner = ClassScanner::current();
-            $scanner->addClassPath(ROOT . 'modules/' . $moduleWithVersion . '/');
-            $scanner->scan();
+            ClassScanner::addClassRelativePath('modules/' . $moduleWithVersion);
 
             $module = explode('~', $moduleWithVersion, 2);
             $namespace = 'modules\\' . $module[0] . '\\';

@@ -4,10 +4,7 @@ namespace framework\modules;
 
 use framework\Core;
 use framework\Project;
-use framework\exceptions\ClassNotFoundException;
-use framework\lang\ClassLoader;
 use framework\lang\ClassScanner;
-use framework\mvc\Assets;
 use framework\mvc\route\Router;
 use framework\exceptions\CoreException;
 use framework\io\File;
@@ -91,27 +88,20 @@ abstract class AbstractModule {
         if ( self::$modules[ $moduleName ] )
             return false;
 
-        ClassScanner::current()->addClassPath(ROOT . 'modules/' . $moduleName . '~' . $version . '/');
-        // ClassLoader::$modulesLoader->addModule($moduleName, $version);
+        ClassScanner::addClassRelativePath('modules/' . $moduleName . '~' . $version);
 
-        self::$modules[ $moduleName ] = array('version' => $version);
-        return true;
-    }
-
-    public static function doRegister(){
-        foreach(self::$modules as $moduleName => &$module){
-            $bootstrapName = '\\modules\\' . $moduleName . '\\Module';
-            $version = $module['version'];
-
-            if (!ClassLoader::load($bootstrapName)){
-                unset(self::$modules[ $moduleName ]);
-                throw CoreException::formated('Unload bootstrap `%s` class of `%s` module', $bootstrapName, $moduleName . '~' . $version);
-            }
-
-            $module = new $bootstrapName();
-            $module->uid     = $moduleName;
-            $module->version = $version;
+        $bootstrapName = '\\modules\\' . $moduleName . '\\Module';
+        if (!class_exists($bootstrapName)){
+            unset(self::$modules[ $moduleName ]);
+            throw CoreException::formated('Unload bootstrap `%s` class of `%s` module', $bootstrapName, $moduleName . '~' . $version);
         }
+
+        $module = new $bootstrapName();
+        $module->uid     = $moduleName;
+        $module->version = $version;
+
+        self::$modules[ $moduleName ] = $module;
+        return true;
     }
 
     /**

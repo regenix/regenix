@@ -5,7 +5,6 @@ use framework\exceptions\StrictObject;
 use framework\exceptions\AnnotationException;
 use framework\exceptions\CoreException;
 use framework\lang\ArrayTyped;
-use framework\lang\ClassLoader;
 use framework\lang\String;
 
 abstract class AbstractService extends StrictObject {
@@ -237,7 +236,6 @@ abstract class AbstractService extends StrictObject {
             if ( $info['is_array'] ){
 
                 $type = $info['array_type'];
-                ClassLoader::load($type);
                 $service = $type::getService();
 
                 if (!is_array($value))
@@ -257,7 +255,6 @@ abstract class AbstractService extends StrictObject {
 
             } else {
                 $type = $info['type'];
-                ClassLoader::load($type);
 
                 /** @var $service AbstractService */
                 $service = $type::getService();
@@ -276,7 +273,6 @@ abstract class AbstractService extends StrictObject {
 
         if ($info['ref'] && !$info['ref']['lazy'] && $lazy === false){
 
-            ClassLoader::load($info['type']);
             $type = $info['type'];
             /** @var $service AbstractService */
 

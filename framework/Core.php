@@ -5,15 +5,12 @@ namespace framework {
     use framework\exceptions\CoreStrictException;
     use framework\exceptions\HttpException;
     use framework\io\File;
-    use framework\lang\ClassLoader;
     use framework\lang\ClassScanner;
-    use framework\lang\ModulesClassLoader;
     use framework\lang\String;
     use framework\logger\Logger;
     use framework\mvc\Controller;
     use framework\mvc\Response;
-    use framework\mvc\results\Result;
-    use framework\lang\FrameworkClassLoader;
+    use framework\mvc\Result;
     use framework\mvc\template\BaseTemplate;
     use framework\mvc\template\TemplateLoader;
 
@@ -22,12 +19,15 @@ abstract class Core {
     const type = __CLASS__;
 
     const VERSION = '0.5';
+
+    /** @var int */
+    protected static $startTime;
+
+    /** @var int */
+    protected static $startMemory;
     
     /** @var string */
     public static $tempDir;
-
-    /** @var ClassLoader */
-    public static $classLoader;
 
     /**
      * @var array
@@ -38,6 +38,9 @@ abstract class Core {
     public static $bootstrap;
 
     public static function init(){
+        self::$startTime = microtime(1);
+        self::$startMemory = memory_get_usage();
+
         define('PHP_TRAITS', function_exists('trait_exists'));
 
         // TODO
@@ -49,8 +52,9 @@ abstract class Core {
         unset($_POST, $_GET, $_REQUEST);
 
         // register class loader
-        require 'framework/lang/ClassLoader.php';
-        self::registerSystemClassLoader();
+        require 'framework/lang/ClassScanner.php';
+        ClassScanner::registerDefault(ROOT);
+        //ClassScanner::setDebug(true);
 
         self::_registerTriggers();
         self::_deploy();
@@ -60,20 +64,6 @@ abstract class Core {
 
         if (!Project::current())
             register_shutdown_function(array(Core::type, 'shutdown'), null);
-    }
-
-    public static function registerSystemClassLoader(){
-        $scanner = ClassScanner::current();
-        $scanner->setIncludePath(ROOT);
-        $scanner->addClassPath(ROOT . 'framework/');
-
-        $loader = new FrameworkClassLoader();
-        $loader->register();
-
-        self::$classLoader = new ClassLoader();
-        self::$classLoader->addClassPath(ROOT . 'framework/vendor/');
-        self::$classLoader->addClassLibPath(ROOT . 'framework/vendor/');
-        self::$classLoader->register();
     }
 
     private static function _registerTriggers(){
@@ -226,7 +216,6 @@ abstract class Core {
     }
 
     private static function catchError($error, $logPath){
-
         $title = 'Fatal Error';
 
         switch($error['type']){
