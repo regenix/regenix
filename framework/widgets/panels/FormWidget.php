@@ -1,8 +1,8 @@
 <?php
-namespace framework\widgets\panels;
+namespace regenix\widgets\panels;
 
-use framework\lang\String;
-use framework\widgets\inputs\FieldWidget;
+use regenix\lang\String;
+use regenix\widgets\inputs\FieldWidget;
 
 class FormWidget extends PanelWidget {
 

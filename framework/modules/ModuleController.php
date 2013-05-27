@@ -1,11 +1,11 @@
 <?php
 
-namespace framework\modules;
+namespace regenix\modules;
 
-use framework\lang\CoreException;
-use framework\lang\String;
-use framework\mvc\Controller;
-use framework\mvc\template\TemplateLoader;
+use regenix\lang\CoreException;
+use regenix\lang\String;
+use regenix\mvc\Controller;
+use regenix\mvc\template\TemplateLoader;
 
 abstract class ModuleController extends Controller {
 

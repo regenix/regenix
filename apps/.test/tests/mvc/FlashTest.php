@@ -1,7 +1,7 @@
 <?php
 namespace tests\mvc;
 
-use framework\mvc\Flash;
+use regenix\mvc\Flash;
 use tests\RegenixTest;
 
 class FlashTest extends RegenixTest {

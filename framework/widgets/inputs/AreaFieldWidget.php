@@ -1,8 +1,8 @@
 <?php
-namespace framework\widgets\inputs;
+namespace regenix\widgets\inputs;
 
-use framework\lang\String;
-use framework\widgets\Widget;
+use regenix\lang\String;
+use regenix\widgets\Widget;
 
 class AreaFieldWidget extends FieldWidget {
 

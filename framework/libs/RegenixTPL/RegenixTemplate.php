@@ -1,19 +1,19 @@
 <?php
-namespace framework\libs\RegenixTPL {
+namespace regenix\libs\RegenixTPL {
 
 /**
  * Class RegenixTemplate
- * @package framework\libs\RegenixTPL
+ * @package regenix\libs\RegenixTPL
  */
-    use framework\Core;
-    use framework\lang\CoreException;
-    use framework\lang\String;
-    use framework\libs\I18n;
-    use framework\mvc\Flash;
-    use framework\mvc\Request;
-    use framework\mvc\RequestQuery;
-    use framework\mvc\template\TemplateLoader;
-    use framework\mvc\template\TemplateNotFoundException;
+    use regenix\Core;
+    use regenix\lang\CoreException;
+    use regenix\lang\String;
+    use regenix\libs\I18n;
+    use regenix\mvc\Flash;
+    use regenix\mvc\Request;
+    use regenix\mvc\RequestQuery;
+    use regenix\mvc\template\TemplateLoader;
+    use regenix\mvc\template\TemplateNotFoundException;
 
     /**
  *  ${var} - var
@@ -268,8 +268,8 @@ class RegenixTemplate {
                             $str .= '<?php echo ' . $expr . ' ?>';
                         } break;
                         case '_': {
-                            if ( class_exists('\\framework\\libs\\I18n') )
-                                $str .= '<?php echo htmlspecialchars(\\framework\\libs\\I18n::get('. $expr .'))?>';
+                            if ( class_exists('\\regenix\\libs\\I18n') )
+                                $str .= '<?php echo htmlspecialchars(\\regenix\\libs\\I18n::get('. $expr .'))?>';
                             else
                                 $str .= '<?php echo htmlspecialchars(' . $expr . ')?>';
                         } break;

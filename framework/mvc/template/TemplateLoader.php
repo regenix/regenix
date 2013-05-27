@@ -1,13 +1,13 @@
 <?php
 
-namespace framework\mvc\template;
+namespace regenix\mvc\template;
 
-use framework\SDK;
-use framework\lang\CoreException;
-use framework\lang\String;
-use framework\mvc\providers\ResponseProvider;
-use framework\Core;
-use framework\Project;
+use regenix\SDK;
+use regenix\lang\CoreException;
+use regenix\lang\String;
+use regenix\mvc\providers\ResponseProvider;
+use regenix\Core;
+use regenix\Project;
 
 class TemplateLoader {
 
@@ -103,7 +103,7 @@ class TemplateLoader {
         $reflection = new \ReflectionClass($templateClass);
         
         if ( IS_DEV ){
-            if ( !$reflection->isSubclassOf( '\framework\mvc\template\BaseTemplate' ) )
+            if ( !$reflection->isSubclassOf( '\regenix\mvc\template\BaseTemplate' ) )
                 throw new CoreException(String::format('%s.class must be extends of BaseTemplate', $templateClass));
 
             if ( !$reflection->isInstantiable() )
@@ -115,7 +115,7 @@ class TemplateLoader {
     
     public static function switchEngine($templateEngine){
         if ( !class_exists($templateEngine) ){
-            $templateEngine = '\\framework\\mvc\\template\\' . $templateEngine . 'Template';
+            $templateEngine = '\\regenix\\mvc\\template\\' . $templateEngine . 'Template';
         }
             
         if ( self::$registered[ $templateEngine ] ){
@@ -142,7 +142,7 @@ class TemplateLoader {
             self::setDefaultExt($ext);
         
         self::$engines[ $ext ] = $reflection->getName();
-        ResponseProvider::register('\framework\mvc\providers\ResponseBaseTemplateProvider', $templateClass);
+        ResponseProvider::register('\regenix\mvc\providers\ResponseBaseTemplateProvider', $templateClass);
         
         self::$registered[ $templateClass ] = 1;
         SDK::trigger('registerTemplateEngine', array($reflection));

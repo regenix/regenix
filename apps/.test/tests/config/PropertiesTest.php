@@ -1,8 +1,8 @@
 <?php
 namespace tests\config;
 
-use framework\config\PropertiesConfiguration;
-use framework\lang\File;
+use regenix\config\PropertiesConfiguration;
+use regenix\lang\File;
 use tests\RegenixTest;
 use tests\ClassloaderTest;
 

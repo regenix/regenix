@@ -1,13 +1,12 @@
 <?php
 namespace {
 
-    use framework\AbstractBootstrap as BaseBootstrap, framework\Project;
-    use framework\cache\Cache;
-    use framework\lang\IClassInitialization;
-    use framework\libs\I18n;
-    use framework\mvc\Request;
-    use framework\mvc\route\Router;
-    use framework\mvc\template\BaseTemplate;
+    use regenix\AbstractBootstrap as BaseBootstrap, regenix\Project;
+    use regenix\cache\Cache;
+    use regenix\libs\I18n;
+    use regenix\mvc\Request;
+    use regenix\mvc\route\Router;
+    use regenix\mvc\template\BaseTemplate;
 
     class Bootstrap extends BaseBootstrap {
 

@@ -1,19 +1,19 @@
 <?php
 
-namespace framework\libs;
+namespace regenix\libs;
 
-use framework\lang\CoreException;
-use framework\lang\IClassInitialization;
-use framework\mvc\MIMETypes;
-use framework\mvc\Response;
-use framework\mvc\Session;
-use framework\mvc\providers\ResponseProvider;
+use regenix\lang\CoreException;
+use regenix\lang\IClassInitialization;
+use regenix\mvc\MIMETypes;
+use regenix\mvc\Response;
+use regenix\mvc\Session;
+use regenix\mvc\providers\ResponseProvider;
 use kcaptcha\KCaptcha;
 
 /**
  * TODO: add options feature
  * Class Captcha
- * @package framework\libs
+ * @package regenix\libs
  */
 class Captcha implements IClassInitialization {
 
@@ -24,7 +24,7 @@ class Captcha implements IClassInitialization {
     /** @var string */
     protected $keyString;
 
-    /** @var \framework\mvc\Session */
+    /** @var \regenix\mvc\Session */
     protected $session;
 
     protected function __construct(){

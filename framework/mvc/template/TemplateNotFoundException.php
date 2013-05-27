@@ -1,9 +1,9 @@
 <?php
 
-namespace framework\mvc\template;
+namespace regenix\mvc\template;
 
-use framework\lang\CoreException;
-use framework\lang\String;
+use regenix\lang\CoreException;
+use regenix\lang\String;
 
 class TemplateNotFoundException extends CoreException {
 

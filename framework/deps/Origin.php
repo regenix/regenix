@@ -1,11 +1,11 @@
 <?php
-namespace framework\deps;
+namespace regenix\deps;
 
-use framework\lang\CoreException;
-use framework\exceptions\HttpException;
-use framework\lang\File;
-use framework\lang\String;
-use framework\libs\WS;
+use regenix\lang\CoreException;
+use regenix\exceptions\HttpException;
+use regenix\lang\File;
+use regenix\lang\String;
+use regenix\libs\WS;
 
 abstract class Origin {
 
@@ -126,7 +126,7 @@ class GithubOrigin extends Origin {
 
     /**
      * @param $path
-     * @return \framework\libs\WSRequest
+     * @return \regenix\libs\WSRequest
      */
     protected function ws($path){
         return WS::url($this->getUrlRaw($path))->timeout(10);

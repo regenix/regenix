@@ -1,7 +1,7 @@
 <?php
 namespace tests\mvc;
 
-use framework\mvc\Session;
+use regenix\mvc\Session;
 use tests\RegenixTest;
 
 class SessionTest extends RegenixTest {

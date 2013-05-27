@@ -1,11 +1,11 @@
 <?php
-namespace framework\widgets;
+namespace regenix\widgets;
 
-use framework\lang\CoreException;
-use framework\lang\StrictObject;
-use framework\lang\IClassInitialization;
-use framework\lang\String;
-use framework\mvc\template\TemplateLoader;
+use regenix\lang\CoreException;
+use regenix\lang\StrictObject;
+use regenix\lang\IClassInitialization;
+use regenix\lang\String;
+use regenix\mvc\template\TemplateLoader;
 
 abstract class Widget extends StrictObject
     implements IClassInitialization {
@@ -107,7 +107,7 @@ abstract class Widget extends StrictObject
             return new $class($args);
         else if (class_exists($extClass = $class . 'Widget'))
             return new $extClass($args);
-        else if (class_exists($class = 'framework\\' . $class))
+        else if (class_exists($class = 'regenix\\' . $class))
             return new $class($args);
         else if (class_exists($extClass = $class . 'Widget'))
             return new $extClass($args);

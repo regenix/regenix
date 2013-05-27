@@ -1,10 +1,10 @@
 <?php
-namespace framework\test;
+namespace regenix\test;
 
-use framework\Project;
-use framework\lang\CoreException;
-use framework\lang\ClassScanner;
-use framework\mvc\Controller;
+use regenix\Project;
+use regenix\lang\CoreException;
+use regenix\lang\ClassScanner;
+use regenix\mvc\Controller;
 
 class Tester extends Controller {
 

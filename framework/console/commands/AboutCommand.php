@@ -1,11 +1,11 @@
 <?php
-namespace framework\console\commands;
+namespace regenix\console\commands;
 
-use framework\Core;
-use framework\Project;
-use framework\console\Commander;
-use framework\console\ConsoleCommand;
-use framework\modules\AbstractModule;
+use regenix\Core;
+use regenix\Project;
+use regenix\console\Commander;
+use regenix\console\ConsoleCommand;
+use regenix\modules\AbstractModule;
 
 class AboutCommand extends ConsoleCommand {
 
@@ -37,5 +37,9 @@ class AboutCommand extends ConsoleCommand {
         foreach($cmd->projects as $project){
             $this->writeln('    - %s (%s)', $project->getName(), $project->config->get('app.mode'));
         }
+    }
+
+    public function getInlineHelp(){
+        return 'show information about versions, projects, modules';
     }
 }

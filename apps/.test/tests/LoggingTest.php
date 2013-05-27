@@ -1,8 +1,8 @@
 <?php
 namespace tests;
 
-use framework\logger\Logger;
-use framework\logger\LoggerHandler;
+use regenix\logger\Logger;
+use regenix\logger\LoggerHandler;
 
 Logger::debug('Init logger test');
 

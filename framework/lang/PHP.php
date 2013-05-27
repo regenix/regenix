@@ -1,12 +1,12 @@
 <?php
-namespace framework\lang;
+namespace regenix\lang;
 
-use framework\Project;
-use framework\cache\SystemCache;
-use framework\SDK;
-use framework\lang\File;
+use regenix\Project;
+use regenix\cache\SystemCache;
+use regenix\SDK;
+use regenix\lang\File;
 
-require 'framework/cache/SystemCache.php';
+require REGENIX_ROOT . 'cache/SystemCache.php';
 
 if (!defined('T_TRAIT'))
     define('T_TRAIT', 355);
@@ -15,7 +15,7 @@ CoreException::showOnlyPublic(!defined('IS_CORE_DEBUG') || IS_CORE_DEBUG === fal
 
 /**
  * Class ClassNotFoundException
- * @package framework\lang
+ * @package regenix\lang
  */
 class ClassNotFoundException extends CoreException {
 
@@ -28,7 +28,7 @@ class ClassNotFoundException extends CoreException {
 
 /**
  * Class FileIOException
- * @package framework\lang
+ * @package regenix\lang
  */
 class FileIOException extends CoreException {
 
@@ -47,7 +47,7 @@ class FileIOException extends CoreException {
 
 /**
  * Class FileNotFoundException
- * @package framework\lang
+ * @package regenix\lang
  */
 class FileNotFoundException extends CoreException {
 
@@ -63,7 +63,7 @@ class FileNotFoundException extends CoreException {
 
 /**
  * Class FileNotOpenException
- * @package framework\lang
+ * @package regenix\lang
  */
 class FileNotOpenException extends CoreException {
 
@@ -83,7 +83,7 @@ class FileNotOpenException extends CoreException {
 
 /**
  * Class CoreException
- * @package framework\lang
+ * @package regenix\lang
  */
 class CoreException extends \Exception {
 
@@ -226,16 +226,45 @@ final class ClassMetaInfo {
         return $this->info[0];
     }
 
+    /**
+     * @return bool
+     */
     public function isClass(){
         return !$this->info[1] || $this->info[1] === T_CLASS;
     }
 
+    /**
+     * @return bool
+     */
     public function isInterface(){
         return $this->info[1] === T_INTERFACE;
     }
 
+    /**
+     * @return bool
+     */
     public function isTrait(){
         return $this->info[1] === T_TRAIT;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAbstract(){
+        if ($this->isClass()){
+            $reflect = new \ReflectionClass($this->name);
+            return $reflect->isAbstract();
+        } else
+            return false;
+    }
+
+    /**
+     * @param array $args
+     * @return object
+     */
+    public function newInstance($args = array()){
+        $reflect = new \ReflectionClass($this->name);
+        return $reflect->newInstanceArgs($args);
     }
 
     /**
@@ -261,7 +290,7 @@ final class ClassMetaInfo {
 
     /**
      * @param array $result
-     * @return \framework\lang\ClassMetaInfo[]
+     * @return \regenix\lang\ClassMetaInfo[]
      * @return ClassMetaInfo[]
      */
     public function getImplementsAll(&$result = null){
@@ -301,7 +330,7 @@ final class ClassMetaInfo {
      * Find childrens recursive
      * @param string $namespace
      * @param null $result
-     * @return array|null
+     * @return ClassMetaInfo[]
      */
     public function getChildrensAll($namespace = '', &$result = null){
         $childrens = $this->getChildrens($namespace);
@@ -355,7 +384,7 @@ final class ClassMetaInfo {
  *      - namespace (dynamic)
  *
  * Class ClassScanner
- * @package framework\lang
+ * @package regenix\lang
  */
 class ClassScanner {
 
@@ -1035,7 +1064,7 @@ abstract class StrictObject {
 
 /**
  * Class File
- * @package framework\lang
+ * @package regenix\lang
  */
 class File extends StrictObject {
 
@@ -1046,7 +1075,7 @@ class File extends StrictObject {
 
     /**
      * @param string $path
-     * @param \framework\lang\File $parent
+     * @param \regenix\lang\File $parent
      */
     public function __construct($path, File $parent = null){
         if ( $parent != null )

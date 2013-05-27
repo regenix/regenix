@@ -1,21 +1,21 @@
 <?php
 
-namespace framework\mvc;
+namespace regenix\mvc;
 
-use framework\Core;
-use framework\SDK;
-use framework\exceptions\HttpException;
-use framework\lang\StrictObject;
-use framework\lang\CoreException;
-use framework\lang\File;
-use framework\mvc\Response;
-use framework\mvc\providers\FileResponse;
-use framework\mvc\providers\ResponseFileProvider;
-use framework\mvc\providers\ResponseProvider;
-use framework\mvc\route\Router;
-use framework\mvc\template\TemplateLoader;
-use framework\lang\String;
-use framework\mvc\MIMETypes;
+use regenix\Core;
+use regenix\SDK;
+use regenix\exceptions\HttpException;
+use regenix\lang\StrictObject;
+use regenix\lang\CoreException;
+use regenix\lang\File;
+use regenix\mvc\Response;
+use regenix\mvc\providers\FileResponse;
+use regenix\mvc\providers\ResponseFileProvider;
+use regenix\mvc\providers\ResponseProvider;
+use regenix\mvc\route\Router;
+use regenix\mvc\template\TemplateLoader;
+use regenix\lang\String;
+use regenix\mvc\MIMETypes;
 
 abstract class Controller extends StrictObject {
 
@@ -212,7 +212,7 @@ abstract class Controller extends StrictObject {
      * @param $action
      * @param array $args
      * @param bool $permanent
-     * @throws \framework\lang\CoreException
+     * @throws \regenix\lang\CoreException
      */
     public function redirect($action, array $args = array(), $permanent = false){
         if (strpos($action, '.') === false)

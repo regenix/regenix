@@ -1,7 +1,7 @@
 <?php
-namespace framework\widgets\inputs;
+namespace regenix\widgets\inputs;
 
-use framework\widgets\panels\PanelWidget;
+use regenix\widgets\panels\PanelWidget;
 
 class DateTimeFieldWidget extends PanelWidget {
 

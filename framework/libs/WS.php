@@ -1,11 +1,11 @@
 <?php
-namespace framework\libs;
+namespace regenix\libs;
 
-use framework\lang\CoreException;
-use framework\lang\File;
-use framework\lang\ArrayTyped;
-use framework\lang\String;
-use framework\mvc\Response;
+use regenix\lang\CoreException;
+use regenix\lang\File;
+use regenix\lang\ArrayTyped;
+use regenix\lang\String;
+use regenix\mvc\Response;
 
 abstract class WS {
 

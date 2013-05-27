@@ -1,7 +1,7 @@
 <?php
-namespace framework\widgets\panels;
+namespace regenix\widgets\panels;
 
-use framework\widgets\Widget;
+use regenix\widgets\Widget;
 
 class PanelWidget extends Widget {
 

@@ -1,8 +1,8 @@
 <?php
-namespace framework\deps;
+namespace regenix\deps;
 
-use framework\lang\CoreException;
-use framework\lang\String;
+use regenix\lang\CoreException;
+use regenix\lang\String;
 
 class DependencyNotFoundException extends CoreException {
 

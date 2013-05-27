@@ -1,14 +1,14 @@
 <?php
 
-namespace framework\mvc;
+namespace regenix\mvc;
 
-use framework\Core;
-use framework\lang\StrictObject;
-use framework\lang\CoreException;
-use framework\lang\ArrayTyped;
-use framework\lang\String;
-use framework\libs\Time;
-use framework\mvc\providers\ResponseProvider;
+use regenix\Core;
+use regenix\lang\StrictObject;
+use regenix\lang\CoreException;
+use regenix\lang\ArrayTyped;
+use regenix\lang\String;
+use regenix\libs\Time;
+use regenix\mvc\providers\ResponseProvider;
 
 class Request extends StrictObject {
 
@@ -194,7 +194,7 @@ class Request extends StrictObject {
     
     /**
      * @param string $method - get, post, etc.
-     * @return \framework\mvc\Request
+     * @return \regenix\mvc\Request
      */
     public function setMethod($method){
         $this->method = strtoupper($method);
@@ -279,7 +279,7 @@ class Request extends StrictObject {
 /**
  * TODO: DI
  * Class Session
- * @package framework\mvc
+ * @package regenix\mvc
  */
 class Session extends StrictObject {
 
@@ -798,7 +798,7 @@ abstract class RequestBinder extends StrictObject {
      * @param $type string
      * @throws BindValueException
      * @throws BindValueInstanceException
-     * @return array|bool|float|\framework\mvc\RequestBindValue|int|string
+     * @return array|bool|float|\regenix\mvc\RequestBindValue|int|string
      */
     public static function getValue($value, $type){
         switch($type){
@@ -858,7 +858,7 @@ class BindValueInstanceException extends CoreException {
 
     public function __construct($type){
         parent::__construct(String::format(
-            'Bind error: `%s` class must be implements \framework\mvc\RequestBindValue interface for bind value', $type
+            'Bind error: `%s` class must be implements \regenix\mvc\RequestBindValue interface for bind value', $type
         ));
     }
 }

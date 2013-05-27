@@ -1,16 +1,16 @@
 <?php
 
-namespace framework\mvc\route;
+namespace regenix\mvc\route;
 
-use framework\Project;
-use framework\lang\StrictObject;
-use framework\cache\SystemCache;
-use framework\lang\String;
-use framework\logger\Logger;
-use framework\mvc\Controller;
-use framework\mvc\Request;
-use framework\mvc\RequestBindParams;
-use framework\mvc\RequestBinder;
+use regenix\Project;
+use regenix\lang\StrictObject;
+use regenix\cache\SystemCache;
+use regenix\lang\String;
+use regenix\logger\Logger;
+use regenix\mvc\Controller;
+use regenix\mvc\Request;
+use regenix\mvc\RequestBindParams;
+use regenix\mvc\RequestBinder;
 
 class Router extends StrictObject {
 

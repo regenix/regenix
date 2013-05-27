@@ -1,8 +1,8 @@
 <?php
 
-namespace framework\mvc\providers;
+namespace regenix\mvc\providers;
 
-use framework\mvc\template\BaseTemplate;
+use regenix\mvc\template\BaseTemplate;
 
 class ResponseBaseTemplateProvider extends ResponseProvider {
 
@@ -10,10 +10,10 @@ class ResponseBaseTemplateProvider extends ResponseProvider {
 
     const CLASS_TYPE = BaseTemplate::type;
     
-    /** @var \framework\mvc\template\BaseTemplate */
+    /** @var \regenix\mvc\template\BaseTemplate */
     private $template;
     
-    public function __construct(\framework\mvc\Response $response) {
+    public function __construct(\regenix\mvc\Response $response) {
         parent::__construct($response);
         $this->template = $response->getEntity();
         $response->setContentType( 'text/html' );

@@ -1,6 +1,6 @@
 <?php
 
-namespace framework\libs;
+namespace regenix\libs;
 
 class Time {
 

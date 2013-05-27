@@ -1,8 +1,8 @@
 <?php
-namespace framework\exceptions;
+namespace regenix\exceptions;
 
-use framework\lang\CoreException;
-use framework\lang\String;
+use regenix\lang\CoreException;
+use regenix\lang\String;
 
 class ParseFileException extends CoreException {
 

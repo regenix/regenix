@@ -1,11 +1,11 @@
 <?php
-namespace framework\mvc;
+namespace regenix\mvc;
 
-use framework\cache\SystemCache;
-use framework\exceptions\AnnotationException;
-use framework\lang\CoreException;
-use framework\lang\ArrayTyped;
-use framework\lang\String;
+use regenix\cache\SystemCache;
+use regenix\exceptions\AnnotationException;
+use regenix\lang\CoreException;
+use regenix\lang\ArrayTyped;
+use regenix\lang\String;
 
 class Annotations {
 

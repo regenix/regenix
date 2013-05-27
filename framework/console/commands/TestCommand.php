@@ -1,12 +1,12 @@
 <?php
-namespace framework\console\commands;
+namespace regenix\console\commands;
 
-use framework\Core;
-use framework\Project;
-use framework\console\Commander;
-use framework\console\ConsoleCommand;
-use framework\modules\AbstractModule;
-use framework\test\Tester;
+use regenix\Core;
+use regenix\Project;
+use regenix\console\Commander;
+use regenix\console\ConsoleCommand;
+use regenix\modules\AbstractModule;
+use regenix\test\Tester;
 
 class TestCommand extends ConsoleCommand {
 
@@ -47,5 +47,9 @@ class TestCommand extends ConsoleCommand {
         $this->writeln();
         $this->writeln('Tests %s, exit code: %s', $result['result'] ? 'success' : 'fail', $result['result'] ? 0 : 1);
         exit($result['result'] ? 0 : 1);
+    }
+
+    public function getInlineHelp(){
+        return 'run tests of project or module, for module: test -module=name~0.5';
     }
 }

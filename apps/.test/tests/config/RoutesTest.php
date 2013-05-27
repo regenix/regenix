@@ -1,8 +1,8 @@
 <?php
 namespace tests\config;
 
-use framework\lang\File;
-use framework\mvc\route\RouterConfiguration;
+use regenix\lang\File;
+use regenix\mvc\route\RouterConfiguration;
 use tests\RegenixTest;
 
 class RoutesTest extends RegenixTest {

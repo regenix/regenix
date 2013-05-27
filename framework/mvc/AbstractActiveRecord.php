@@ -1,10 +1,10 @@
 <?php
-namespace framework\mvc;
+namespace regenix\mvc;
 
-use framework\lang\CoreException;
-use framework\lang\StrictObject;
-use framework\exceptions\TypeException;
-use framework\lang\IClassInitialization;
+use regenix\lang\CoreException;
+use regenix\lang\StrictObject;
+use regenix\exceptions\TypeException;
+use regenix\lang\IClassInitialization;
 
 abstract class AbstractActiveRecord extends StrictObject
     implements IClassInitialization {

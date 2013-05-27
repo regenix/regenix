@@ -1,12 +1,12 @@
 <?php
-namespace framework\mvc;
+namespace regenix\mvc;
 
-use framework\Project;
-use framework\lang\File;
-use framework\lang\IClassInitialization;
-use framework\lang\String;
-use framework\mvc\template\RegenixTemplate;
-use framework\mvc\template\TemplateLoader;
+use regenix\Project;
+use regenix\lang\File;
+use regenix\lang\IClassInitialization;
+use regenix\lang\String;
+use regenix\mvc\template\RegenixTemplate;
+use regenix\mvc\template\TemplateLoader;
 
 abstract class Mailer implements IClassInitialization {
 

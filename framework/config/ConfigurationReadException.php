@@ -1,8 +1,8 @@
 <?php
 
-namespace framework\config;
+namespace regenix\config;
 
-use framework\lang\CoreException;
+use regenix\lang\CoreException;
 
 class ConfigurationReadException extends CoreException {
 

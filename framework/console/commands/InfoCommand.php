@@ -1,7 +1,7 @@
 <?php
-namespace framework\console\commands;
+namespace regenix\console\commands;
 
-use framework\console\ConsoleCommand;
+use regenix\console\ConsoleCommand;
 
 class InfoCommand extends ConsoleCommand {
 
@@ -15,5 +15,9 @@ class InfoCommand extends ConsoleCommand {
             ->writeln()
             ->writeln('     mode = %s', $config->get('app.mode'))
             ->writeln('     mode.strict = %s', $config->getBoolean('app.mode.strict', true) ? 'on' : 'off');
+    }
+
+    public function getInlineHelp(){
+        return 'show information of current project';
     }
 }

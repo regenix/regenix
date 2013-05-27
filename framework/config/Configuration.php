@@ -1,11 +1,11 @@
 <?php
 
-namespace framework\config;
+namespace regenix\config;
 
-use framework\lang\StrictObject;
-use framework\lang\FileIOException;
-use framework\lang\String;
-use framework\lang\File;
+use regenix\lang\StrictObject;
+use regenix\lang\FileIOException;
+use regenix\lang\String;
+use regenix\lang\File;
 
 class Configuration extends StrictObject {
 
@@ -30,7 +30,7 @@ class Configuration extends StrictObject {
 
     /**
      * 
-     * @param \framework\lang\File $file|array files
+     * @param \regenix\lang\File $file|array files
      */
     public function __construct($file = null){
         if (is_array($file)){
@@ -71,7 +71,7 @@ class Configuration extends StrictObject {
 
 /**
  * Class PropertiesConfiguration
- * @package framework\config
+ * @package regenix\config
  */
 class PropertiesConfiguration extends Configuration {
 

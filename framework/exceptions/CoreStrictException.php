@@ -1,9 +1,9 @@
 <?php
-namespace framework\exceptions;
+namespace regenix\exceptions;
 
-use framework\Project;
-use framework\lang\CoreException;
-use framework\lang\String;
+use regenix\Project;
+use regenix\lang\CoreException;
+use regenix\lang\String;
 
 class CoreStrictException extends CoreException {
 

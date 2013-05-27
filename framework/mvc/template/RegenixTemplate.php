@@ -1,20 +1,20 @@
 <?php
-namespace framework\mvc\template {
+namespace regenix\mvc\template {
 
-use framework\Core;
-use framework\Project;
-use framework\SDK;
-use framework\lang\CoreException;
-use framework\exceptions\CoreStrictException;
-use framework\lang\File;
-use framework\lang\FileNotFoundException;
-use framework\lang\String;
-use framework\libs\Captcha;
-use framework\libs\RegenixTPL\RegenixTemplate as RegenixTPL;
-use framework\libs\RegenixTPL\RegenixTemplateTag;
-use framework\libs\ImageUtils;
-use framework\mvc\route\Router;
-use framework\widgets\Widget;
+use regenix\Core;
+use regenix\Project;
+use regenix\SDK;
+use regenix\lang\CoreException;
+use regenix\exceptions\CoreStrictException;
+use regenix\lang\File;
+use regenix\lang\FileNotFoundException;
+use regenix\lang\String;
+use regenix\libs\Captcha;
+use regenix\libs\RegenixTPL\RegenixTemplate as RegenixTPL;
+use regenix\libs\RegenixTPL\RegenixTemplateTag;
+use regenix\libs\ImageUtils;
+use regenix\mvc\route\Router;
+use regenix\widgets\Widget;
 
 class RegenixTemplate extends BaseTemplate {
 
@@ -254,9 +254,9 @@ class RegenixTemplate extends BaseTemplate {
 
 namespace {
 
-    use framework\lang\StrictObject;
-    use framework\lang\CoreException;
-    use framework\mvc\template\RegenixTemplate;
+    use regenix\lang\StrictObject;
+    use regenix\lang\CoreException;
+    use regenix\mvc\template\RegenixTemplate;
 
     class TPL extends StrictObject {
 
@@ -286,7 +286,7 @@ namespace {
         }
     }
 
-    use framework\libs\I18n;
+    use regenix\libs\I18n;
 
     function __($message, $args = ''){
         if (is_array($args))

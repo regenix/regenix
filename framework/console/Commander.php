@@ -1,17 +1,18 @@
 <?php
-namespace framework\console;
+namespace regenix\console;
 
-use framework\Core;
-use framework\Project;
-use framework\console\commands\AboutCommand;
-use framework\console\commands\DepsCommand;
-use framework\console\commands\HelpCommand;
-use framework\console\commands\InfoCommand;
-use framework\console\commands\LoadCommand;
-use framework\console\commands\TestCommand;
-use framework\lang\CoreException;
-use framework\lang\File;
-use framework\lang\IClassInitialization;
+use regenix\Core;
+use regenix\Project;
+use regenix\console\commands\AboutCommand;
+use regenix\console\commands\DepsCommand;
+use regenix\console\commands\HelpCommand;
+use regenix\console\commands\InfoCommand;
+use regenix\console\commands\LoadCommand;
+use regenix\console\commands\TestCommand;
+use regenix\lang\ClassScanner;
+use regenix\lang\CoreException;
+use regenix\lang\File;
+use regenix\lang\IClassInitialization;
 
 class Commander implements IClassInitialization {
 
@@ -119,13 +120,19 @@ class Commander implements IClassInitialization {
         self::$commands[$group] = $commands;
     }
 
+    /**
+     * @return ConsoleCommand[]
+     */
+    public static function getCommands(){
+        return self::$commands;
+    }
+
     public static function initialize() {
-        self::register(new HelpCommand());
-        self::register(new InfoCommand());
-        self::register(new AboutCommand());
-        self::register(new LoadCommand());
-        self::register(new DepsCommand());
-        self::register(new TestCommand());
+        $meta = ClassScanner::find(ConsoleCommand::type);
+        foreach($meta->getChildrensAll() as $class){
+            if (!$class->isAbstract())
+                self::register($class->newInstance());
+        }
     }
 
     private static $instance;

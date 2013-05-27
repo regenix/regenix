@@ -1,5 +1,5 @@
 <?php
-namespace framework\cache;
+namespace regenix\cache;
 
 use Jamm\Memory\APCObject;
 use Jamm\Memory\CouchbaseObject;
@@ -9,10 +9,10 @@ use Jamm\Memory\MemoryObject;
 use Jamm\Memory\RedisObject;
 use Jamm\Memory\RedisServer;
 use Jamm\Memory\Shm\SHMObject;
-use framework\Core;
-use framework\Project;
-use framework\lang\CoreException;
-use framework\lang\IClassInitialization;
+use regenix\Core;
+use regenix\Project;
+use regenix\lang\CoreException;
+use regenix\lang\IClassInitialization;
 
 final class Cache implements IClassInitialization {
 

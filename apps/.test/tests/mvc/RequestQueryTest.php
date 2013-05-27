@@ -1,7 +1,7 @@
 <?php
 namespace tests\mvc;
 
-use framework\mvc\RequestQuery;
+use regenix\mvc\RequestQuery;
 use tests\RegenixTest;
 
 class RequestQueryTest extends RegenixTest {

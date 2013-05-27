@@ -1,12 +1,12 @@
 <?php
 
-namespace framework\mvc\route;
+namespace regenix\mvc\route;
 
-use framework\config\Configuration;
-use framework\config\ConfigurationReadException;
-use framework\lang\CoreException;
-use framework\lang\File;
-use framework\lang\String;
+use regenix\config\Configuration;
+use regenix\config\ConfigurationReadException;
+use regenix\lang\CoreException;
+use regenix\lang\File;
+use regenix\lang\String;
 
 class RouterConfiguration extends Configuration {
 

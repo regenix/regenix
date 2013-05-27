@@ -1,11 +1,11 @@
 <?php
-namespace framework\libs;
+namespace regenix\libs;
 
 use Imagine\Gd\Imagine;
 use Imagine\Image\Box;
-use framework\Project;
-use framework\lang\File;
-use framework\lang\IClassInitialization;
+use regenix\Project;
+use regenix\lang\File;
+use regenix\lang\IClassInitialization;
 
 class ImageUtils implements IClassInitialization {
 

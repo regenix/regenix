@@ -7,10 +7,10 @@
  * To change this template use File | Settings | File Templates.
  */
 
-namespace framework\deps;
+namespace regenix\deps;
 
-use framework\lang\CoreException;
-use framework\lang\String;
+use regenix\lang\CoreException;
+use regenix\lang\String;
 
 class DependencyDownloadException extends CoreException {
 

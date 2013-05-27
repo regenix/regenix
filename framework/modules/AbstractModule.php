@@ -1,13 +1,13 @@
 <?php
 
-namespace framework\modules;
+namespace regenix\modules;
 
-use framework\Core;
-use framework\Project;
-use framework\lang\ClassScanner;
-use framework\mvc\route\Router;
-use framework\lang\CoreException;
-use framework\lang\File;
+use regenix\Core;
+use regenix\Project;
+use regenix\lang\ClassScanner;
+use regenix\mvc\route\Router;
+use regenix\lang\CoreException;
+use regenix\lang\File;
 
 abstract class AbstractModule {
 
@@ -44,7 +44,7 @@ abstract class AbstractModule {
 
     /**
      * get route file
-     * @return \framework\lang\File
+     * @return \regenix\lang\File
      */
     final public function getRouteFile(){
         return new File( $this->getPath() . 'conf/route' );

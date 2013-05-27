@@ -1,9 +1,9 @@
 <?php
-namespace framework\exceptions;
+namespace regenix\exceptions;
 
-use framework\lang\CoreException;
-use framework\mvc\Annotations;
-use framework\lang\String;
+use regenix\lang\CoreException;
+use regenix\mvc\Annotations;
+use regenix\lang\String;
 
 
 class AnnotationException extends CoreException {

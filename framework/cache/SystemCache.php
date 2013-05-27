@@ -1,5 +1,5 @@
 <?php
-namespace framework\cache;
+namespace regenix\cache;
 
 define('APC_ENABLED', extension_loaded('apc'));
 define('XCACHE_ENABLED', extension_loaded('xcache'));

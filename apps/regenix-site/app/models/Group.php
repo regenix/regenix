@@ -1,7 +1,7 @@
 <?php
 namespace models;
 
-use framework\mvc\IHandleBeforeSave;
+use regenix\mvc\IHandleBeforeSave;
 use models\mixins\TSaveAndUpdate;
 use models\mixins\TTimeInformation;
 use modules\mongodb\ActiveRecord;

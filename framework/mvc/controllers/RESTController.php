@@ -1,8 +1,8 @@
 <?php
-namespace framework\mvc\controllers;
+namespace regenix\mvc\controllers;
 
-use framework\exceptions\HttpException;
-use framework\mvc\Controller;
+use regenix\exceptions\HttpException;
+use regenix\mvc\Controller;
 
 class RESTController extends Controller{
 

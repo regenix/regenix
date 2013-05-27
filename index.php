@@ -1,11 +1,8 @@
 <?php
-//define('IS_CORE_DEBUG', true);
-use framework\Core;
-require 'framework/Core.php';
+use regenix\Core;
 
-try {
-    Core::init(__DIR__);
-    Core::processRoute();
-} catch (Exception $e){
-    Core::catchException($e);
-}
+    // require main file
+    require 'framework/include.php';
+
+    // Init apps
+    Core::initWeb(__DIR__);

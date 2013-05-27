@@ -1,7 +1,7 @@
 <?php
 namespace tests;
 
-use framework\test\UnitTest;
+use regenix\test\UnitTest;
 
 abstract class RegenixTest extends UnitTest {
 

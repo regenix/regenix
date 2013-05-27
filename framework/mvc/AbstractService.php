@@ -1,11 +1,11 @@
 <?php
-namespace framework\mvc;
+namespace regenix\mvc;
 
-use framework\lang\StrictObject;
-use framework\exceptions\AnnotationException;
-use framework\lang\CoreException;
-use framework\lang\ArrayTyped;
-use framework\lang\String;
+use regenix\lang\StrictObject;
+use regenix\exceptions\AnnotationException;
+use regenix\lang\CoreException;
+use regenix\lang\ArrayTyped;
+use regenix\lang\String;
 
 abstract class AbstractService extends StrictObject {
 
@@ -370,7 +370,7 @@ abstract class AbstractService extends StrictObject {
      * @param Annotations $classInfo
      * @param $key
      * @param ArrayTyped $indexed
-     * @throws \framework\exceptions\AnnotationException
+     * @throws \regenix\exceptions\AnnotationException
      */
     protected static function registerModelMetaIndex(&$infoIndex, &$allInfo, Annotations $classInfo, $key, ArrayTyped $indexed){
 
@@ -380,7 +380,7 @@ abstract class AbstractService extends StrictObject {
      * @param \ReflectionClass $class
      * @param Annotations $classInfo
      * @param Annotations[] $propertiesInfo
-     * @throws \framework\exceptions\AnnotationException
+     * @throws \regenix\exceptions\AnnotationException
      */
     protected static function registerModelMeta(\ReflectionClass $class, Annotations $classInfo, $propertiesInfo){
         $info = array();

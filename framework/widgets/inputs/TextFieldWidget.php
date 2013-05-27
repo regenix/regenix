@@ -1,7 +1,7 @@
 <?php
-namespace framework\widgets\inputs;
+namespace regenix\widgets\inputs;
 
-use framework\widgets\Widget;
+use regenix\widgets\Widget;
 
 class TextFieldWidget extends FieldWidget {
 

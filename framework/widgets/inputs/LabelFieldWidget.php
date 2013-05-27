@@ -1,8 +1,8 @@
 <?php
-namespace framework\widgets\inputs;
+namespace regenix\widgets\inputs;
 
-use framework\lang\String;
-use framework\libs\I18n;
+use regenix\lang\String;
+use regenix\libs\I18n;
 
 class LabelFieldWidget extends FieldWidget {
 

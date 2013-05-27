@@ -1,14 +1,14 @@
 <?php
 
-namespace framework\logger;
+namespace regenix\logger;
 
-use framework\Core;
-use framework\Project;
-use framework\lang\CoreException;
-use framework\lang\File;
-use framework\lang\FileIOException;
-use framework\lang\IClassInitialization;
-use framework\lang\String;
+use regenix\Core;
+use regenix\Project;
+use regenix\lang\CoreException;
+use regenix\lang\File;
+use regenix\lang\FileIOException;
+use regenix\lang\IClassInitialization;
+use regenix\lang\String;
 
 abstract class Logger implements IClassInitialization {
 

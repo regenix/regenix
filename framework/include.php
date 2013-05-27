@@ -1,32 +1,33 @@
 <?php
-namespace framework {
+namespace regenix {
 
-    use framework\cache\SystemCache;
-    use framework\config\ConfigurationReadException;
-    use framework\config\PropertiesConfiguration;
-    use framework\deps\Repository;
-    use framework\exceptions\JsonFileException;
-    use framework\exceptions\TypeException;
-    use framework\lang\FileNotFoundException;
-    use framework\lang\CoreException;
-    use framework\exceptions\CoreStrictException;
-    use framework\exceptions\HttpException;
-    use framework\lang\File;
-    use framework\lang\ClassScanner;
-    use framework\lang\String;
-    use framework\libs\Captcha;
-    use framework\logger\Logger;
-    use framework\modules\AbstractModule;
-    use framework\mvc\Controller;
-    use framework\mvc\Request;
-    use framework\mvc\Response;
-    use framework\mvc\Result;
-    use framework\mvc\URL;
-    use framework\mvc\route\Router;
-    use framework\mvc\route\RouterConfiguration;
-    use framework\mvc\session\APCSession;
-    use framework\mvc\template\BaseTemplate;
-    use framework\mvc\template\TemplateLoader;
+    use regenix\cache\SystemCache;
+    use regenix\config\ConfigurationReadException;
+    use regenix\config\PropertiesConfiguration;
+    use regenix\console\Commander;
+    use regenix\deps\Repository;
+    use regenix\exceptions\JsonFileException;
+    use regenix\exceptions\TypeException;
+    use regenix\lang\FileNotFoundException;
+    use regenix\lang\CoreException;
+    use regenix\exceptions\CoreStrictException;
+    use regenix\exceptions\HttpException;
+    use regenix\lang\File;
+    use regenix\lang\ClassScanner;
+    use regenix\lang\String;
+    use regenix\libs\Captcha;
+    use regenix\logger\Logger;
+    use regenix\modules\AbstractModule;
+    use regenix\mvc\Controller;
+    use regenix\mvc\Request;
+    use regenix\mvc\Response;
+    use regenix\mvc\Result;
+    use regenix\mvc\URL;
+    use regenix\mvc\route\Router;
+    use regenix\mvc\route\RouterConfiguration;
+    use regenix\mvc\session\APCSession;
+    use regenix\mvc\template\BaseTemplate;
+    use regenix\mvc\template\TemplateLoader;
 
 abstract class Core {
 
@@ -42,7 +43,7 @@ abstract class Core {
         return '0.6';
     }
 
-    public static function init($rootDir, $inWeb = true){
+    private static function init($rootDir, $inWeb = true){
         $rootDir = str_replace(DIRECTORY_SEPARATOR, '/', realpath($rootDir));
         if (substr($rootDir, -1) !== '/')
             $rootDir .= '/';
@@ -87,8 +88,38 @@ abstract class Core {
         }
     }
 
+    /**
+     * Init for console app
+     * @param $rootDir
+     */
     public static function initConsole($rootDir){
-        self::init($rootDir, false);
+        try {
+            self::init($rootDir, false);
+            register_shutdown_function(array(Core::type, 'shutdownConsole'));
+
+            $commander = Commander::current();
+            $commander->run();
+        } catch (\Exception $e){
+            echo "\n    Exception error: " . str_replace('\\', '.', get_class($e)) . "\n";
+            echo "\n        message: " . $e->getMessage();
+            echo "\n        file: " . $e->getFile();
+            echo "\n        line: " . $e->getLine();
+            echo "\n\n      Exit code: 1\n";
+            exit(1);
+        }
+    }
+
+    /**
+     * Init for web app
+     * @param $rootDir
+     */
+    public static function initWeb($rootDir){
+        self::init($rootDir);
+        try {
+            self::processRoute();
+        } catch (\Exception $e){
+            self::catchException($e);
+        }
     }
 
     private static function _registerTriggers(){
@@ -283,7 +314,7 @@ abstract class Core {
                 fclose($fp);
             }
         }
-        include ROOT . 'framework/views/system/errors/fatal.phtml';
+        include REGENIX_ROOT . 'views/system/errors/fatal.phtml';
     }
 
     private static function catchAny(\Exception $e){
@@ -357,7 +388,7 @@ abstract class Core {
     }
 
     public static function getFrameworkPath(){
-        return ROOT . 'framework/';
+        return REGENIX_ROOT;
     }
 
     /**
@@ -389,6 +420,33 @@ abstract class Core {
                     throw CoreStrictException::formated($errstr);
                 }
             }
+        }
+    }
+
+    public static function shutdownConsole(){
+        $error = error_get_last();
+        if ($error){
+            switch($error['type']){
+                case E_ERROR:
+                case E_CORE_ERROR:
+                case E_COMPILE_ERROR:
+                case E_PARSE:
+                case E_USER_ERROR:
+                case 4096:
+                {
+                    echo "\n    Error: '" . $error['message'] . "'";
+                    echo "\n        file: '" . $error['file'] . "'";
+                    echo "\n        line: " . $error['line'] . "\n";
+
+                    break;
+                }
+                default: {
+                    return;
+                }
+            }
+            echo "\n    Exit code: " . $error['type'];
+            echo "\n";
+            exit($error['type']);
         }
     }
     
@@ -570,7 +628,7 @@ abstract class Core {
 
         /**
          * replace part configuration
-         * @param \framework\config\Configuration|\framework\config\PropertiesConfiguration $config
+         * @param \regenix\config\Configuration|\regenix\config\PropertiesConfiguration $config
          */
         public function applyConfig(PropertiesConfiguration $config){
             $paths = $config->getArray("app.paths", array('/'));

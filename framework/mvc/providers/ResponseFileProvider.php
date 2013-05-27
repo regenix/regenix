@@ -1,11 +1,11 @@
 <?php
 
-namespace framework\mvc\providers;
+namespace regenix\mvc\providers;
 
-use framework\lang\File;
-use framework\mvc\MIMETypes;
-use framework\mvc\Request;
-use framework\mvc\Response;
+use regenix\lang\File;
+use regenix\mvc\MIMETypes;
+use regenix\mvc\Request;
+use regenix\mvc\Response;
 
 class ResponseFileProvider extends ResponseProvider {
 

@@ -1,13 +1,14 @@
 <?php
 
-namespace framework\console;
+namespace regenix\console;
 
-use framework\Project;
-use framework\lang\ArrayTyped;
-use framework\lang\String;
+use regenix\Project;
+use regenix\lang\ArrayTyped;
+use regenix\lang\String;
 
 abstract class ConsoleCommand {
 
+    const type  = __CLASS__;
     const GROUP = '';
 
     /** @var Project */
@@ -31,6 +32,12 @@ abstract class ConsoleCommand {
         $this->opts = new ArrayTyped($options);
         $this->onBefore();
     }
+
+    abstract public function getInlineHelp();
+    public function invokeHelp(){
+        $this->writeln('    Help: ' . $this->getInlineHelp());
+    }
+
 
     protected function onBefore(){}
 

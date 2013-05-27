@@ -1,7 +1,7 @@
 <?php
 namespace notifiers;
 
-use framework\mvc\Mailer;
+use regenix\mvc\Mailer;
 
 class ConfirmNotifier extends Mailer {
 

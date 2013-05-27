@@ -1,13 +1,13 @@
 <?php
 namespace controllers;
 
-use framework\Project;
-use framework\cache\Cache;
-use framework\lang\ClassFileScanner;
-use framework\lang\ClassScanner;
-use framework\libs\I18n;
-use framework\mvc\Controller;
-use framework\widgets\Widget;
+use regenix\Project;
+use regenix\cache\Cache;
+use regenix\lang\ClassFileScanner;
+use regenix\lang\ClassScanner;
+use regenix\libs\I18n;
+use regenix\mvc\Controller;
+use regenix\widgets\Widget;
 
 class Application extends Controller {
 

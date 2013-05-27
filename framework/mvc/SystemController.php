@@ -1,8 +1,8 @@
 <?php
-namespace framework\mvc;
+namespace regenix\mvc;
 
-use framework\libs\Captcha;
-use framework\libs\I18n;
+use regenix\libs\Captcha;
+use regenix\libs\I18n;
 
 class SystemController extends Controller {
 

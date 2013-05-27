@@ -1,10 +1,10 @@
 <?php
 namespace tests\mvc;
 
-use framework\mvc\BindValueException;
-use framework\mvc\BindValueInstanceException;
-use framework\mvc\RequestBindValue;
-use framework\mvc\RequestBinder;
+use regenix\mvc\BindValueException;
+use regenix\mvc\BindValueInstanceException;
+use regenix\mvc\RequestBindValue;
+use regenix\mvc\RequestBinder;
 use tests\RegenixTest;
 
 class RequestBinderTest extends RegenixTest {

@@ -1,5 +1,5 @@
 <?php
-namespace framework\widgets\inputs;
+namespace regenix\widgets\inputs;
 
 class DateFieldWidget extends TextFieldWidget {
 

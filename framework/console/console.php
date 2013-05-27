@@ -1,14 +1,11 @@
 <?php
-namespace framework\console;
+namespace regenix\console;
 
-    use framework\Core;
+    use regenix\Core;
 
 {
     $root = dirname(dirname(__DIR__));
-    require $root . '/framework/Core.php';
+    require $root . '/framework/include.php';
 
     Core::initConsole($root);
-
-    $commander = Commander::current();
-    $commander->run();
 }

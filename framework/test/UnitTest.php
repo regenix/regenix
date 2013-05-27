@@ -1,11 +1,11 @@
 <?php
-namespace framework\test;
+namespace regenix\test;
 
-use framework\lang\StrictObject;
-use framework\exceptions\TypeException;
+use regenix\lang\StrictObject;
+use regenix\exceptions\TypeException;
 /**
  * Class UnitTest
- * @package framework\test
+ * @package regenix\test
  */
 abstract class UnitTest extends StrictObject {
 
@@ -58,7 +58,7 @@ abstract class UnitTest extends StrictObject {
      * @param callable $callback
      * @param array $args
      * @param string $message
-     * @throws \framework\exceptions\TypeException
+     * @throws \regenix\exceptions\TypeException
      * @throws \Exception
      * @return $this
      */
@@ -89,7 +89,7 @@ abstract class UnitTest extends StrictObject {
      * @param array $args
      * @param string $message
      * @return $this
-     * @throws \framework\exceptions\TypeException
+     * @throws \regenix\exceptions\TypeException
      * @throws \Exception
      */
     protected function assertNotException($class, $callback, array $args = array(), $message = ''){

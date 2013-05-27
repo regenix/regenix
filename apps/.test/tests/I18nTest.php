@@ -2,7 +2,7 @@
 namespace tests;
 
 
-use framework\libs\I18n;
+use regenix\libs\I18n;
 
 class I18nTest extends  RegenixTest {
 

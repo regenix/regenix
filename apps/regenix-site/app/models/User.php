@@ -1,7 +1,7 @@
 <?php
 namespace models;
 
-use framework\lang\String;
+use regenix\lang\String;
 use models\mixins\TDefaultInformation;
 use models\mixins\TTimeInformation;
 use modules\mongodb\ActiveRecord;

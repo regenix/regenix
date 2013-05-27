@@ -1,6 +1,6 @@
 <?php
 
-namespace framework\mvc\template {
+namespace regenix\mvc\template {
 
     class PHPTemplate extends BaseTemplate {
 

@@ -1,5 +1,5 @@
 <?php
-namespace framework\exceptions;
+namespace regenix\exceptions;
 
 
 class JsonFileException extends ParseFileException {

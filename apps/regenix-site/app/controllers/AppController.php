@@ -1,7 +1,7 @@
 <?php
 namespace controllers;
 
-use framework\mvc\Controller;
+use regenix\mvc\Controller;
 
 abstract class AppController extends Controller {
 

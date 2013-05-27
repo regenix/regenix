@@ -1,7 +1,7 @@
 <?php
-namespace framework\deps;
+namespace regenix\deps;
 
-use framework\lang\CoreException;
+use regenix\lang\CoreException;
 
 class ConnectException extends CoreException {
 

@@ -1,12 +1,12 @@
 <?php
 
-namespace framework\deps;
+namespace regenix\deps;
 
-use framework\Project;
-use framework\lang\CoreException;
-use framework\lang\File;
-use framework\lang\IClassInitialization;
-use framework\lang\String;
+use regenix\Project;
+use regenix\lang\CoreException;
+use regenix\lang\File;
+use regenix\lang\IClassInitialization;
+use regenix\lang\String;
 
 class Repository implements IClassInitialization{
 

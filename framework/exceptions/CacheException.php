@@ -1,7 +1,7 @@
 <?php
-namespace framework\exceptions;
+namespace regenix\exceptions;
 
-use framework\lang\CoreException;
+use regenix\lang\CoreException;
 
 class CacheException extends CoreException {
 

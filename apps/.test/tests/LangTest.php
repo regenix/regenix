@@ -1,10 +1,10 @@
 <?php
 namespace tests;
 
-use framework\exceptions\CoreException;
-use framework\lang\ArrayTyped;
-use framework\lang\ClassLoader;
-use framework\lang\String;
+use regenix\exceptions\CoreException;
+use regenix\lang\ArrayTyped;
+use regenix\lang\ClassLoader;
+use regenix\lang\String;
 
 class LangTest extends RegenixTest {
 

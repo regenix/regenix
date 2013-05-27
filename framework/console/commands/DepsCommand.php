@@ -7,16 +7,16 @@
  * To change this template use File | Settings | File Templates.
  */
 
-namespace framework\console\commands;
+namespace regenix\console\commands;
 
-use framework\console\ConsoleCommand;
-use framework\deps\ConnectException;
-use framework\deps\DependencyDownloadException;
-use framework\deps\DependencyNotFoundException;
-use framework\deps\Origin;
-use framework\deps\Repository;
-use framework\exceptions\HttpException;
-use framework\exceptions\NotFoundException;
+use regenix\console\ConsoleCommand;
+use regenix\deps\ConnectException;
+use regenix\deps\DependencyDownloadException;
+use regenix\deps\DependencyNotFoundException;
+use regenix\deps\Origin;
+use regenix\deps\Repository;
+use regenix\exceptions\HttpException;
+use regenix\exceptions\NotFoundException;
 
 class DepsCommand extends ConsoleCommand {
 
@@ -268,5 +268,9 @@ class DepsCommand extends ConsoleCommand {
             $this->writeln();
             $this->writeln('Last exception: %s', $e->getMessage());
         }
+    }
+
+    public function getInlineHelp(){
+        return 'show and update dependencies of current project, example: deps update';
     }
 }

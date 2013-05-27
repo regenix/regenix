@@ -1,10 +1,10 @@
 <?php
 namespace tests;
 
-use framework\Core;
-use framework\Project;
-use framework\lang\ClassLoader;
-use framework\lang\ClassScanner;
+use regenix\Core;
+use regenix\Project;
+use regenix\lang\ClassLoader;
+use regenix\lang\ClassScanner;
 
 class ClassloaderTest extends RegenixTest {
 

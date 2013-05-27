@@ -1,11 +1,11 @@
 <?php
 
-namespace framework\mvc\providers;
+namespace regenix\mvc\providers;
 
-use framework\lang\CoreException;
-use framework\lang\ClassScanner;
-use framework\mvc\Response;
-use framework\lang\String;
+use regenix\lang\CoreException;
+use regenix\lang\ClassScanner;
+use regenix\mvc\Response;
+use regenix\lang\String;
 
 abstract class ResponseProvider {
 

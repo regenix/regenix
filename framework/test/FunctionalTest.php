@@ -1,10 +1,10 @@
 <?php
-namespace framework\test;
+namespace regenix\test;
 
-use framework\lang\CoreException;
-use framework\libs\WS;
-use framework\libs\WSResponse;
-use framework\mvc\URL;
+use regenix\lang\CoreException;
+use regenix\libs\WS;
+use regenix\libs\WSResponse;
+use regenix\mvc\URL;
 
 class FunctionalTest extends UnitTest {
 
@@ -90,7 +90,7 @@ class FunctionalTest extends UnitTest {
      * @param array $json
      * @param WSResponse $response
      * @return $this
-     * @throws \framework\lang\CoreException
+     * @throws \regenix\lang\CoreException
      */
     protected function assertJsonContent($json = array(), WSResponse $response = null){
         $response = $response ? $response : $this->response;

@@ -1,19 +1,26 @@
 <?php
-namespace framework\console\commands;
+namespace regenix\console\commands;
 
-use framework\console\ConsoleCommand;
+use regenix\console\Commander;
+use regenix\console\ConsoleCommand;
 
 class HelpCommand extends ConsoleCommand {
 
     const GROUP = 'help';
 
     public function __default(){
-        $this->writeln('All commands:');
+        $this->writeln('All commands <regenix [command] ..args>:');
         $this->writeln();
-        $this->writeln('    help - show help');
-        $this->writeln('    about - show version, projects, modules information');
-        $this->writeln('    info - show information of current project');
+
+        $commands = Commander::getCommands();
+
+        foreach($commands as $name => $command){
+            $this->writeln('    `' . $name . '` - ' . $command->getInlineHelp());
+        }
         $this->writeln();
-        $this->writeln('    load <name> - load and set current project by name');
+    }
+
+    public function getInlineHelp(){
+        return 'show help';
     }
 }

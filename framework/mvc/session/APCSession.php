@@ -1,7 +1,7 @@
 <?php
-namespace framework\mvc\session;
+namespace regenix\mvc\session;
 
-use framework\mvc\SessionDriver;
+use regenix\mvc\SessionDriver;
 
 class APCSession extends SessionDriver {
 

@@ -1,14 +1,13 @@
 <?php
 namespace {
 
-    use framework\AbstractBootstrap;
-    use framework\lang\ClassScanner;
-    use framework\mvc\template\BaseTemplate;
+    use regenix\AbstractBootstrap;
+    use regenix\lang\ClassScanner;
+    use regenix\mvc\template\BaseTemplate;
     use tests\ClassloaderTest;
     use tests\I18nTest;
     use tests\LangTest;
     use tests\LoggingTest;
-    use tests\RegenixTest;
 
     class Bootstrap extends AbstractBootstrap {
 

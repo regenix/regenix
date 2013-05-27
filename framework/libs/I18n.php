@@ -1,16 +1,16 @@
 <?php
-namespace framework\libs;
+namespace regenix\libs;
 
 
-use framework\Project;
-use framework\cache\SystemCache;
-use framework\config\PropertiesConfiguration;
-use framework\lang\File;
-use framework\lang\IClassInitialization;
-use framework\mvc\Request;
-use framework\mvc\RequestQuery;
-use framework\mvc\Session;
-use framework\mvc\route\Router;
+use regenix\Project;
+use regenix\cache\SystemCache;
+use regenix\config\PropertiesConfiguration;
+use regenix\lang\File;
+use regenix\lang\IClassInitialization;
+use regenix\mvc\Request;
+use regenix\mvc\RequestQuery;
+use regenix\mvc\Session;
+use regenix\mvc\route\Router;
 
 class I18n implements IClassInitialization {
 
@@ -112,7 +112,7 @@ class I18n implements IClassInitialization {
     }
 
     /**
-     * @return bool|\framework\mvc\scalar|null|string
+     * @return bool|\regenix\mvc\scalar|null|string
      */
     public static function detectLang(){
         $project = Project::current();

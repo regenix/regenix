@@ -1,7 +1,7 @@
 <?php
 namespace controllers;
 
-use framework\test\Tester;
+use regenix\test\Tester;
 
 class Application extends Tester {
 

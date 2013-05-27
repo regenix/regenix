@@ -1,9 +1,9 @@
 <?php
-namespace framework\mvc\template;
+namespace regenix\mvc\template;
 
-use framework\Project;
-use framework\exceptions\TypeException;
-use framework\lang\IClassInitialization;
+use regenix\Project;
+use regenix\exceptions\TypeException;
+use regenix\lang\IClassInitialization;
 
 abstract class BaseTemplate implements IClassInitialization {
 

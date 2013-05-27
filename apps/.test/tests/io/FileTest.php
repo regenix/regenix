@@ -1,7 +1,7 @@
 <?php
 namespace tests\io;
 
-use framework\lang\File;
+use regenix\lang\File;
 use tests\RegenixTest;
 
 class FileTest extends RegenixTest {

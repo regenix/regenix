@@ -1,9 +1,9 @@
 <?php
-namespace framework\console\commands;
+namespace regenix\console\commands;
 
-use framework\console\Commander;
-use framework\console\ConsoleCommand;
-use framework\lang\File;
+use regenix\console\Commander;
+use regenix\console\ConsoleCommand;
+use regenix\lang\File;
 
 class LoadCommand extends ConsoleCommand {
 
@@ -24,5 +24,9 @@ class LoadCommand extends ConsoleCommand {
             else
                 $this->writeln('[error: can`t write to temp directory');
         }
+    }
+
+    public function getInlineHelp(){
+        return 'load and set current project by name, example: `load <name>`';
     }
 }
