@@ -1,7 +1,7 @@
 <?php
 namespace framework\test;
 
-use framework\exceptions\CoreException;
+use framework\lang\CoreException;
 use framework\libs\WS;
 use framework\libs\WSResponse;
 use framework\mvc\URL;
@@ -90,7 +90,7 @@ class FunctionalTest extends UnitTest {
      * @param array $json
      * @param WSResponse $response
      * @return $this
-     * @throws \framework\exceptions\CoreException
+     * @throws \framework\lang\CoreException
      */
     protected function assertJsonContent($json = array(), WSResponse $response = null){
         $response = $response ? $response : $this->response;

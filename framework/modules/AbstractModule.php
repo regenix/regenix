@@ -6,8 +6,8 @@ use framework\Core;
 use framework\Project;
 use framework\lang\ClassScanner;
 use framework\mvc\route\Router;
-use framework\exceptions\CoreException;
-use framework\io\File;
+use framework\lang\CoreException;
+use framework\lang\File;
 
 abstract class AbstractModule {
 
@@ -44,7 +44,7 @@ abstract class AbstractModule {
 
     /**
      * get route file
-     * @return \framework\io\File
+     * @return \framework\lang\File
      */
     final public function getRouteFile(){
         return new File( $this->getPath() . 'conf/route' );

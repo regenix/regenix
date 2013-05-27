@@ -4,8 +4,8 @@ namespace framework\mvc\route;
 
 use framework\config\Configuration;
 use framework\config\ConfigurationReadException;
-use framework\exceptions\CoreException;
-use framework\io\File;
+use framework\lang\CoreException;
+use framework\lang\File;
 use framework\lang\String;
 
 class RouterConfiguration extends Configuration {

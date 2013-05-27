@@ -1,7 +1,7 @@
 <?php
 namespace framework\deps;
 
-use framework\exceptions\CoreException;
+use framework\lang\CoreException;
 
 class ConnectException extends CoreException {
 

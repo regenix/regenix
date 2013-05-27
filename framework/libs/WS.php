@@ -1,8 +1,8 @@
 <?php
 namespace framework\libs;
 
-use framework\exceptions\CoreException;
-use framework\io\File;
+use framework\lang\CoreException;
+use framework\lang\File;
 use framework\lang\ArrayTyped;
 use framework\lang\String;
 use framework\mvc\Response;
@@ -287,10 +287,10 @@ class WSRequest {
             case 'put':
             case 'post': {
                 $data = array();
-                foreach($this->parameters as $name => $value){
+                foreach((array)$this->parameters as $name => $value){
                     $data[ $name ] = $value;
                 }
-                foreach($this->fileParams as $name => $value){
+                foreach((array)$this->fileParams as $name => $value){
                     $data[ $name ] = '@' . $value;
                 }
 

@@ -1,17 +1,11 @@
 <?php
-// define('IS_CORE_DEBUG', true);
-
-require 'framework/Core.php';
+//define('IS_CORE_DEBUG', true);
 use framework\Core;
-define('ROOT', str_replace(DIRECTORY_SEPARATOR, '/', realpath(dirname(__FILE__))) . '/');
+require 'framework/Core.php';
 
 try {
-    Core::init();
+    Core::init(__DIR__);
     Core::processRoute();
-} catch (\framework\exceptions\CoreException $e){
-    Core::catchCoreException($e);
-} catch (\ErrorException $e){
-    Core::catchErrorException($e);
-} catch (\Exception $e){
+} catch (Exception $e){
     Core::catchException($e);
 }

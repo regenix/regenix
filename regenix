@@ -1,6 +1,3 @@
 #!/usr/bin/env php
 <?php
-define('ROOT', str_replace('\\', '/', dirname(__file__)) . '/');
-set_include_path(ROOT);
-
-require_once 'framework/console/console.php';
+require_once __DIR__ . '/framework/console/console.php';

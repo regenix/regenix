@@ -3,7 +3,7 @@ namespace framework\console\commands;
 
 use framework\console\Commander;
 use framework\console\ConsoleCommand;
-use framework\io\File;
+use framework\lang\File;
 
 class LoadCommand extends ConsoleCommand {
 

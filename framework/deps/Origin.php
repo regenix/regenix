@@ -1,9 +1,9 @@
 <?php
 namespace framework\deps;
 
-use framework\exceptions\CoreException;
+use framework\lang\CoreException;
 use framework\exceptions\HttpException;
-use framework\io\File;
+use framework\lang\File;
 use framework\lang\String;
 use framework\libs\WS;
 

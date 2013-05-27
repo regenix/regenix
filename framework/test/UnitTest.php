@@ -1,7 +1,7 @@
 <?php
 namespace framework\test;
 
-use framework\exceptions\StrictObject;
+use framework\lang\StrictObject;
 use framework\exceptions\TypeException;
 /**
  * Class UnitTest

@@ -2,17 +2,11 @@
 namespace framework\mvc;
 
 use framework\Project;
-use framework\io\File;
+use framework\lang\File;
 use framework\lang\IClassInitialization;
 use framework\lang\String;
 use framework\mvc\template\RegenixTemplate;
 use framework\mvc\template\TemplateLoader;
-
-// require PHP Mailer classes
-require 'framework/vendor/PHPMailer/class.phpmailer.php';
-require 'framework/vendor/PHPMailer/class.pop3.php';
-require 'framework/vendor/PHPMailer/class.smtp.php';
-
 
 abstract class Mailer implements IClassInitialization {
 

@@ -1,6 +1,7 @@
 <?php
 namespace framework\exceptions;
 
+use framework\lang\CoreException;
 use framework\mvc\Annotations;
 use framework\lang\String;
 

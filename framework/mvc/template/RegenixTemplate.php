@@ -4,10 +4,10 @@ namespace framework\mvc\template {
 use framework\Core;
 use framework\Project;
 use framework\SDK;
-use framework\exceptions\CoreException;
+use framework\lang\CoreException;
 use framework\exceptions\CoreStrictException;
-use framework\io\File;
-use framework\io\FileNotFoundException;
+use framework\lang\File;
+use framework\lang\FileNotFoundException;
 use framework\lang\String;
 use framework\libs\Captcha;
 use framework\libs\RegenixTPL\RegenixTemplate as RegenixTPL;
@@ -254,8 +254,8 @@ class RegenixTemplate extends BaseTemplate {
 
 namespace {
 
-    use framework\exceptions\StrictObject;
-    use framework\exceptions\CoreException;
+    use framework\lang\StrictObject;
+    use framework\lang\CoreException;
     use framework\mvc\template\RegenixTemplate;
 
     class TPL extends StrictObject {

@@ -22,7 +22,7 @@ class AboutCommand extends ConsoleCommand {
    }
 
     public function __default(){
-        $this->writeln('Regenix framework v%s', Core::VERSION);
+        $this->writeln('Regenix framework v%s', Core::getVersion());
         $this->writeln();
         $this->writeln('    root path: `%s`', ROOT);
         $this->writeln('    apps path: `%s`', Project::getSrcDir());

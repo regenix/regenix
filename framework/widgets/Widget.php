@@ -1,8 +1,8 @@
 <?php
 namespace framework\widgets;
 
-use framework\exceptions\CoreException;
-use framework\exceptions\StrictObject;
+use framework\lang\CoreException;
+use framework\lang\StrictObject;
 use framework\lang\IClassInitialization;
 use framework\lang\String;
 use framework\mvc\template\TemplateLoader;

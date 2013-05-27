@@ -4,7 +4,7 @@ namespace framework\libs;
 use Imagine\Gd\Imagine;
 use Imagine\Image\Box;
 use framework\Project;
-use framework\io\File;
+use framework\lang\File;
 use framework\lang\IClassInitialization;
 
 class ImageUtils implements IClassInitialization {

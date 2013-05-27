@@ -2,7 +2,7 @@
 
 namespace framework\mvc\providers;
 
-use framework\io\File;
+use framework\lang\File;
 use framework\mvc\MIMETypes;
 use framework\mvc\Request;
 use framework\mvc\Response;

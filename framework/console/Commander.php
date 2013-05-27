@@ -9,8 +9,8 @@ use framework\console\commands\HelpCommand;
 use framework\console\commands\InfoCommand;
 use framework\console\commands\LoadCommand;
 use framework\console\commands\TestCommand;
-use framework\exceptions\CoreException;
-use framework\io\File;
+use framework\lang\CoreException;
+use framework\lang\File;
 use framework\lang\IClassInitialization;
 
 class Commander implements IClassInitialization {

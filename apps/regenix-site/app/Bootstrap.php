@@ -9,28 +9,21 @@ namespace {
     use framework\mvc\route\Router;
     use framework\mvc\template\BaseTemplate;
 
-    class XXX implements IClassInitialization {
-
-        public static function initialize()
-        {
-            // TODO: Implement initialize() method.
-        }
-    }
-
     class Bootstrap extends BaseBootstrap {
 
         public function onStart(){
-           /* $request = Request::current();
+            die('die.');
+            $request = Request::current();
             if ($request->isBase('http://regenix.ru') || $request->isBase('http://localhost'))
                 I18n::setLang('ru');
             else
-                I18n::setLang('en');*/
+                I18n::setLang('en');
         }
 
         public function onEnvironment(&$env){
-            /*$request = Request::current();
+            $request = Request::current();
             if ($request->isBase('http://regenix.ru'))
-                $env = 'prod';*/
+                $env = 'prod';
         }
 
         public function onTemplateRender(BaseTemplate $template){

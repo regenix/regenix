@@ -3,7 +3,7 @@
 namespace framework\mvc\template;
 
 use framework\SDK;
-use framework\exceptions\CoreException;
+use framework\lang\CoreException;
 use framework\lang\String;
 use framework\mvc\providers\ResponseProvider;
 use framework\Core;

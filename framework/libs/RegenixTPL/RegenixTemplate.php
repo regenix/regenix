@@ -6,7 +6,7 @@ namespace framework\libs\RegenixTPL {
  * @package framework\libs\RegenixTPL
  */
     use framework\Core;
-    use framework\exceptions\CoreException;
+    use framework\lang\CoreException;
     use framework\lang\String;
     use framework\libs\I18n;
     use framework\mvc\Flash;

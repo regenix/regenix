@@ -2,7 +2,7 @@
 
 namespace framework\config;
 
-use framework\exceptions\CoreException;
+use framework\lang\CoreException;
 
 class ConfigurationReadException extends CoreException {
 

@@ -3,8 +3,8 @@
 namespace framework\deps;
 
 use framework\Project;
-use framework\exceptions\CoreException;
-use framework\io\File;
+use framework\lang\CoreException;
+use framework\lang\File;
 use framework\lang\IClassInitialization;
 use framework\lang\String;
 

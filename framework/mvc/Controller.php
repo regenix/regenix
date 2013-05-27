@@ -5,9 +5,9 @@ namespace framework\mvc;
 use framework\Core;
 use framework\SDK;
 use framework\exceptions\HttpException;
-use framework\exceptions\StrictObject;
-use framework\exceptions\CoreException;
-use framework\io\File;
+use framework\lang\StrictObject;
+use framework\lang\CoreException;
+use framework\lang\File;
 use framework\mvc\Response;
 use framework\mvc\providers\FileResponse;
 use framework\mvc\providers\ResponseFileProvider;
@@ -212,7 +212,7 @@ abstract class Controller extends StrictObject {
      * @param $action
      * @param array $args
      * @param bool $permanent
-     * @throws \framework\exceptions\CoreException
+     * @throws \framework\lang\CoreException
      */
     public function redirect($action, array $args = array(), $permanent = false){
         if (strpos($action, '.') === false)

@@ -11,7 +11,7 @@ use Jamm\Memory\RedisServer;
 use Jamm\Memory\Shm\SHMObject;
 use framework\Core;
 use framework\Project;
-use framework\exceptions\CoreException;
+use framework\lang\CoreException;
 use framework\lang\IClassInitialization;
 
 final class Cache implements IClassInitialization {

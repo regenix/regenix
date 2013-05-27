@@ -1,9 +1,9 @@
 <?php
 namespace framework\mvc;
 
-use framework\exceptions\StrictObject;
+use framework\lang\StrictObject;
 use framework\exceptions\AnnotationException;
-use framework\exceptions\CoreException;
+use framework\lang\CoreException;
 use framework\lang\ArrayTyped;
 use framework\lang\String;
 

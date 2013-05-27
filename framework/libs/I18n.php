@@ -5,7 +5,7 @@ namespace framework\libs;
 use framework\Project;
 use framework\cache\SystemCache;
 use framework\config\PropertiesConfiguration;
-use framework\io\File;
+use framework\lang\File;
 use framework\lang\IClassInitialization;
 use framework\mvc\Request;
 use framework\mvc\RequestQuery;

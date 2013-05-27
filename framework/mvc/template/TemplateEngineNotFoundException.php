@@ -2,7 +2,7 @@
 
 namespace framework\mvc\template;
 
-use framework\exceptions\CoreException;
+use framework\lang\CoreException;
 use framework\lang\String;
 
 class TemplateEngineNotFoundException extends CoreException {

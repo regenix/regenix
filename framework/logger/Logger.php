@@ -4,9 +4,9 @@ namespace framework\logger;
 
 use framework\Core;
 use framework\Project;
-use framework\exceptions\CoreException;
-use framework\io\File;
-use framework\io\FileIOException;
+use framework\lang\CoreException;
+use framework\lang\File;
+use framework\lang\FileIOException;
 use framework\lang\IClassInitialization;
 use framework\lang\String;
 

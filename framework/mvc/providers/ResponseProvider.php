@@ -2,7 +2,7 @@
 
 namespace framework\mvc\providers;
 
-use framework\exceptions\CoreException;
+use framework\lang\CoreException;
 use framework\lang\ClassScanner;
 use framework\mvc\Response;
 use framework\lang\String;

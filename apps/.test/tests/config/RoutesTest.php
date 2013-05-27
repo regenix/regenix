@@ -1,7 +1,7 @@
 <?php
 namespace tests\config;
 
-use framework\io\File;
+use framework\lang\File;
 use framework\mvc\route\RouterConfiguration;
 use tests\RegenixTest;
 

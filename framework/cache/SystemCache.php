@@ -4,7 +4,7 @@ namespace framework\cache;
 define('APC_ENABLED', extension_loaded('apc'));
 define('XCACHE_ENABLED', extension_loaded('xcache'));
 
-if (IS_CORE_DEBUG === true)
+if (defined('IS_CORE_DEBUG') && IS_CORE_DEBUG === true)
     define('SYSTEM_CACHED', false);
 else {
     if (APC_ENABLED){

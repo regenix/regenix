@@ -2,6 +2,7 @@
 namespace framework\exceptions;
 
 use framework\Project;
+use framework\lang\CoreException;
 use framework\lang\String;
 
 class CoreStrictException extends CoreException {

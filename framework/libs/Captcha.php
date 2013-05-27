@@ -2,7 +2,7 @@
 
 namespace framework\libs;
 
-use framework\exceptions\CoreException;
+use framework\lang\CoreException;
 use framework\lang\IClassInitialization;
 use framework\mvc\MIMETypes;
 use framework\mvc\Response;

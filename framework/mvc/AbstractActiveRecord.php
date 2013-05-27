@@ -1,8 +1,8 @@
 <?php
 namespace framework\mvc;
 
-use framework\exceptions\CoreException;
-use framework\exceptions\StrictObject;
+use framework\lang\CoreException;
+use framework\lang\StrictObject;
 use framework\exceptions\TypeException;
 use framework\lang\IClassInitialization;
 

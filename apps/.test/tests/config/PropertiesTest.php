@@ -2,7 +2,7 @@
 namespace tests\config;
 
 use framework\config\PropertiesConfiguration;
-use framework\io\File;
+use framework\lang\File;
 use tests\RegenixTest;
 use tests\ClassloaderTest;
 

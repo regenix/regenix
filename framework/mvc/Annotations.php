@@ -3,7 +3,7 @@ namespace framework\mvc;
 
 use framework\cache\SystemCache;
 use framework\exceptions\AnnotationException;
-use framework\exceptions\CoreException;
+use framework\lang\CoreException;
 use framework\lang\ArrayTyped;
 use framework\lang\String;
 

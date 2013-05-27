@@ -2,7 +2,7 @@
 
 namespace framework\modules;
 
-use framework\exceptions\CoreException;
+use framework\lang\CoreException;
 use framework\lang\String;
 use framework\mvc\Controller;
 use framework\mvc\template\TemplateLoader;

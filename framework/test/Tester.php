@@ -2,7 +2,7 @@
 namespace framework\test;
 
 use framework\Project;
-use framework\exceptions\CoreException;
+use framework\lang\CoreException;
 use framework\lang\ClassScanner;
 use framework\mvc\Controller;
 
@@ -26,7 +26,7 @@ class Tester extends Controller {
         $tests = array();
 
         $testClass = ClassScanner::find(UnitTest::type);
-        foreach($testClass->getChildrens($namespace) as $child){
+        foreach($testClass->getChildrensAll($namespace) as $child){
             $class = $child->getName();
             $reflection = new \ReflectionClass($class);
             if ($reflection->isAbstract())
