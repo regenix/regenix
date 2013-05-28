@@ -1,6 +1,8 @@
 <?php
 namespace regenix\cache;
 
+use regenix\lang\File;
+
 define('APC_ENABLED', extension_loaded('apc'));
 define('XCACHE_ENABLED', extension_loaded('xcache'));
 
@@ -66,6 +68,19 @@ class SystemCache {
     public static function remove($name){
         if (SYSTEM_CACHED === true)
             apc_delete($name);
+
+        $file = SYSTEM_CACHE_TMP_DIR . sha1(self::$id . '.' . $name);
+        if (is_file($file))
+            @unlink($file);
+    }
+
+    public static function removeAll(){
+        if (function_exists('apc_clear_cache'))
+            apc_clear_cache('user');
+
+        $dir = new File(SYSTEM_CACHE_TMP_DIR);
+        if ($dir->isDirectory())
+            $dir->delete();
     }
     
     public static function getWithCheckFile($name, $filePath, $cacheInFiles = false){
@@ -73,12 +88,11 @@ class SystemCache {
             return null;
 
         $result = self::get($name, $cacheInFiles);
-
         if ( $result ){
             $upd    = (int)self::get($name . '.$upd', $cacheInFiles);
             if ($upd === 0)
                 return null;
-            
+
             $mtime  = filemtime($filePath);
             if ( $upd == $mtime )
                 return $result;
@@ -91,7 +105,6 @@ class SystemCache {
             return;
 
         self::set($name, $value, $lifetime, $cacheInFiles);
-        
         if (file_exists($filePath)){
             $mtime = filemtime($filePath);
             self::set($name.'.$upd', $mtime, $lifetime, $cacheInFiles);
