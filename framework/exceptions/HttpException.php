@@ -3,6 +3,8 @@ namespace regenix\exceptions;
 
 use regenix\lang\CoreException;
 use regenix\lang\String;
+use regenix\mvc\Response;
+use regenix\mvc\template\TemplateLoader;
 
 class HttpException extends CoreException {
 
@@ -45,7 +47,23 @@ class HttpException extends CoreException {
     }
 
     /** @return int */
-    function getStatus(){
+    public function getStatus(){
         return $this->status;
+    }
+
+    /**
+     * @return Response
+     */
+    public function getTemplateResponse(){
+        $response = new Response();
+        $response->setStatus($this->getStatus());
+
+        $template = TemplateLoader::load('.errors/' . $this->getStatus() . '.html', false);
+        if (!$template)
+            $template = TemplateLoader::load('.errors/500.html');
+
+        $template->put('e', $this);
+        $response->setEntity($template);
+        return $response;
     }
 }

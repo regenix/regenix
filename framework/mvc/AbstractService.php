@@ -517,6 +517,11 @@ abstract class ActiveRecordCursor implements \Iterator {
     }
 
     /**
+     * @return AbstractActiveRecord
+     */
+    abstract public function firstOrCreate();
+
+    /**
      * @return AbstractActiveRecord[]
      */
     public function asArray(){
@@ -551,11 +556,11 @@ abstract class AbstractQuery {
         if ($this->stackField)
             throw QueryException::formated('field `%s` set already', $this->stackField);
 
-        if (!$this->meta['fields'][$name])
+        if (!($meta = $this->meta['fields'][$name]))
             throw QueryException::formated('field `%s` not exists in `%s` document type', $name, $this->service->getModelClass());
 
         $this->stackField = $name;
-        return $this;
+        return $meta['column'];
     }
 
     protected function popField(){
@@ -627,12 +632,12 @@ abstract class AbstractQuery {
     }
 
     protected function popValue($field, $value, $prefix = '$eq', $typed = true){
-        $this->field($field);
+        $column = $this->field($field);
 
         if ($prefix == '$eq'){
-            $this->data[$field] = $typed ? $this->getValue($field, $value) : $value;
+            $this->data[$column] = $typed ? $this->getValue($field, $value) : $value;
         } else
-            $this->data[$field][$prefix] = $typed ? $this->getValue($field, $value) : $value;
+            $this->data[$column][$prefix] = $typed ? $this->getValue($field, $value) : $value;
 
         return $this;
     }
@@ -642,47 +647,48 @@ abstract class AbstractQuery {
     }
 
     /**
-     * Example: ->where('name, age >', "my name", 18);
+     * Example: ->filter('name', "my name", age >', 18);
      *
-     * @param string $fields
      * @param mixed[] values ...
      * @throws static
      * @return $this
      */
-    public function filter($fields, $values){
-        $values = array_slice(func_get_args(), 1);
-        $fields = explode(',', (string)$fields);
-        array_map('trim', $fields);
-
-        if (sizeof($values) !== sizeof($fields))
+    public function filter(){
+        $values = func_get_args();
+        if (sizeof($values) % 2 !== 0)
             throw QueryException::formated('number of fields and values ​​are not the same');
 
-        foreach($fields as $i => $field){
-            $value = $values[$i];
-            $field = explode(' ', $field, 2);
-            $operator = trim($field[1]);
-            $field    = $field[0];
+        $field = '';
+        foreach($values as $i => $value){
+            if ($i % 2){
+                $field    = explode(' ', $field, 2);
+                $operator = trim($field[1]);
+                $field    = $field[0];
 
-            switch($operator){
-                case '':
-                case '=': $this->eq($field, $value); break;
+                switch($operator){
+                    case '':
+                    case '=': $this->eq($field, $value); break;
 
-                case '!=':
-                case '<>': $this->notEq($field, $value); break;
+                    case '!=':
+                    case '<>': $this->notEq($field, $value); break;
 
-                case '>': $this->gt($field, $value); break;
-                case '<': $this->lt($field, $value); break;
-                case '>=': $this->gte($field, $value); break;
-                case '<=': $this->lte($field, $value); break;
-                case 'in': $this->in($field, $value); break;
-                case 'nin': $this->notIn($field, $value); break;
-                case '%':
-                case 'like': $this->like($field, $value); break;
-                default: {
-                    $this->filterCustomOperator($field, $value, $operator);
+                    case '>': $this->gt($field, $value); break;
+                    case '<': $this->lt($field, $value); break;
+                    case '>=': $this->gte($field, $value); break;
+                    case '<=': $this->lte($field, $value); break;
+                    case 'in': $this->in($field, $value); break;
+                    case 'nin': $this->notIn($field, $value); break;
+                    case '%':
+                    case 'like': $this->like($field, $value); break;
+                    default: {
+                        $this->filterCustomOperator($field, $value, $operator);
+                    }
                 }
+            } else {
+                $field = $value;
             }
         }
+
         return $this;
     }
 

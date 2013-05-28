@@ -77,7 +77,7 @@ abstract class Widget extends StrictObject
 
         $template = TemplateLoader::load('.widgets/' . $this->getTemplate());
         $template->putArgs($args);
-        return (string)$template;
+        return $template->toString();
     }
 
     protected function onRender(){}

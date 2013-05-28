@@ -5,7 +5,7 @@ use regenix\Core;
 use regenix\Project;
 use regenix\console\Commander;
 use regenix\console\ConsoleCommand;
-use regenix\modules\AbstractModule;
+use regenix\modules\Module;
 use regenix\test\Tester;
 
 class TestCommand extends ConsoleCommand {

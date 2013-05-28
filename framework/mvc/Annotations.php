@@ -154,7 +154,7 @@ class Annotations {
 
         // check types
         if ( $meta['fields'] ){
-            foreach($meta['fields'] as $nm => $type){
+            foreach((array)$meta['fields'] as $nm => $type){
 
                 $value = $item[$nm];
                 if ( $value === null ){

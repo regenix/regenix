@@ -387,6 +387,7 @@ abstract class Controller extends StrictObject {
 
     /**
      * @param string $message
+     * @throws \regenix\exceptions\HttpException
      */
     public function forbidden($message = ''){
         throw new HttpException(HttpException::E_FORBIDDEN, $message);
@@ -394,6 +395,7 @@ abstract class Controller extends StrictObject {
 
     /**
      * @param string $message
+     * @throws \regenix\exceptions\HttpException
      */
     public function notFound($message = ''){
         throw new HttpException(HttpException::E_NOT_FOUND, $message);

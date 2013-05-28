@@ -365,11 +365,13 @@ final class ClassMetaInfo {
         $class = $this->name;
 
         if ($force || !class_exists($class, false)){
-            require $this->getFilename();
+            if ($file = $this->getFilename()){
+                require $file;
 
-            $implements = class_implements($class);
-            if ( $implements[IClassInitialization::IClassInitialization_type] ){
-                $class::initialize();
+                $implements = class_implements($class);
+                if ( $implements[IClassInitialization::IClassInitialization_type] ){
+                    $class::initialize();
+                }
             }
         }
     }
@@ -1061,6 +1063,7 @@ abstract class StrictObject {
         throw CoreException::formated('Property `%s` not defined in `%s` class', $name, get_class($this));
     }
 }
+
 
 /**
  * Class File

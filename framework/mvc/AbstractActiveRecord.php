@@ -179,13 +179,13 @@ abstract class AbstractActiveRecord extends StrictObject
     abstract static function find(AbstractQuery $query = null, array $fields = array());
 
     /**
-     * @param string $where
+     * filter('age >', 18,  'name', 'dmitriy')
      * @internal param $values ...
      * @return ActiveRecordCursor
      */
-    public static function filter($where = ''){
+    public static function filter(){
         $query = static::query();
-        if ($where)
+        if (func_num_args())
             call_user_func_array(array($query, 'filter'), func_get_args());
 
         return static::find($query);

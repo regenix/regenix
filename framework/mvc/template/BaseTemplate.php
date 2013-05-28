@@ -21,7 +21,6 @@ abstract class BaseTemplate implements IClassInitialization {
 
 
     public function __construct($templateFile, $templateName) {
-
         $this->file = $templateFile;
         $this->name = $templateName;
     }
@@ -29,7 +28,7 @@ abstract class BaseTemplate implements IClassInitialization {
     public function getContent(){ return null; }
     public function render(){}
 
-    public function __toString(){
+    public function toString(){
         $content = $this->getContent();
         if ($content === null){
             ob_start();

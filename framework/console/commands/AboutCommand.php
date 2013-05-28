@@ -5,7 +5,7 @@ use regenix\Core;
 use regenix\Project;
 use regenix\console\Commander;
 use regenix\console\ConsoleCommand;
-use regenix\modules\AbstractModule;
+use regenix\modules\Module;
 
 class AboutCommand extends ConsoleCommand {
 
@@ -15,7 +15,7 @@ class AboutCommand extends ConsoleCommand {
         $this->writeln('Modules:');
         $this->writeln();
 
-        $modules = AbstractModule::getAllModules();
+        $modules = Module::getAllModules();
         foreach($modules as $name => $versions){
             $this->writeln('    - %s (%s)', $name, implode(', ', $versions));
         }

@@ -11,7 +11,7 @@ abstract class ModuleController extends Controller {
 
     const type = __CLASS__;
 
-    /** @var AbstractModule */
+    /** @var Module */
     protected $module;
 
 
@@ -19,7 +19,7 @@ abstract class ModuleController extends Controller {
         parent::__construct();
         
         $class  = explode('\\', get_class($this), 3);
-        $this->module = AbstractModule::$modules[$class[1]];
+        $this->module = Module::$modules[$class[1]];
         if (!$this->module)
             throw CoreException::formated('Can`t find module for %s ModuleController', $class);
         

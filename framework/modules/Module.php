@@ -9,33 +9,18 @@ use regenix\mvc\route\Router;
 use regenix\lang\CoreException;
 use regenix\lang\File;
 
-abstract class AbstractModule {
+class Module {
 
     const type = __CLASS__;
     
     public $uid;
     public $version;
 
-    static $modules = array();
-
-    // abstract
-    abstract public function getName();
-
-    /**
-     * @return array
-     */
-    public static function getDeps(){
-        return array();
+    protected function __construct(){
+        ;
     }
 
-    /**
-     * @return array
-     */
-    public static function getAssetDeps(){
-        return array();
-    }
-
-    public function getDescription(){ return null; }
+    public static $modules = array();
 
     public static function getCurrent(){
         $tmp = explode('\\', get_called_class(), 3);
@@ -90,13 +75,7 @@ abstract class AbstractModule {
 
         ClassScanner::addClassRelativePath('modules/' . $moduleName . '~' . $version);
 
-        $bootstrapName = '\\modules\\' . $moduleName . '\\Module';
-        if (!class_exists($bootstrapName)){
-            unset(self::$modules[ $moduleName ]);
-            throw CoreException::formated('Unload bootstrap `%s` class of `%s` module', $bootstrapName, $moduleName . '~' . $version);
-        }
-
-        $module = new $bootstrapName();
+        $module = new Module();
         $module->uid     = $moduleName;
         $module->version = $version;
 

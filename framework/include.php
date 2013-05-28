@@ -17,7 +17,7 @@ namespace regenix {
     use regenix\lang\String;
     use regenix\libs\Captcha;
     use regenix\logger\Logger;
-    use regenix\modules\AbstractModule;
+    use regenix\modules\Module;
     use regenix\mvc\Controller;
     use regenix\mvc\Request;
     use regenix\mvc\Response;
@@ -76,6 +76,7 @@ abstract class Core {
             if (!Project::current())
                 register_shutdown_function(array(Core::type, 'shutdown'), null);
         } else {
+            error_reporting(0);
             set_time_limit(0);
             header_remove();
 
@@ -86,6 +87,9 @@ abstract class Core {
             defined('STDIN') or define('STDIN', fopen('php://stdin', 'r'));
             define('CONSOLE_STDOUT', fopen('php://stdout', 'w+'));
         }
+
+        if (IS_PROD)
+            error_reporting(0);
     }
 
     /**
@@ -114,8 +118,8 @@ abstract class Core {
      * @param $rootDir
      */
     public static function initWeb($rootDir){
-        self::init($rootDir);
         try {
+            self::init($rootDir);
             self::processRoute();
         } catch (\Exception $e){
             self::catchException($e);
@@ -183,7 +187,7 @@ abstract class Core {
             }
         }
         
-        throw new HttpException(500, "Can't find project for current request");
+        throw new HttpException(HttpException::E_NOT_FOUND, "Can't find project for current request");
     }
     
     public static function processRoute(){
@@ -238,6 +242,8 @@ abstract class Core {
                 try {
                     if ($e instanceof HttpException){
                         $controller->callHttpException($e);
+                        $responseErr = $e->getTemplateResponse();
+                        dump('1111');
                     }
 
                     // if no result, do:
@@ -319,13 +325,7 @@ abstract class Core {
 
     private static function catchAny(\Exception $e){
         if ( $e instanceof HttpException ){
-            $template = TemplateLoader::load('errors/' . $e->getStatus() . '.html');
-            $template->putArgs(array('e' => $e));
-
-            $response = new Response();
-            $response->setStatus($e->getStatus());
-            $response->setEntity($template);
-            $response->send();
+            $e->getTemplateResponse()->send();
             return;
         }
 
@@ -856,7 +856,7 @@ abstract class Core {
                 } elseif (IS_DEV && !$this->repository->isValid($name, $dep['version'])){
                     throw CoreException::formated('Module `%s` not valid or not exists, please run in console `regenix deps update`', $name);
                 }
-                AbstractModule::register($name, $dep['version']);
+                Module::register($name, $dep['version']);
             }
 
             if (IS_DEV)
@@ -889,7 +889,7 @@ abstract class Core {
 
                 $routeConfig  = new RouterConfiguration();
 
-                foreach (modules\AbstractModule::$modules as $name => $module){
+                foreach (modules\Module::$modules as $name => $module){
                     $routeConfig->addModule($name, '.modules.' . $name . '.controllers.', $module->getRouteFile());
                 }
 
@@ -989,7 +989,7 @@ abstract class Core {
          * @return bool
          */
         public static function isModuleRegister($moduleUID){
-            return (boolean)modules\AbstractModule::$modules[ $moduleUID ];
+            return (boolean)modules\Module::$modules[ $moduleUID ];
         }
     }
 }

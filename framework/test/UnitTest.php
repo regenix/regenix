@@ -294,6 +294,7 @@ abstract class UnitTest extends StrictObject {
                     $method->invoke($this);
                 } catch (\Exception $e){
                     $this->onException($e);
+                    $this->assertWrite(false, 'Exception: ' . $e->getMessage() . ' at line ' . $e->getLine());
                 }
                 $this->onAfter();
             }
