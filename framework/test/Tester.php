@@ -2,6 +2,7 @@
 namespace regenix\test;
 
 use regenix\Project;
+use regenix\cache\SystemCache;
 use regenix\lang\CoreException;
 use regenix\lang\ClassScanner;
 use regenix\mvc\Controller;
@@ -15,6 +16,7 @@ class Tester extends Controller {
             if (!is_dir(ROOT . 'modules/' . $moduleWithVersion . '/'))
                 throw CoreException::formated('Module `%s` not found', $moduleWithVersion);
 
+            SystemCache::removeAll();
             ClassScanner::addClassRelativePath('modules/' . $moduleWithVersion);
 
             $module = explode('~', $moduleWithVersion, 2);
