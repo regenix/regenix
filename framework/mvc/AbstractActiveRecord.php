@@ -143,6 +143,18 @@ abstract class AbstractActiveRecord extends StrictObject
     }
 
     /**
+     * deleteAll('age >', 18), delete documents where age > 18
+     * @param ... $fields filter
+     */
+    public static function deleteAll(){
+        $query = static::query();
+        if (func_num_args())
+            call_user_func_array(array($query, 'filter'), func_get_args());
+
+        return static::getService()->removeByFilter($query);
+    }
+
+    /**
      * @return AbstractService
      */
     public static function getService(){

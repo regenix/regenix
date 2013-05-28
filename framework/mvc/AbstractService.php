@@ -84,6 +84,7 @@ abstract class AbstractService extends StrictObject {
 
     abstract public function save(AbstractActiveRecord $object, array $options = array());
     abstract public function remove(AbstractActiveRecord $object, array $options = array());
+    abstract public function removeByFilter(AbstractQuery $query, array $options = array());
 
     /**
      * @param AbstractActiveRecord[] $documents
@@ -539,6 +540,8 @@ class QueryException extends CoreException {
 
 abstract class AbstractQuery {
 
+    const type = __CLASS__;
+
     /** @var AbstractService */
     protected $service;
     protected $meta;
@@ -553,9 +556,6 @@ abstract class AbstractQuery {
     }
 
     public function field($name){
-        if ($this->stackField)
-            throw QueryException::formated('field `%s` set already', $this->stackField);
-
         if (!($meta = $this->meta['fields'][$name]))
             throw QueryException::formated('field `%s` not exists in `%s` document type', $name, $this->service->getModelClass());
 
