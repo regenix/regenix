@@ -1,7 +1,7 @@
 <?php
 namespace {
 
-    use regenix\AbstractBootstrap as BaseBootstrap, regenix\Project;
+    use regenix\AbstractBootstrap as BaseBootstrap, regenix\Application;
     use regenix\cache\Cache;
     use regenix\libs\I18n;
     use regenix\mvc\Request;
@@ -11,7 +11,6 @@ namespace {
     class Bootstrap extends BaseBootstrap {
 
         public function onStart(){
-            die('die.');
             $request = Request::current();
             if ($request->isBase('http://regenix.ru') || $request->isBase('http://localhost'))
                 I18n::setLang('ru');

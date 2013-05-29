@@ -1,10 +1,12 @@
 <?php
 namespace controllers;
 
-use regenix\Project;
+use models\User;
+use models\UserValidator;
+use regenix\Regenix;
 use regenix\cache\Cache;
-use regenix\lang\ClassFileScanner;
 use regenix\lang\ClassScanner;
+use regenix\lang\String;
 use regenix\libs\I18n;
 use regenix\mvc\Controller;
 use regenix\widgets\Widget;

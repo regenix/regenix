@@ -5,6 +5,7 @@ use regenix\lang\String;
 use models\mixins\TDefaultInformation;
 use models\mixins\TTimeInformation;
 use modules\mongodb\ActiveRecord;
+use regenix\validation\Validator;
 
 /**
  * Class User
@@ -65,5 +66,16 @@ class User extends ActiveRecord {
                 return true;
         }
         return false;
+    }
+}
+
+class UserValidator extends Validator {
+
+    protected function registration(){
+        if ($this->requires('login')->message('Введите логин')->isOk()){
+            $this->minLength('login', 3)->message('Минимальная длина логина 3 символа');
+        }
+
+        $this->requires('email', 'Введите email')->message('Введите email адрес');
     }
 }
