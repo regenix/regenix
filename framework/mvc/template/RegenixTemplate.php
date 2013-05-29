@@ -1,8 +1,8 @@
 <?php
 namespace regenix\mvc\template {
 
-use regenix\Core;
-use regenix\Project;
+use regenix\Regenix;
+use regenix\Application;
 use regenix\SDK;
 use regenix\lang\CoreException;
 use regenix\exceptions\CoreStrictException;
@@ -29,22 +29,7 @@ class RegenixTemplate extends BaseTemplate {
     public function __construct($templateFile, $templateName){
         if (!self::$loaded){
             self::$tpl = new RegenixTPL();
-
-            self::$tpl->registerTag(new RegenixDepsAssetsTag());
-            self::$tpl->registerTag(new RegenixDepsAssetTag());
-
-            self::$tpl->registerTag(new RegenixAssetTag());
-            self::$tpl->registerTag(new RegenixHtmlAssetTag());
-            self::$tpl->registerTag(new RegenixPathTag());
-            self::$tpl->registerTag(new RegenixPublicTag());
-
-            self::$tpl->registerTag(new RegenixWidgetTag());
-
-            self::$tpl->registerTag(new RegenixImageCropTag());
-            self::$tpl->registerTag(new RegenixImageResizeTag());
-            self::$tpl->registerTag(new RegenixCaptchaTag());
-
-            self::$tpl->setTempDir( Core::$tempDir . 'regenixtpl/' );
+            self::$tpl->setTempDir( Regenix::getTempPath() . 'regenixtpl/' );
             self::$tpl->setTplDirs( TemplateLoader::getPaths() );
             self::$loaded = true;
         }
@@ -117,8 +102,8 @@ class RegenixTemplate extends BaseTemplate {
         }
 
         public function call($args, RegenixTPL $ctx){
-            $project = Project::current();
-            $file = '/public/' . $project->getName() . '/' . $args['_arg'];
+            $app =  Regenix::app();
+            $file = '/public/' . $app->getName() . '/' . $args['_arg'];
             if (APP_MODE_STRICT){
                 if (!file_exists(ROOT . $file))
                     throw CoreStrictException::formated('File `%s` not found, at `file` tag', $file);
@@ -182,8 +167,8 @@ class RegenixTemplate extends BaseTemplate {
         }
 
         public function call($args, RegenixTPL $ctx){
-            $project = Project::current();
-            if (!$project->config->getBoolean('captcha.enable'))
+            $app =  Regenix::app();
+            if (!$app->config->getBoolean('captcha.enable'))
                 throw CoreException::formated('Captcha is not enable in configuration, needs `captcha.enable = on`');
 
             return Captcha::URL;
@@ -197,8 +182,8 @@ class RegenixTemplate extends BaseTemplate {
         }
 
         public function call($args, RegenixTPL $ctx) {
-            $project = Project::current();
-            $assets  = $project->getAssets();
+            $app =  Regenix::app();
+            $assets  = $app->getAssets();
 
             $html     = '';
             $included = array();
@@ -216,8 +201,8 @@ class RegenixTemplate extends BaseTemplate {
         }
 
         public static function getOne($group, $version = false, &$included = array()){
-            $project  = Project::current();
-            $assets   = $project->getAssetFiles($group, $version, $included);
+            $app  = Regenix::app();
+            $assets   = $app->getAssetFiles($group, $version, $included);
 
             $result = '';
             foreach((array)$assets as $file){
@@ -248,6 +233,19 @@ class RegenixTemplate extends BaseTemplate {
                 return $tpl;
 
             throw CoreException::formated('Unknown html asset for `%s`', $file);
+        }
+    }
+
+    class RegenixDebugInfoTag extends RegenixTemplateTag {
+
+        function getName(){
+            return 'debug.info';
+        }
+
+        public function call($args, RegenixTPL $ctx){
+            $info   = Regenix::getDebugInfo();
+            return String::format('<!-- execute: %s ms. -->' . "\n" . '<!-- memory: %s kb. -->',
+                round($info['time'], 2), round($info['memory'] / 1024));
         }
     }
 }

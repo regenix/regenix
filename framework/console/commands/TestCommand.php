@@ -1,8 +1,8 @@
 <?php
 namespace regenix\console\commands;
 
-use regenix\Core;
-use regenix\Project;
+use regenix\Regenix;
+use regenix\Application;
 use regenix\console\Commander;
 use regenix\console\ConsoleCommand;
 use regenix\modules\Module;
@@ -20,8 +20,8 @@ class TestCommand extends ConsoleCommand {
 
             $this->writeln('Start module "%s" testing ...', $module);
         } else {
-            $this->project->register(false);
-            $this->writeln('Start "%s" testing ...', $this->project->getName());
+            $this->app->register(false);
+            $this->writeln('Start "%s" testing ...', $this->app->getName());
             Tester::startTesting();
         }
         $this->writeln();
@@ -50,6 +50,6 @@ class TestCommand extends ConsoleCommand {
     }
 
     public function getInlineHelp(){
-        return 'run tests of project or module, for module: test -module=name~0.5';
+        return 'run tests of app or module, for module: test -module=name~0.5';
     }
 }

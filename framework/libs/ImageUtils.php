@@ -3,7 +3,7 @@ namespace regenix\libs;
 
 use Imagine\Gd\Imagine;
 use Imagine\Image\Box;
-use regenix\Project;
+use regenix\Application;
 use regenix\lang\File;
 use regenix\lang\IClassInitialization;
 
@@ -44,8 +44,8 @@ class ImageUtils implements IClassInitialization {
     }
 
     public static function initialize(){
-        $project    = Project::current();
-        self::$path = new File($project->getPublicPath() . 'gen/images/');
+        $app    = Regenix::app();
+        self::$path = new File($app->getPublicPath() . 'gen/images/');
         self::$path->mkdirs();
     }
 }

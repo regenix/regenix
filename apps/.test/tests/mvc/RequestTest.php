@@ -1,7 +1,7 @@
 <?php
 namespace tests\mvc;
 
-use regenix\Core;
+use regenix\Regenix;
 use regenix\mvc\Request;
 use tests\RegenixTest;
 

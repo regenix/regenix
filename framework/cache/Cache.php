@@ -9,8 +9,8 @@ use Jamm\Memory\MemoryObject;
 use Jamm\Memory\RedisObject;
 use Jamm\Memory\RedisServer;
 use Jamm\Memory\Shm\SHMObject;
-use regenix\Core;
-use regenix\Project;
+use regenix\Regenix;
+use regenix\Application;
 use regenix\lang\CoreException;
 use regenix\lang\IClassInitialization;
 
@@ -227,16 +227,16 @@ final class Cache implements IClassInitialization {
     }
 
     public static function initialize(){
-        $project = Project::current();
-        if ($project){
-            $driver  = $project->config->get('cache.driver', 'auto');
+        $app =  Regenix::app();
+        if ($app){
+            $driver  = $app->config->get('cache.driver', 'auto');
 
             self::$defaultConfig = array(
-                'id'   => $project->config->getString('cache.id', ''),
-                'host' => $project->config->get('cache.host', 'localhost'),
-                'port' => $project->config->getNumber('cache.port'),
-                'size' => $project->config->getNumber('cache.size'),
-                'maxsize' => $project->config->getNumber('cache.maxsize')
+                'id'   => $app->config->getString('cache.id', ''),
+                'host' => $app->config->get('cache.host', 'localhost'),
+                'port' => $app->config->getNumber('cache.port'),
+                'size' => $app->config->getNumber('cache.size'),
+                'maxsize' => $app->config->getNumber('cache.maxsize')
             );
 
             switch(trim(strtolower($driver))){

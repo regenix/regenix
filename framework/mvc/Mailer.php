@@ -1,7 +1,7 @@
 <?php
 namespace regenix\mvc;
 
-use regenix\Project;
+use regenix\Application;
 use regenix\lang\File;
 use regenix\lang\IClassInitialization;
 use regenix\lang\String;
@@ -260,9 +260,9 @@ abstract class Mailer implements IClassInitialization {
 
         self::$init = true;
 
-        $project = Project::current();
-        if ($project){
-            $config = $project->config;
+        $app =  Regenix::app();
+        if ($app){
+            $config = $app->config;
 
             self::$defaults = array(
                 'method'  => $config->getString('mail.method', self::$defaults['method']),

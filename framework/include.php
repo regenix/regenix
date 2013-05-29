@@ -29,21 +29,65 @@ namespace regenix {
     use regenix\mvc\template\BaseTemplate;
     use regenix\mvc\template\TemplateLoader;
 
-abstract class Core {
+abstract class Regenix {
 
     const type = __CLASS__;
+
+    /** @var float */
+    private static $traceTime;
+
+    /** @var int */
+    private static $traceMemory;
+
+    /** @var float */
+    private static $startTime;
+
+    /** @var int */
+    private static $startMemory;
     
     /** @var string */
-    public static $tempDir;
+    private static $tempPath;
 
-    /** @var Project[] */
-    private static $projects = array();
+    /** @var Application[] */
+    private static $apps = array();
 
+    /** @var array */
+    private static $profileLog = array();
+
+    /**
+     * Get current version of regenix framework
+     * @return string
+     */
     public static function getVersion(){
         return '0.6';
     }
 
+    /**
+     * Get information about execute time, memory usage, etc.
+     * @param bool $traceLog
+     * @return array
+     */
+    public static function getDebugInfo($traceLog = false){
+        $result = array(
+            'time' => (microtime(true) - self::$startTime) * 1000,
+            'memory' => memory_get_usage() - self::$startMemory,
+            'memory_max' => memory_get_peak_usage()
+        );
+        if ($traceLog)
+            $result['trace'] = self::$profileLog;
+
+        return $result;
+    }
+
     private static function init($rootDir, $inWeb = true){
+        ini_set('display_errors', 'Off');
+        error_reporting(0);
+
+        self::$startTime   = self::$traceTime = microtime(true);
+        self::$startMemory = self::$traceMemory = memory_get_usage();
+
+        self::trace('Start init core');
+
         $rootDir = str_replace(DIRECTORY_SEPARATOR, '/', realpath($rootDir));
         if (substr($rootDir, -1) !== '/')
             $rootDir .= '/';
@@ -55,26 +99,33 @@ abstract class Core {
 
         require REGENIX_ROOT . 'lang/PHP.php';
 
-        // TODO
-        ini_set('display_errors', 'Off');
-        error_reporting(E_ALL ^ E_NOTICE);
         set_include_path($rootDir);
-        self::$tempDir = sys_get_temp_dir() . '/';
+        self::$tempPath = sys_get_temp_dir() . '/';
 
         unset($_POST, $_GET, $_REQUEST);
 
+        self::trace('Start add framework class path');
+
         // register class loader
         ClassScanner::init($rootDir, array(REGENIX_ROOT));
+        self::trace('Finish init core');
 
         if ($inWeb){
             self::_registerTriggers();
             self::_deploy();
+            self::trace('Deploy finish.');
 
-            self::_registerProjects();
-            self::_registerCurrentProject();
+            self::_registerApps();
+            self::trace('Register apps finish.');
 
-            if (!Project::current())
-                register_shutdown_function(array(Core::type, 'shutdown'), null);
+            self::_registerCurrentApp();
+            self::trace('Register current finish.');
+
+            if (!Regenix::app())
+                register_shutdown_function(array(Regenix::type, '__shutdown'), null);
+
+            if (defined('APP_MODE_STRICT') && APP_MODE_STRICT)
+                set_error_handler(array(__CLASS__, '__errorHandler'));
         } else {
             error_reporting(0);
             set_time_limit(0);
@@ -99,7 +150,7 @@ abstract class Core {
     public static function initConsole($rootDir){
         try {
             self::init($rootDir, false);
-            register_shutdown_function(array(Core::type, 'shutdownConsole'));
+            register_shutdown_function(array(Regenix::type, '__shutdownConsole'));
 
             $commander = Commander::current();
             $commander->run();
@@ -126,6 +177,32 @@ abstract class Core {
         }
     }
 
+    /**
+     * Get current application
+     * @return Application
+     */
+    public static function app(){
+        return Application::current();
+    }
+
+    /**
+     * Write trace log
+     * @param $message
+     */
+    public static function trace($message){
+        self::$profileLog[] =
+            array(
+                'message' => $message,
+                'debug' => array(
+                    'time' => (microtime(true) - self::$traceTime) * 1000,
+                    'memory' => (memory_get_usage() - self::$traceMemory)
+                )
+            );
+
+        self::$traceTime   = microtime(true);
+        self::$traceMemory = memory_get_usage();
+    }
+
     private static function _registerTriggers(){
         SDK::registerTrigger('beforeRequest');
         SDK::registerTrigger('afterRequest');
@@ -135,7 +212,7 @@ abstract class Core {
 
     private static function _deployZip($zipFile){
         $name   = basename($zipFile, '.zip');
-        $appDir = Project::getSrcDir() . $name . '/';
+        $appDir = Application::getSrcDir() . $name . '/';
 
         // check directory exists
         if (file_exists($appDir)){
@@ -158,44 +235,44 @@ abstract class Core {
     }
 
     private static function _deploy(){
-        foreach (glob(Project::getSrcDir() . "*.zip") as $zipFile) {
+        foreach (glob(Application::getSrcDir() . "*.zip") as $zipFile) {
             self::_deployZip($zipFile);
         }
     }
 
-    private static function _registerProjects(){
-        $dirs = scandir(Project::getSrcDir());
-        $root = Project::getSrcDir();
-        foreach ($dirs as $dir){
-            if ($dir == '.' || $dir == '..') continue;
-            if (is_dir($root . $dir))
-                self::$projects[ $dir ] = new Project( $dir );
+    private static function _registerApps(){
+        $file = new File(Application::getSrcDir());
+        foreach($file->findFiles() as $path){
+            if ($path->isDirectory()){
+                $name = $path->getName();
+                self::$apps[ $name ] = new Application($name);
+            }
         }
     }
 
-    private static function _registerCurrentProject(){
+    private static function _registerCurrentApp(){
         /** 
-         * @var Project $project
+         * @var Application $app
          */
-        foreach (self::$projects as $project){
-            $url = $project->findCurrentPath();
+        foreach (self::$apps as $app){
+            $url = $app->findCurrentPath();
             if ( $url ){
-                register_shutdown_function(array(Core::type, 'shutdown'), $project);
-                $project->setUriPath( $url );
-                $project->register();
+                register_shutdown_function(array(Regenix::type, '__shutdown'), $app);
+                $app->setUriPath( $url );
+                $app->register();
                 return;
             }
         }
         
-        throw new HttpException(HttpException::E_NOT_FOUND, "Can't find project for current request");
+        throw new HttpException(HttpException::E_NOT_FOUND, "Can't find app for current request");
     }
     
     public static function processRoute(){
-        $project = Project::current();
-        $router  = $project->router;
+        $app =  Regenix::app();
+        $router  = $app->router;
         
         $request = Request::current();
-        $request->setBasePath( $project->getUriPath() );
+        $request->setBasePath( $app->getUriPath() );
                 
         $router->route($request);
 
@@ -243,7 +320,6 @@ abstract class Core {
                     if ($e instanceof HttpException){
                         $controller->callHttpException($e);
                         $responseErr = $e->getTemplateResponse();
-                        dump('1111');
                     }
 
                     // if no result, do:
@@ -329,7 +405,7 @@ abstract class Core {
             return;
         }
 
-        $stack = CoreException::findProjectStack($e);
+        $stack = CoreException::findAppStack($e);
         if ($stack === null && IS_CORE_DEBUG){
             $stack = current($e->getTrace());
         }
@@ -391,6 +467,10 @@ abstract class Core {
         return REGENIX_ROOT;
     }
 
+    public static function getTempPath(){
+        return self::$tempPath;
+    }
+
     /**
      * @return bool
      */
@@ -398,13 +478,13 @@ abstract class Core {
         return PHP_SAPI === 'cli';
     }
 
-    public static function errorHandler($errno, $errstr, $errfile, $errline){
+    public static function __errorHandler($errno, $errstr, $errfile, $errline){
         if ( APP_MODE_STRICT ){
-            $project = Project::current();
+            $app =  Regenix::app();
             $errfile = str_replace('\\', '/', $errfile);
 
-            // only for project sources
-            if (!$project || String::startsWith($errfile, $project->getPath())){
+            // only for app sources
+            if (!$app || String::startsWith($errfile, $app->getPath())){
                 if ( $errno === E_DEPRECATED
                     || $errno === E_USER_DEPRECATED
                     || $errno === E_WARNING ){
@@ -412,7 +492,7 @@ abstract class Core {
                 }
 
                 // ignore tmp dir
-                if (!$project || String::startsWith($errfile, $project->getPath() . 'tmp/') )
+                if (!$app || String::startsWith($errfile, $app->getPath() . 'tmp/') )
                     return false;
 
                 if (String::startsWith($errstr, 'Undefined variable:')
@@ -423,7 +503,7 @@ abstract class Core {
         }
     }
 
-    public static function shutdownConsole(){
+    public static function __shutdownConsole(){
         $error = error_get_last();
         if ($error){
             switch($error['type']){
@@ -450,7 +530,7 @@ abstract class Core {
         }
     }
     
-    public static function shutdown(Project $project){
+    public static function __shutdown(Application $app){
         $error = error_get_last();
         if ($error){
             switch($error['type']){
@@ -462,8 +542,8 @@ abstract class Core {
                 case 4096: // Catchable fatal error
                 {
                     self::catchError($error,
-                        $project->config->getBoolean('logger.fatal.enable',true)
-                            ? $project->getPath() . 'log/'
+                        $app->config->getBoolean('logger.fatal.enable',true)
+                            ? $app->getPath() . 'log/'
                             : false);
 
                     break;
@@ -478,27 +558,26 @@ abstract class Core {
         flush();
     }
 
-
     /*** utils ***/
-    public static function setTempDir($dir){
+    public static function setTempPath($dir){
         if ( !is_dir($dir) ){
             if ( !mkdir($dir, 0777, true) ){
-                throw new exceptions\CoreException('Unable to create temp directory `/tmp/`');
+                throw new CoreException('Unable to create temp directory `/tmp/`');
             }
             chmod($dir, 0777);
         }
-        self::$tempDir = $dir;
+        self::$tempPath = $dir;
     }
 }
 
 
     abstract class AbstractBootstrap {
 
-        /** @var Project */
-        protected $project;
+        /** @var Application */
+        protected $app;
 
-        public function setProject(Project $project){
-            $this->project = $project;
+        public function setApp(Application $app){
+            $this->app = $app;
         }
 
         public function onStart(){}
@@ -510,10 +589,12 @@ abstract class Core {
 
 
     /**
-     * Class Project
-     * @package framework
+     * Class Application
+     * @package regenix
      */
-    class Project {
+    class Application {
+
+        const type = __CLASS__;
 
         private $name;
         private $paths = array();
@@ -546,14 +627,14 @@ abstract class Core {
         protected $assets;
 
         /**
-         * @param string $projectName root directory name of project
+         * @param string $appName root directory name of app
          * @param bool $inWeb
          */
-        public function __construct($projectName, $inWeb = true){
-            $this->name   = $projectName;
+        public function __construct($appName, $inWeb = true){
+            $this->name   = $appName;
 
-            SystemCache::setId($projectName);
-            $cacheName = 'appconf';
+            SystemCache::setId($appName);
+            $cacheName = 'app.conf';
 
             $configFile   = $this->getPath() . 'conf/application.conf';
             $this->config = SystemCache::getWithCheckFile($cacheName, $configFile);
@@ -570,10 +651,12 @@ abstract class Core {
             }
 
             $this->applyConfig( $this->config );
+            if (IS_CORE_DEBUG)
+                Regenix::trace('New app - ' . $appName);
         }
 
         /**
-         * get project name (root directory name)
+         * get app name (root directory name)
          * @return string
          */
         public function getName(){
@@ -581,7 +664,7 @@ abstract class Core {
         }
 
         /**
-         * get project root path
+         * get app root path
          * @return string
          */
         public function getPath(){
@@ -738,18 +821,15 @@ abstract class Core {
 
 
         public function register($inWeb = true){
-            ClassScanner::addClassPath($this->getPath());
+            Regenix::trace('.register() application pre-start');
 
-            Project::$instance = $this;
+            ClassScanner::addClassPath($this->getPath());
+            Application::$instance = $this;
             SystemCache::setId($this->name);
 
-            if (is_file($file = $this->getPath() . 'app/Bootstrap.php')){
-                require $file;
-                if (!class_exists('Bootstrap', false)){
-                    throw CoreException::formated('Can`t find `Bootstrap` class at `%s`', $file);
-                }
+            if (class_exists('\\Bootstrap')){
                 $this->bootstrap = new \Bootstrap();
-                $this->bootstrap->setProject($this);
+                $this->bootstrap->setApp($this);
             }
 
             // config
@@ -774,17 +854,21 @@ abstract class Core {
                 throw new ConfigurationReadException($this->config, '`app.secret` must be set as random string');
             }
 
+            Regenix::trace('.register() application start');
+
             // temp
-            Core::setTempDir( sys_get_temp_dir() . '/regenix/' . $this->name . '/' );
+            Regenix::setTempPath( sys_get_temp_dir() . '/regenix/' . $this->name . '/' );
 
             $sessionDriver = new APCSession();
             $sessionDriver->register();
 
             // module deps
             $this->_registerDependencies();
+            Regenix::trace('.registerDependencies() application finish');
 
             // route
             $this->_registerRoute();
+            Regenix::trace('.registerRoute() application finish');
 
             if (IS_DEV)
                 $this->_registerTests();
@@ -795,6 +879,8 @@ abstract class Core {
             if ($this->bootstrap){
                 $this->bootstrap->onStart();
             }
+
+            Regenix::trace('.registerBootstrap() application, finish register app');
         }
 
         public function loadDeps(){
@@ -821,7 +907,7 @@ abstract class Core {
         }
 
         /**
-         * Get all assets of project
+         * Get all assets of app
          * @throws static
          * @return array
          */
@@ -901,11 +987,11 @@ abstract class Core {
             }
         }
 
-        /** @var Project */
+        /** @var Application */
         private static $instance;
 
         /**
-         * @return Project
+         * @return Application
          */
         public static function current(){
             return self::$instance;

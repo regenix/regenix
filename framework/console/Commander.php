@@ -1,8 +1,8 @@
 <?php
 namespace regenix\console;
 
-use regenix\Core;
-use regenix\Project;
+use regenix\Regenix;
+use regenix\Application;
 use regenix\console\commands\AboutCommand;
 use regenix\console\commands\DepsCommand;
 use regenix\console\commands\HelpCommand;
@@ -27,50 +27,50 @@ class Commander implements IClassInitialization {
     protected $options;
 
     /**
-     * @var Project[]
+     * @var Application[]
      */
-    public $projects = array();
+    public $apps = array();
 
     /**
-     * @var Project
+     * @var Application
      */
-    protected $project;
+    protected $app;
 
     protected function __construct(){
         echo "\n";
-        $this->_registerProjects();
-        $this->_registerCurrentProject();
+        $this->_registerapps();
+        $this->_registerCurrentapp();
     }
 
-    private function _registerProjects(){
-        $dirs = scandir(Project::getSrcDir());
+    private function _registerapps(){
+        $dirs = scandir(Application::getSrcDir());
         foreach ((array)$dirs as $dir){
             if ($dir == '.' || $dir == '..') continue;
-            $this->projects[ $dir ] = new Project( $dir, false );
+            $this->apps[ $dir ] = new Application( $dir, false );
         }
     }
 
-    private function _registerCurrentProject(){
+    private function _registerCurrentapp(){
         $tmpFile = new File(sys_get_temp_dir() . '/regenix/.current');
 
         if ($tmpFile->isFile()){
-            $this->project = @file_get_contents($tmpFile->getPath());
-            $this->project = $this->projects[$this->project];
+            $this->app = @file_get_contents($tmpFile->getPath());
+            $this->app = $this->apps[$this->app];
         }
 
-        if (!$this->project){
-            foreach($this->projects as $name => $project){
+        if (!$this->app){
+            foreach($this->apps as $name => $app){
                 if ($name[0] == '.') continue;
 
-                $this->project = $project;
+                $this->app = $app;
                 break;
             }
 
-            if (!$this->project)
-                $this->project = current($this->projects);
+            if (!$this->app)
+                $this->app = current($this->apps);
 
             $tmpFile->getParentFile()->mkdirs();
-            file_put_contents($tmpFile->getPath(), $this->project->getName());
+            file_put_contents($tmpFile->getPath(), $this->app->getName());
         }
     }
 
@@ -105,7 +105,7 @@ class Commander implements IClassInitialization {
             throw CoreException::formated('Command method `%s %s` not found', $command, $method);
         }
 
-        $cmd->__loadInfo($method, $this->project, (array)array_slice($this->args, 1), (array)$this->options);
+        $cmd->__loadInfo($method, $this->app, (array)array_slice($this->args, 1), (array)$this->options);
         call_user_func(array($cmd, $method));
     }
 

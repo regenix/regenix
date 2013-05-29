@@ -93,9 +93,10 @@ class SystemCache {
             if ($upd === 0)
                 return null;
 
-            $mtime  = filemtime($filePath);
-            if ( $upd == $mtime )
+            $file = new File($filePath);
+            if (!$file->isModified($upd, false)){
                 return $result;
+            }
         }
         return null;
     }
@@ -106,8 +107,8 @@ class SystemCache {
 
         self::set($name, $value, $lifetime, $cacheInFiles);
         if (file_exists($filePath)){
-            $mtime = filemtime($filePath);
-            self::set($name.'.$upd', $mtime, $lifetime, $cacheInFiles);
+            $file = new File($filePath);
+            self::set($name.'.$upd', $file->lastModified(), $lifetime, $cacheInFiles);
         }
     }
     

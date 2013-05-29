@@ -1,8 +1,8 @@
 <?php
 namespace regenix\console\commands;
 
-use regenix\Core;
-use regenix\Project;
+use regenix\Regenix;
+use regenix\Application;
 use regenix\console\Commander;
 use regenix\console\ConsoleCommand;
 use regenix\modules\Module;
@@ -22,24 +22,24 @@ class AboutCommand extends ConsoleCommand {
    }
 
     public function __default(){
-        $this->writeln('Regenix framework v%s', Core::getVersion());
+        $this->writeln('Regenix framework v%s', Regenix::getVersion());
         $this->writeln();
         $this->writeln('    root path: `%s`', ROOT);
-        $this->writeln('    apps path: `%s`', Project::getSrcDir());
+        $this->writeln('    apps path: `%s`', Application::getSrcDir());
         $this->writeln();
 
         $this->printModules();
 
         $cmd = Commander::current();
         $this->writeln();
-        $this->writeln('Projects:');
+        $this->writeln('apps:');
         $this->writeln();
-        foreach($cmd->projects as $project){
-            $this->writeln('    - %s (%s)', $project->getName(), $project->config->get('app.mode'));
+        foreach($cmd->apps as $app){
+            $this->writeln('    - %s (%s)', $app->getName(), $app->config->get('app.mode'));
         }
     }
 
     public function getInlineHelp(){
-        return 'show information about versions, projects, modules';
+        return 'show information about versions, apps, modules';
     }
 }

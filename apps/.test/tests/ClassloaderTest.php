@@ -1,8 +1,8 @@
 <?php
 namespace tests;
 
-use regenix\Core;
-use regenix\Project;
+use regenix\Regenix;
+use regenix\Application;
 use regenix\lang\ClassLoader;
 use regenix\lang\ClassScanner;
 

@@ -26,8 +26,8 @@ class DepsCommand extends ConsoleCommand {
     protected $repository;
 
     public function onBefore(){
-        $this->project->loadDeps();
-        $this->repository = new Repository($this->project->deps);
+        $this->app->loadDeps();
+        $this->repository = new Repository($this->app->deps);
     }
 
     protected function renderDep($group, $pattern, $level = 0){
@@ -94,12 +94,12 @@ class DepsCommand extends ConsoleCommand {
             return;
         }
 
-        $this->writeln('Dependencies of `%s`:', $this->project->getName());
+        $this->writeln('Dependencies of `%s`:', $this->app->getName());
         $this->writeln();
 
-        $this->renderDeps('Assets', 'assets', $this->project->deps['assets']);
+        $this->renderDeps('Assets', 'assets', $this->app->deps['assets']);
         $this->writeln();
-        $this->renderDeps('Modules', 'modules', $this->project->deps['modules']);
+        $this->renderDeps('Modules', 'modules', $this->app->deps['modules']);
 
         $this->checkConflicts();
     }
@@ -249,7 +249,7 @@ class DepsCommand extends ConsoleCommand {
                 }
 
                 $this->repository->setEnv($env);
-                $deps = $this->project->deps[$env];
+                $deps = $this->app->deps[$env];
                 foreach((array)$deps as $group => $dep){
                     $this->update($env, $group, $dep);
                 }
@@ -271,6 +271,6 @@ class DepsCommand extends ConsoleCommand {
     }
 
     public function getInlineHelp(){
-        return 'show and update dependencies of current project, example: deps update';
+        return 'show and update dependencies of current app, example: deps update';
     }
 }

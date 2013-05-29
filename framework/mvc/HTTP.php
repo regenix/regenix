@@ -2,7 +2,7 @@
 
 namespace regenix\mvc;
 
-use regenix\Core;
+use regenix\Regenix;
 use regenix\lang\StrictObject;
 use regenix\lang\CoreException;
 use regenix\lang\ArrayTyped;
@@ -39,7 +39,6 @@ class Request extends StrictObject {
     }
 
     public static function createFromGlobal($headers = null){
-
         if ($headers === null)
         if ( function_exists('getallheaders') ){
             $headers = getallheaders();
@@ -291,7 +290,7 @@ class Session extends StrictObject {
 
     protected function check(){
         if (!$this->init){
-            if (Core::isCLI()){
+            if (Regenix::isCLI()){
                 global $_SESSION;
                 $_SESSION = array();
                 $this->id = String::random(40);
@@ -314,7 +313,7 @@ class Session extends StrictObject {
      */
     public function getId(){
         $this->check();
-        return Core::isCLI() ? $this->id : session_id();
+        return Regenix::isCLI() ? $this->id : session_id();
     }
 
     /**
@@ -380,7 +379,7 @@ class Session extends StrictObject {
      */
     public function clear(){
         $this->check();
-        if (Core::isCLI()){
+        if (Regenix::isCLI()){
             global $_SESSION;
             $_SESSION = array();
         } else
@@ -916,74 +915,6 @@ class RequestBody extends StrictObject {
     }
 }
 
-abstract class RequestBindParams extends StrictObject {
-
-    const type     = __CLASS__;
-
-    static $method = 'GET';
-    static $prefix = '';
-
-    public function __construct(array $args, $prefix = ''){
-        foreach($args as $key => $value){
-            if ( $prefix ) {
-                if (($p = strpos($key, $prefix)) === 0){
-                    $key = substr($key, strlen($prefix));
-                } else
-                    continue;
-            }
-
-            if ( method_exists($this, 'set' . $key) ){
-                $reflect = new \ReflectionMethod(get_class($this), 'set' . $key);
-                $a       = array();
-                foreach($reflect->getParameters() as $param){
-                    if($class = $param->getClass()){
-                        $a[] = RequestBinder::getValue($value, $class->getName());
-                    } else
-                        $a[] = $value;
-                }
-                $reflect->setAccessible(true);
-                $reflect->invokeArgs($this, $a);
-            } else if ( property_exists($this, $key) ) {
-                $this->{$key} = $value;
-            }
-        }
-    }
-
-    /**
-     * @param null|string $prefix - if null default used
-     * @internal param null $method
-     * @internal param null|string $method - if null default used
-     * @return RequestBindParams
-     */
-    public static function current($prefix = null){
-        $class   = get_called_class();
-        $_method = strtoupper($class::method);
-        switch($_method){
-            case 'POST': {
-                $body = new RequestBody();
-                $httpArgs = $body->asQuery();
-            } break;
-            case 'GET': {
-                $tmp = new RequestQuery();
-                $httpArgs = $tmp->getAll();
-            } break;
-            case 'REQUEST': {
-                $httpArgs = $_REQUEST;
-            } break;
-            case 'COOKIE': {
-                $httpArgs = $_COOKIE;
-            } break;
-            case 'SESSION': {
-                $httpArgs = $_SESSION;
-            } break;
-            case 'FILES': {
-                $httpArgs = $_FILES;
-            } break;
-        }
-        return new $class( $httpArgs, $prefix ? $prefix : $class::prefix );
-    }
-}
-
 class URL extends StrictObject {
 
     const type = __CLASS__;
@@ -1259,7 +1190,7 @@ class Response extends StrictObject {
         foreach($this->headers as $name => $value){
             header($name . ': ' . $value, true);
         }
-        header('Powered-By: Regenix Framework v' . Core::getVersion(), true);
+        header('Powered-By: Regenix Framework v' . Regenix::getVersion(), true);
     }
 
     public function send($headers = true){

@@ -2,7 +2,7 @@
 
 namespace regenix\mvc;
 
-use regenix\Core;
+use regenix\Regenix;
 use regenix\SDK;
 use regenix\exceptions\HttpException;
 use regenix\lang\StrictObject;

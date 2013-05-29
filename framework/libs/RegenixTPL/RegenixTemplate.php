@@ -5,7 +5,8 @@ namespace regenix\libs\RegenixTPL {
  * Class RegenixTemplate
  * @package regenix\libs\RegenixTPL
  */
-    use regenix\Core;
+    use regenix\Regenix;
+    use regenix\lang\ClassScanner;
     use regenix\lang\CoreException;
     use regenix\lang\String;
     use regenix\libs\I18n;
@@ -68,10 +69,11 @@ class RegenixTemplate {
     protected $compiledFile;
 
     public function __construct(){
-        $this->registerTag(new RegenixRenderTag());
-        $this->registerTag(new RegenixIncludeTag());
-        $this->registerTag(new RegenixGetTag());
-        $this->registerTag(new RegenixSetTag());
+        $meta = ClassScanner::find(RegenixTemplateTag::type);
+        foreach($meta->getChildrensAll() as $class){
+            if (!$class->isAbstract())
+                $this->registerTag($class->newInstance());
+        }
     }
 
     public function setFile($file){
@@ -98,7 +100,9 @@ class RegenixTemplate {
     }
 
     public function registerTag(RegenixTemplateTag $tag){
-        $this->tags[strtolower($tag->getName())] = $tag;
+        $name = strtolower($tag->getName());
+        if (!isset($this->tags[$name]))
+            $this->tags[$name] = $tag;
     }
 
     public function duplicate(){
@@ -444,6 +448,8 @@ class RegenixTemplate {
 }
 
 abstract class RegenixTemplateTag {
+
+    const type = __CLASS__;
 
     abstract function getName();
     abstract public function call($args, RegenixTemplate $ctx);

@@ -2,7 +2,7 @@
 
 namespace regenix\console;
 
-use regenix\Project;
+use regenix\Application;
 use regenix\lang\ArrayTyped;
 use regenix\lang\String;
 
@@ -11,8 +11,8 @@ abstract class ConsoleCommand {
     const type  = __CLASS__;
     const GROUP = '';
 
-    /** @var Project */
-    protected $project;
+    /** @var Application */
+    protected $app;
 
     /** @var ArrayTyped */
     protected $args;
@@ -25,9 +25,9 @@ abstract class ConsoleCommand {
 
     abstract public function __default();
 
-    public function __loadInfo($method, Project $project, array $args, array $options){
+    public function __loadInfo($method, Application $app, array $args, array $options){
         $this->method = $method;
-        $this->project = $project;
+        $this->app = $app;
         $this->args = new ArrayTyped($args);
         $this->opts = new ArrayTyped($options);
         $this->onBefore();

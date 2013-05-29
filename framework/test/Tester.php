@@ -1,7 +1,8 @@
 <?php
 namespace regenix\test;
 
-use regenix\Project;
+use regenix\Application;
+use regenix\Regenix;
 use regenix\cache\SystemCache;
 use regenix\lang\CoreException;
 use regenix\lang\ClassScanner;
@@ -10,7 +11,7 @@ use regenix\mvc\Controller;
 class Tester extends Controller {
 
     public static function startTesting($id = null, $moduleWithVersion = null){
-        $project = Project::current();
+        $app =  Regenix::app();
 
         if ($moduleWithVersion){
             if (!is_dir(ROOT . 'modules/' . $moduleWithVersion . '/'))
@@ -38,8 +39,8 @@ class Tester extends Controller {
             $tests[] = $test;
         }
 
-        if (!$module && $project && $project->bootstrap)
-            $project->bootstrap->onTest($tests);
+        if (!$module && $app && $app->bootstrap)
+            $app->bootstrap->onTest($tests);
 
         foreach($tests as $test){
             $test->startTesting();
@@ -117,7 +118,7 @@ class Tester extends Controller {
     public function run($id = null){
         self::startTesting($id);
         $result = static::getResults();
-        $this->put('project', Project::current());
+        $this->put('app', Regenix::app());
 
         if ($id){
             $this->detail($detail = $result['tests'][$id]);

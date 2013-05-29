@@ -2,14 +2,14 @@
 
 namespace regenix\mvc\route;
 
-use regenix\Project;
+use regenix\Application;
+use regenix\Regenix;
 use regenix\lang\StrictObject;
 use regenix\cache\SystemCache;
 use regenix\lang\String;
 use regenix\logger\Logger;
 use regenix\mvc\Controller;
 use regenix\mvc\Request;
-use regenix\mvc\RequestBindParams;
 use regenix\mvc\RequestBinder;
 
 class Router extends StrictObject {
@@ -179,8 +179,8 @@ class Router extends StrictObject {
                         }
                     }
 
-                    $project = Project::current();
-                    $path    = $project ? $project->getUriPath() : '';
+                    //$app  = Regenix::app();
+                    //$path = $app ? $app->getUriPath() : '';
 
                     return /*($path === '/' ? '' : $path) . */$url;
                 }
@@ -219,11 +219,11 @@ class Router extends StrictObject {
             } else {
                 $class = $param->getClass();
 
-                if ( $class && $class->isSubclassOf(RequestBindParams::type) ){
+                /*if ( $class && $class->isSubclassOf(RequestBindParams::type) ){
                     $cls_name = $class->getName();
                     $value    = $cls_name::current();
                     $args[$name] = $value;
-                } else if ( $param->isArray() ){
+                } else*/ if ( $param->isArray() ){
                     $args[$name] = $controller->query->getArray($name);
                 } else if ( $parsedBody && ($v = $parsedBody[$name]) ){
 
@@ -316,7 +316,7 @@ class Router extends StrictObject {
      * @return null|string URL of action
      */
     public static function path($action, array $args = array(), $method = '*'){
-        $router = Project::current()->router;
+        $router = Regenix::app()->router;
         return $router ? $router->reverse($action, $args, $method) : null;
     }
 }

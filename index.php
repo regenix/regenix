@@ -1,8 +1,10 @@
 <?php
-use regenix\Core;
+use regenix\Regenix;
+
+    //define('IS_CORE_DEBUG', true);
 
     // require main file
     require 'framework/include.php';
 
     // Init apps
-    Core::initWeb(__DIR__);
+    Regenix::initWeb(__DIR__);

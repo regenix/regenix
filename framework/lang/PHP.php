@@ -1,7 +1,8 @@
 <?php
 namespace regenix\lang;
 
-use regenix\Project;
+use regenix\Application;
+use regenix\Regenix;
 use regenix\cache\SystemCache;
 use regenix\SDK;
 use regenix\lang\File;
@@ -90,16 +91,15 @@ class CoreException extends \Exception {
     const type = __CLASS__;
 
     public function __construct($message){
-        parent::__construct($message);
+        $args = array();
+        if (func_num_args() > 1)
+            $args = array_slice(func_get_args(), 1);
+
+        parent::__construct(String::formatArgs($message, $args));
     }
 
     public static function formated($message){
-        $args = array();
-        if (func_num_args() > 1){
-            $args = array_slice(func_get_args(), 1);
-        }
-
-        return new static(String::formatArgs($message, $args));
+        return new static(func_get_args());
     }
 
     public function getSourceLine(){
@@ -110,17 +110,17 @@ class CoreException extends \Exception {
         return $this->getFile();
     }
 
-    public static function findProjectStack(\Exception $e){
+    public static function findAppStack(\Exception $e){
         if (self::$hideDebug)
             return null;
 
-        $project = Project::current();
-        if ($project){
-            $projectDir = str_replace('\\', '/', Project::getSrcDir());
+        $app = Regenix::app();
+        if ($app){
+            $appDir = str_replace('\\', '/', Application::getSrcDir());
             $moduleDir  = ROOT . 'modules/';
             foreach($e->getTrace() as $stack){
                 $dir = str_replace('\\', '/', dirname($stack['file']));
-                if (strpos($dir, $projectDir) === 0){
+                if (strpos($dir, $appDir) === 0){
                     return $stack;
                 }
                 if (self::$onlyPublic) continue;
@@ -315,9 +315,9 @@ final class ClassMetaInfo {
                 $namespace .= '\\';
 
             $result = array();
-            foreach($items as $el){
-                if (!$namespace || String::startsWith($el, $namespace)){
-                    $result[] = ClassScanner::find($el);
+            foreach($items as $className => $el){
+                if (!$namespace || String::startsWith($className, $namespace)){
+                    $result[$className] = ClassScanner::find($className);
                 }
             }
 
@@ -337,11 +337,11 @@ final class ClassMetaInfo {
         if ($result === null){
             $result = $childrens;
         } else {
-            $result = $result + $childrens;
+            $result = array_merge($result, $childrens);
         }
 
         foreach($childrens as $child){
-            $result = $result + $child->getChildrensAll($namespace, $result);
+            $result = array_merge($result, $child->getChildrensAll($namespace, $result));
         }
         return $result;
     }
@@ -439,8 +439,9 @@ class ClassScanner {
                 if ($cached){
                     SystemCache::setWithCheckFile('lang.sc.m.' . $hash, self::$metaInfo, $path, 3600, true);
                 }
-            } else
+            } else {
                 self::$metaInfo = $meta;
+            }
 
         } else
         foreach(self::$paths as $path){
@@ -536,7 +537,10 @@ class ClassScanner {
             $result[3] = $meta[3];
         }
 
-        $result[255] = self::$metaInfo[$className][255];
+        $metaInfo =& self::$metaInfo;
+
+        if ($childs = $metaInfo[$className][255])
+            $result[255] = $childs;
 
         // if exists parent...
         if ($extends || $implements){
@@ -545,20 +549,17 @@ class ClassScanner {
 
             if ($extends){
                 $implements[] = $extends;
-                //array_unshift($implements, $extends);
             }
 
             foreach($implements as $extend){
-                if (!self::$metaInfo[$extend])
-                    self::$metaInfo[$extend] = array();
+                if (!$metaInfo[$extend])
+                    $metaInfo[$extend] = array();
 
-                self::$metaInfo[$extend][255][] = $className;
-                if (substr($className, 0, 5) === 'tests'){
-                }
+                $metaInfo[$extend][255][$className] = 1;
             }
         }
 
-        return self::$metaInfo[$className] = $result;
+        return $metaInfo[$className] = $result;
     }
 
     /**
@@ -1242,11 +1243,46 @@ class File extends StrictObject {
     }
 
     /**
-     * Get last modified of file in unix time format
+     * Get last modified of file or directory in unix time format
+     * @param bool $absolute
      * @return int unix time
      */
-    public function lastModified(){
-        return filemtime($this->path);
+    public function lastModified($absolute = true){
+        if ($absolute && $this->isDirectory()){
+            $files  = $this->findFiles();
+            $result = filemtime($this->path);
+            foreach($files as $file){
+                $m_time = $file->lastModified();
+                if ($m_time > $result)
+                    $result = $m_time;
+            }
+            return $result;
+        } else
+            return filemtime($this->path);
+    }
+
+    /**
+     * Check file or directory modified by current time stamp
+     * @param int $currentTime unix time
+     * @param bool $absolute
+     * @return bool
+     */
+    public function isModified($currentTime, $absolute = true){
+        if ($absolute && $this->isDirectory()){
+            $result = filemtime($this->path);
+            if ($result > $currentTime)
+                return true;
+
+            $files  = $this->findFiles();
+
+            foreach($files as $file){
+                $m_time = $file->lastModified();
+                if ($m_time > $currentTime)
+                    return true;
+            }
+            return false;
+        } else
+            return $currentTime < filemtime($this->path);
     }
 
     /**
@@ -1390,22 +1426,27 @@ class File extends StrictObject {
 
     /**
      * find files and dirs
-     * @param string $pattern
-     * @param int $flags
      * @return string[]
      */
-    public function find($pattern = '.*', $flags = 0){
-        $files = glob($this->path . '/' . $pattern, $flags);
-        return $files;
+    public function find(){
+        $path = $this->path;
+        if (substr($path, -1) !== '/')
+            $path .= '/';
+
+        $files = scandir($path);
+        $result = array();
+        foreach($files as $file){
+            if ($file != '..' && $file != '.')
+                $result[] = $path . $file;
+        }
+        return $result;
     }
 
     /**
-     * @param string $pattern
-     * @param int $flags
      * @return File[]
      */
-    public function findFiles($pattern = '.*', $flags = 0){
-        $files = $this->find($pattern, $flags);
+    public function findFiles(){
+        $files = $this->find();
         if ($files)
             foreach($files as &$file){
                 $file = new File($file);

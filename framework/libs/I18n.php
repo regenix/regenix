@@ -2,7 +2,8 @@
 namespace regenix\libs;
 
 
-use regenix\Project;
+use regenix\Application;
+use regenix\Regenix;
 use regenix\cache\SystemCache;
 use regenix\config\PropertiesConfiguration;
 use regenix\lang\File;
@@ -115,7 +116,7 @@ class I18n implements IClassInitialization {
      * @return bool|\regenix\mvc\scalar|null|string
      */
     public static function detectLang(){
-        $project = Project::current();
+        $app =  Regenix::app();
         $request = Request::current();
 
         $lang = false;
@@ -129,7 +130,7 @@ class I18n implements IClassInitialization {
                 }
             } break;
             case 'route': {
-                $lang = $project->router->args[self::$detectArg];
+                $lang = $app->router->args[self::$detectArg];
             } break;
             case 'get': {
                 $lang = RequestQuery::current()->getString(self::$detectArg);
@@ -138,7 +139,7 @@ class I18n implements IClassInitialization {
                 $lang = Session::current()->get(self::$detectArg);
             } break;
             default: {
-                $lang = $project->config->getString('i18n.lang', 'default');
+                $lang = $app->config->getString('i18n.lang', 'default');
             }
         }
         return $lang;
@@ -147,12 +148,12 @@ class I18n implements IClassInitialization {
     public static function initialize() {
         self::setLoader(new I18nDefaultLoader());
 
-        $project = Project::current();
+        $app =  Regenix::app();
         $request = Request::current();
 
         if ( $request ){
-            $type = $project->config->getString('i18n.detect.type', 'none');
-            $arg  = $project->config->getString('i18n.detect.arg', '_lang');
+            $type = $app->config->getString('i18n.detect.type', 'none');
+            $arg  = $app->config->getString('i18n.detect.arg', '_lang');
 
             self::$detectType = $type;
             self::$detectArg  = $arg;
@@ -184,8 +185,8 @@ abstract class I18nLoader {
 class I18nDefaultLoader extends I18nLoader {
 
     protected function getLangFile($lang){
-        $project = Project::current();
-        return $project->getPath() . 'conf/i18n/' . $lang . '.lang';
+        $app =  Regenix::app();
+        return $app->getPath() . 'conf/i18n/' . $lang . '.lang';
     }
 
     public function loadLang($lang) {

@@ -2,7 +2,7 @@
 
 namespace regenix\deps;
 
-use regenix\Project;
+use regenix\Application;
 use regenix\lang\CoreException;
 use regenix\lang\File;
 use regenix\lang\IClassInitialization;
@@ -23,7 +23,7 @@ class Repository implements IClassInitialization{
     /**
      * @var array
      */
-    protected $deps = array();
+    protected $deps;
 
     /**
      * @var string
@@ -34,7 +34,7 @@ class Repository implements IClassInitialization{
     public function __construct(array $deps){
         $this->deps = $deps;
         if ($deps['repository']){
-            $this->setOrigin(Origin::createOriginByAddress($deps['repository']));
+            //$this->setOrigin(Origin::createOriginByAddress($deps['repository']));
         }
     }
 

@@ -6,8 +6,8 @@ use regenix\SDK;
 use regenix\lang\CoreException;
 use regenix\lang\String;
 use regenix\mvc\providers\ResponseProvider;
-use regenix\Core;
-use regenix\Project;
+use regenix\Regenix;
+use regenix\Application;
 
 class TemplateLoader {
 
@@ -36,26 +36,26 @@ class TemplateLoader {
         if ( !self::$lazyLoaded ){
 
             self::registerPath(ROOT . 'modules/', false);
-            self::registerPath(Core::getFrameworkPath() . 'views/', false);
+            self::registerPath(Regenix::getFrameworkPath() . 'views/', false);
             
-            // current project
-            $project = Project::current();
-            if ($project){
-                self::setAssetPath('/apps/' . $project->getName() . '/assets/');
+            // current app
+            $app =  Regenix::app();
+            if ($app){
+                self::setAssetPath('/apps/' . $app->getName() . '/assets/');
 
-                $default = $project->config->getString('template.default', 'Regenix');
+                $default = $app->config->getString('template.default', 'Regenix');
                 $classTemplate = $default;
 
                 self::switchEngine($classTemplate);
-                self::registerPath( $project->getViewPath() );
+                self::registerPath( $app->getViewPath() );
             } else {
                 self::switchEngine('Regenix');
             }
         
             self::$lazyLoaded = true;
 
-            if ($project->bootstrap) {
-                $project->bootstrap->onUseTemplates();
+            if ($app->bootstrap) {
+                $app->bootstrap->onUseTemplates();
             }
         }
     }

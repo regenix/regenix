@@ -1,7 +1,8 @@
 <?php
 namespace regenix\mvc\template;
 
-use regenix\Project;
+use regenix\Application;
+use regenix\Regenix;
 use regenix\exceptions\TypeException;
 use regenix\lang\IClassInitialization;
 
@@ -48,9 +49,9 @@ abstract class BaseTemplate implements IClassInitialization {
     }
 
     public function onBeforeRender(){
-        $project = Project::current();
-        if ($project->bootstrap)
-            $project->bootstrap->onTemplateRender($this);
+        $app =  Regenix::app();
+        if ($app->bootstrap)
+            $app->bootstrap->onTemplateRender($this);
     }
 
 

@@ -2,8 +2,8 @@
 
 namespace regenix\logger;
 
-use regenix\Core;
-use regenix\Project;
+use regenix\Regenix;
+use regenix\Application;
 use regenix\lang\CoreException;
 use regenix\lang\File;
 use regenix\lang\FileIOException;
@@ -94,15 +94,15 @@ abstract class Logger implements IClassInitialization {
     }
 
     public static function initialize(){
-        $project = Project::current();
+        $app =  Regenix::app();
 
-        if ($project){
-            $enable   = $project->config->getBoolean('logger.enable', true);
-            $division = $project->config->getBoolean('logger.division', true);
-            $level    = $project->config->getString('logger.level', 'info');
+        if ($app){
+            $enable   = $app->config->getBoolean('logger.enable', true);
+            $division = $app->config->getBoolean('logger.division', true);
+            $level    = $app->config->getString('logger.level', 'info');
             if ( $enable ){
                 self::registerHandler(self::getLevelOrd($level),
-                    new LoggerDefaultHandler($project->getLogPath(), $division));
+                    new LoggerDefaultHandler($app->getLogPath(), $division));
             }
         }
     }
