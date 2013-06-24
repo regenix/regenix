@@ -39,6 +39,7 @@ abstract class UnitTest extends StrictObject {
             'result' => (boolean)$result,
             'message' => $message
         );
+        return $this;
     }
 
     protected function required($unitTestClass, $needOk = false){
@@ -109,8 +110,7 @@ abstract class UnitTest extends StrictObject {
             }
             throw $e;
         }
-        $this->assertWrite(true, $message);
-        return $this;
+        return $this->assertWrite(true, $message);
     }
 
     /**
@@ -120,8 +120,7 @@ abstract class UnitTest extends StrictObject {
      * @return $this
      */
     protected function assertEqual($with, $what, $message = ''){
-        $this->assertWrite($what == $with, $message);
-        return $this;
+        return $this->assertWrite($what == $with, $message);
     }
 
     /**
@@ -131,8 +130,7 @@ abstract class UnitTest extends StrictObject {
      * @return $this
      */
     protected function assertNotEqual($with, $what, $message = ''){
-        $this->assertWrite($what != $with, $message);
-        return $this;
+        return $this->assertWrite($what != $with, $message);
     }
 
     /**
@@ -142,8 +140,7 @@ abstract class UnitTest extends StrictObject {
      * @return $this
      */
     protected function assertStrongEqual($with, $what, $message = ''){
-        $this->assertWrite($what === $with, $message);
-        return $this;
+        return $this->assertWrite($what === $with, $message);
     }
 
     /**
@@ -152,8 +149,7 @@ abstract class UnitTest extends StrictObject {
      * @return $this
      */
     protected function assert($what, $message = ''){
-        $this->assertWrite($what === true, $message);
-        return $this;
+        return $this->assertWrite($what === true, $message);
     }
 
     /**
@@ -162,8 +158,7 @@ abstract class UnitTest extends StrictObject {
      * @return $this
      */
     protected function assertNot($what, $message = ''){
-        $this->assertWrite($what === false, $message);
-        return $this;
+        return $this->assertWrite($what === false, $message);
     }
 
     /**
@@ -172,8 +167,7 @@ abstract class UnitTest extends StrictObject {
      * @return $this
      */
     protected function assertNull($what, $message = ''){
-        $this->assertWrite($what === null, $message);
-        return $this;
+        return $this->assertWrite($what === null, $message);
     }
 
     /**
@@ -183,7 +177,7 @@ abstract class UnitTest extends StrictObject {
      * @return $this
      */
     protected function assertType($what, $object, $message = ''){
-        switch($what){
+        switch(strtolower($what)){
             case 'array': $this->assertWrite(is_array($object), $message); break;
             case 'string': $this->assertWrite(is_string($object), $message); break;
             case 'int':
@@ -192,6 +186,8 @@ abstract class UnitTest extends StrictObject {
             case 'float': $this->assertWrite(is_double($object), $message); break;
             case 'callable': $this->assertWrite(is_callable($object), $message); break;
             case 'object': $this->assertWrite(is_object($object), $message); break;
+            case 'null': $this->assertWrite(is_null($object), $message); break;
+            case 'numeric': $this->assertWrite(is_numeric($object), $message); break;
             default: {
                 $this->assertWrite(is_a($object, $what), $message);
             }
@@ -206,8 +202,7 @@ abstract class UnitTest extends StrictObject {
      * @return $this
      */
     protected function assertArraySize($what, $array, $message = ''){
-        $this->assertWrite(is_array($array) && (sizeof($array) === (int)$what), $message);
-        return $this;
+        return $this->assertWrite(is_array($array) && (sizeof($array) === (int)$what), $message);
     }
 
     /**
@@ -216,8 +211,7 @@ abstract class UnitTest extends StrictObject {
      * @return $this
      */
     protected function assertNotNull($what, $message = ''){
-        $this->assertWrite($what, $message);
-        return $this;
+        return $this->assertWrite($what !== null, $message);
     }
 
     /**
@@ -226,8 +220,7 @@ abstract class UnitTest extends StrictObject {
      * @return $this
      */
     protected function assertRequire($what, $message = ''){
-        $this->assertWrite(!!($what), $message);
-        return $this;
+        return $this->assertWrite(!!($what), $message);
     }
 
     /**
@@ -238,16 +231,31 @@ abstract class UnitTest extends StrictObject {
      */
     protected function assertIssetArray($what, array $keys, $message = ''){
         if (!is_array($what))
-            $this->assertWrite(false, $message);
+            return $this->assertWrite(false, $message);
 
         foreach($keys as $key){
-            if (!isset($what[$key])){
-                $this->assertWrite(false, $message);
-                return;
-            }
+            if (!isset($what[$key]))
+                return $this->assertWrite(false, $message);
         }
-        $this->assertWrite(true, $message);
-        return $this;
+        return $this->assertWrite(true, $message);
+    }
+
+    /**
+     * @param array|mixed $what
+     * @param array $keys
+     * @param string $message
+     * @return $this
+     */
+    protected function assertKeyExists($what, array $keys, $message = ''){
+        if (!is_array($what))
+            return $this->assertWrite(false, $message);
+
+        foreach($keys as $key){
+            if (!array_key_exists($key, $what))
+                return $this->assertWrite(false, $message);
+        }
+
+        return $this->assertWrite(true, $message);
     }
 
     /**

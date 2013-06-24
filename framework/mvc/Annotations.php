@@ -117,11 +117,11 @@ class Annotations {
         $meta = self::$types[ $this->scope ][ $name ];
 
         if ( $meta === null )
-            throw CoreException::formated('@%s annotation is not defined', $name);
+            throw new CoreException('@%s annotation is not defined', $name);
 
         // check multi
         if ( isset($item[0]) && !$meta['multi'] )
-            throw CoreException::formated('@%s annotation can\'t multiple', $name);
+            throw new CoreException('@%s annotation can\'t multiple', $name);
 
         if ( is_array($item) )
             foreach($item as $one) self::validateItemOne($one, $name, $meta);
@@ -138,7 +138,7 @@ class Annotations {
             foreach($meta['require'] as $req){
 
                 if ( !isset($item[$req]) ){
-                    throw CoreException::formated('[@%s annotation]: `%s` field is required', $name, $req);
+                    throw new CoreException('[@%s annotation]: `%s` field is required', $name, $req);
                 }
             }
         }
@@ -168,18 +168,18 @@ class Annotations {
                     case 'number': {
 
                         if ( !filter_var($value, FILTER_VALIDATE_INT) || !filter_var($value, FILTER_VALIDATE_FLOAT))
-                            throw CoreException::formated('[%s annotation]: `%s` field must be INTEGER or DOUBLE type', $name, $nm);
+                            throw new CoreException('[%s annotation]: `%s` field must be INTEGER or DOUBLE type', $name, $nm);
 
                     } break;
                     case 'integer':
                     case 'long':
                     case 'int': {
                         if ( !is_numeric($value) )
-                            throw CoreException::formated('[%s annotation]: `%s` field must be INTEGER type', $name, $nm);
+                            throw new CoreException('[%s annotation]: `%s` field must be INTEGER type', $name, $nm);
                     } break;
                     case 'string': {
                         if (is_numeric($value[0]))
-                            throw CoreException::formated('[%s annotation]: `%s` field must be STRING type', $name, $nm);
+                            throw new CoreException('[%s annotation]: `%s` field must be STRING type', $name, $nm);
 
                     } break;
                     case 'bool':
@@ -188,7 +188,7 @@ class Annotations {
                             || $value === '0' || $value === '1'
                             || $value === 'true' || $value === 'false')){
 
-                            throw CoreException::formated('[%s annotation]: `%s` field must be BOOLEAN type', $name, $nm);
+                            throw new CoreException('[%s annotation]: `%s` field must be BOOLEAN type', $name, $nm);
                         }
                     } break;
                     default: {
@@ -409,7 +409,7 @@ class Annotations {
 
         foreach($scopes as $scope){
             /*if ( self::$types[$scope][$type] )
-                throw CoreException::formated('Annotation @%s already registered in `%s` scope', $type, $scope);*/
+                throw new CoreException('Annotation @%s already registered in `%s` scope', $type, $scope);*/
 
             self::$types[ $scope ][ $type ] = $info;
         }
@@ -425,4 +425,4 @@ Annotations::registerAnnotation('package', array(
 ), 'class');
 
 if ( extension_loaded('eaccelerator') && (bool)ini_get('eaccelerator.enable') )
-    throw CoreException::formated('Can`t use annotations with eAccelerator, Rerflections::getDocComments() not supports :(');
+    throw new CoreException('Can`t use annotations with eAccelerator, Rerflections::getDocComments() not supports :(');

@@ -2,8 +2,10 @@
 namespace regenix\validation;
 
 use regenix\lang\CoreException;
+use regenix\lang\File;
 use regenix\lang\String;
 use regenix\libs\I18n;
+use regenix\mvc\UploadFile;
 
 class ValidationException extends CoreException {}
 
@@ -15,7 +17,7 @@ abstract class Validator {
     /** @var array */
     protected $errors;
 
-    protected function __construct($entity){
+    public function __construct($entity){
         $this->entity = $entity;
     }
 
@@ -24,9 +26,12 @@ abstract class Validator {
      * example: getValue('name'), getValue('address.name')
      * @param $attribute
      * @throws ValidationException
-     * @return
+     * @return mixed|null
      */
     protected function getAttribute($attribute){
+        if (!$attribute)
+            return $this->entity;
+
         $attribute = str_replace('->', '.', $attribute);
         $attrs     = explode('.', $attribute);
 
@@ -59,6 +64,30 @@ abstract class Validator {
         return $validation;
     }
 
+    protected function validateEntity($message, ValidationResult $validation){
+        $validation->message($message);
+
+        if (!$validation->validate($this->entity)){
+            $this->errors[] = array(
+                'attr' => null,
+                'validator' => $validation
+            );
+        }
+        return $validation;
+    }
+
+    protected function validateAny($value, $message){
+        $validator = new ValidationRequiresResult();
+        $validator->message($message);
+
+        if (!$validator->validate($value)){
+            $this->errors[] = array(
+                'attr' => null,
+                'validator' => $validator
+            );
+        }
+    }
+
     protected function isEmpty($attribute){
         return $this->validateAttribute($attribute, 'validation.result.isEmpty', new ValidationIsEmptyResult());
     }
@@ -75,30 +104,43 @@ abstract class Validator {
         return $this->validateAttribute($attribute, 'validation.result.maxLength', new ValidationMaxLengthResult($max));
     }
 
+    protected function maxFileSize($attribute, $size){
+        return $this->validateAttribute($attribute, 'validation.result.maxFileSize', new ValidationFileMaxSizeResult($size));
+    }
+
+    protected function isFileType($attribute, array $exts){
+        return $this->validateAttribute($attribute, 'validation.result.isFileType', new ValidationFileTypeResult($exts));
+    }
+
+    protected function matches($attribute, $pattern){
+        return $this->validateAttribute($attribute, 'validation.result.matches', new ValidationMatchesResult($pattern));
+    }
+
+    protected function checkFilter($attribute, $filter){
+        return $this->validateAttribute($attribute, 'validation.result.filter', new ValidationFilterResult($filter));
+    }
+
     public function clear(){
         $this->errors = array();
     }
 
     /**
-     * @param $object
      * @param bool $method
      * @throws ValidationException
      * @param bool|string $method
      * @return Validator
-     * @throws ValidationException
      */
-    public static function validate($object, $method = false){
-        $self = new static($object);
-        $self->clear();
+    public function validate($method = false){
+        $this->clear();
 
         $methods = array();
         if ($method){
-            $method = new \ReflectionMethod($self, (string)$method);
+            $method = new \ReflectionMethod($this, (string)$method);
             $method->setAccessible(true);
 
             $methods = array($method);
         } else {
-            $reflection = new \ReflectionClass($self);
+            $reflection = new \ReflectionClass($this);
             foreach($reflection->getMethods() as $method){
                 if (!$method->isStatic() && $method->getDeclaringClass()->getName() === $reflection->getName()){
                     $methods[] = $method;
@@ -109,9 +151,9 @@ abstract class Validator {
 
         /** @var $method \ReflectionMethod */
         foreach($methods as $method){
-            $method->invoke($self);
+            $method->invoke($this);
         }
-        return $self;
+        return $this;
     }
 
     /**
@@ -206,5 +248,70 @@ class ValidationMaxLengthResult extends ValidationResult {
 
     public function check($value){
         return strlen((string)$value) <= $this->max;
+    }
+}
+
+class ValidationMatchesResult extends ValidationResult {
+
+    private $pattern;
+
+    public function __construct($pattern){
+        $this->pattern = $pattern;
+    }
+
+    public function check($value){
+        return preg_match($this->pattern, $value);
+    }
+}
+
+class ValidationFilterResult extends ValidationResult {
+
+    private $filter;
+
+    public function __construct($filter){
+        $this->filter = $filter;
+    }
+
+    public function check($value){
+        return filter_var($value, $this->filter) !== false;
+    }
+}
+
+class ValidationFileMaxSizeResult extends ValidationResult {
+
+    private $size;
+
+    public function __construct($size){
+        $this->size = $size;
+    }
+
+    public function check($value){
+        $file = $value;
+        if (!($file instanceof File))
+            return false;
+
+        return $file->length() <= $this->size;
+    }
+}
+
+class ValidationFileTypeResult extends ValidationResult {
+
+    private $types;
+
+    public function __construct(array $types){
+        $this->types = array_map('strtolower', $types);
+    }
+
+    public function check($value){
+        $file = $value;
+        if (!($file instanceof File))
+            return false;
+
+        $ext = strtolower($file->getExtension());
+        if ($file instanceof UploadFile){
+            $ext = strtolower($file->getMimeExtension());
+        }
+
+        return in_array($ext, $this->types, true);
     }
 }

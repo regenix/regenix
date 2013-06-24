@@ -21,7 +21,7 @@ abstract class ModuleController extends Controller {
         $class  = explode('\\', get_class($this), 3);
         $this->module = Module::$modules[$class[1]];
         if (!$this->module)
-            throw CoreException::formated('Can`t find module for %s ModuleController', $class);
+            throw new CoreException('Can`t find module for %s ModuleController', $class);
         
         TemplateLoader::setAssetPath('/modules/' . $this->module->uid . '~' . $this->module->version . '/assets/');
         TemplateLoader::setControllerNamespace('.modules.' . $this->module->uid . '.controllers.');

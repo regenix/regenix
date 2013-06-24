@@ -4,6 +4,7 @@ namespace regenix\libs;
 use Imagine\Gd\Imagine;
 use Imagine\Image\Box;
 use regenix\Application;
+use regenix\Regenix;
 use regenix\lang\File;
 use regenix\lang\IClassInitialization;
 

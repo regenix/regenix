@@ -295,7 +295,7 @@ class WSRequest {
                 }
 
                 if ($this->body && sizeof($data)){
-                    throw CoreException::formated('Can`t send body with post parameters');
+                    throw new CoreException('Can`t send body with post parameters');
                 }
 
                 if ($this->body)
@@ -314,7 +314,7 @@ class WSRequest {
                     curl_setopt($ch, CURLOPT_URL, $this->url . '?' . $query);
             } break;
             default: {
-                throw CoreException::formated('WS lib `%s` http method not support', $method);
+                throw new CoreException('WS lib `%s` http method not support', $method);
             }
         }
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, strtoupper($method));
@@ -431,7 +431,7 @@ class WSResponse {
         $result = json_decode($this->body, true);
         $last = json_last_error();
         if ($last){
-            throw CoreException::formated('Can`t parse JSON data');
+            throw new CoreException('Can`t parse JSON data');
         }
         return $result;
     }

@@ -13,9 +13,13 @@ class RESTController extends Controller{
      * @param $result
      */
     protected function onReturn($result){
-        if ($this->hasErrors())
-            $this->renderJson(array('status' => 'fail', 'data' => $this->errors));
-        else
+        if ($this->hasErrors()){
+            $errors = array();
+            foreach($this->validators as $validator){
+                array_push($errors, $validator->getErrors());
+            }
+            $this->renderJson(array('status' => 'fail', 'data' => $errors));
+        } else
             $this->renderJson(array('status' => 'success', 'data' => $result));
     }
 
@@ -25,25 +29,9 @@ class RESTController extends Controller{
      */
     protected function onHttpException(HttpException $e){
         if ($e->getStatus() === HttpException::E_NOT_FOUND)
-            $this->addError('not_found');
+            $this->renderJson(array('status' => 'success', 'message' => $e->getMessage(), 'data' => null));
         else
-            $this->addError($e->getMessage());
-
-        $this->onReturn(null);
-    }
-
-    /**
-     * @param string $message
-     */
-    protected function addError($message){
-        $this->errors[] = $message;
-    }
-
-    /**
-     * @return bool
-     */
-    protected function hasErrors(){
-        return sizeof($this->errors) > 0;
+            $this->renderJson(array('status' => 'error', 'message' => $e->getMessage()));
     }
 
     /**

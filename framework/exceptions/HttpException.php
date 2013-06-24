@@ -32,18 +32,7 @@ class HttpException extends CoreException {
 
     public function __construct($status, $message = ''){
         $this->status = $status;
-        parent::__construct($message);
-    }
-
-    private static function _formated($status, $message = '', array $args = array()){
-        return new static($status, String::formatArgs($message, $args));
-    }
-
-    public static function formated($status, $message = ''){
-        $args = array();
-        if (func_num_args() > 2) $args = array_slice(func_get_args(), 2);
-
-        return static::_formated($message, $args);
+        parent::__construct(String::formatArgs($message, array_slice(func_get_args(), 2)));
     }
 
     /** @return int */

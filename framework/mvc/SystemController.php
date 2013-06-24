@@ -3,6 +3,7 @@ namespace regenix\mvc;
 
 use regenix\libs\Captcha;
 use regenix\libs\I18n;
+use regenix\libs\ImageUtils;
 
 class SystemController extends Controller {
 

@@ -31,10 +31,10 @@ class Repository implements IClassInitialization{
     protected $env;
 
 
-    public function __construct(array $deps){
-        $this->deps = $deps;
+    public function __construct($deps){
+        $this->deps = (array)$deps;
         if ($deps['repository']){
-            //$this->setOrigin(Origin::createOriginByAddress($deps['repository']));
+            $this->setOrigin(Origin::createOriginByAddress($deps['repository']));
         }
     }
 
@@ -138,7 +138,7 @@ class Repository implements IClassInitialization{
                     $result[$group][$version]['deps'][$gr] = $dep['version'];
                     $this->_getAllDependencies($env, $gr, $dep['version'], $result);
                 } elseif ($check){
-                    throw CoreException::formated('Can`t find `%s/%s/%s` dependency, please run in console `regenix deps update`',
+                    throw new CoreException('Can`t find `%s/%s/%s` dependency, please run in console `regenix deps update`',
                         $env, $gr, $pattern['version']);
                 } else {
                     $result[$gr][$pattern['version']] = array();
@@ -162,7 +162,7 @@ class Repository implements IClassInitialization{
             if ($dep){
                 $this->_getAllDependencies($env, $group, $dep['version'], $result, $check);
             } elseif ($check){
-                throw CoreException::formated('Can`t find `%s/%s/%s` dependency, please run in console `regenix deps update`',
+                throw new CoreException('Can`t find `%s/%s/%s` dependency, please run in console `regenix deps update`',
                     $env, $group, $patternVersion['version']);
             } else {
                 $result[$group][$patternVersion['version']] = array();

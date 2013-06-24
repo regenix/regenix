@@ -438,6 +438,7 @@ class RegenixTemplate {
         ob_end_clean();
         $content = str_replace('%__BLOCK_content__%', $content, $this->blocks['content']);
         foreach($this->blocks as $name => $block){
+            $name = strtolower($name);
             if ($name != 'content'){
                 $content = str_replace('%__BLOCK_'.$name.'__%', $block, $content);
             }
@@ -463,9 +464,9 @@ class RegenixGetTag extends RegenixTemplateTag {
 
     public function call($args, RegenixTemplate $ctx){
         if (isset($args['default']))
-            $ctx->blocks[$args['_arg']] = $args['default'];
+            $ctx->blocks[strtolower($args['_arg'])] = $args['default'];
 
-        return '%__BLOCK_' . $args['_arg'] . '__%';
+        return '%__BLOCK_' . strtolower($args['_arg']) . '__%';
     }
 }
 
@@ -477,8 +478,9 @@ class RegenixSetTag extends RegenixTemplateTag {
 
     public function call($args, RegenixTemplate $ctx){
         foreach($args as $key => $value){
+            $key = strtolower($key);
             if ($key === 'content')
-                throw CoreException::formated('Block `content` can not be used');
+                throw new CoreException('Block `content` can not be used');
 
             $ctx->blocks[$key] = $value;
         }
@@ -597,7 +599,7 @@ class RegenixVariable {
             $this->var = call_user_func_array($callback, $args);
             return $this->var;
         } else
-            throw CoreException::formated('Template `%s()` modifier not found', $name);
+            throw new CoreException('Template `%s()` modifier not found', $name);
     }
 }
 }

@@ -1,14 +1,20 @@
 <?php
 
-namespace regenix\libs;
+namespace regenix\libs {
 
 use regenix\lang\CoreException;
 use regenix\lang\IClassInitialization;
 use regenix\mvc\MIMETypes;
+use regenix\mvc\Request;
+use regenix\mvc\RequestBody;
+use regenix\mvc\RequestQuery;
 use regenix\mvc\Response;
 use regenix\mvc\Session;
 use regenix\mvc\providers\ResponseProvider;
 use kcaptcha\KCaptcha;
+use regenix\validation\ValidationRequiresResult;
+use regenix\validation\ValidationResult;
+use regenix\validation\Validator;
 
 /**
  * TODO: add options feature
@@ -63,10 +69,10 @@ class Captcha implements IClassInitialization {
 
     public static function initialize(){
         if (!extension_loaded('gd'))
-            throw CoreException::formated('Captcha feature needs installed and enabled `GD2` extension');
+            throw new CoreException('Captcha feature needs installed and enabled `GD2` extension');
 
         if (!class_exists('\\kcaptcha\\KCaptcha'))
-            throw CoreException::formated('KCaptcha vendor library not found, `vendor/kcaptcha/` not found');
+            throw new CoreException('KCaptcha vendor library not found, `vendor/kcaptcha/` not found');
 
         ResponseProvider::register(ResponseCaptchaProvider::type);
     }
@@ -108,8 +114,40 @@ class ResponseCaptchaProvider extends ResponseProvider {
     public function render(){
         /** @var $captcha Captcha */
         $captcha = $this->response->getEntity();
-        
+
         $img = $captcha->getImage();
         imagejpeg($img);
     }
+}
+
+class CaptchaValidator extends Validator {
+
+    public function __construct($entity = null){
+        $request = Request::current();
+        if ($request->isMethod('GET'))
+            $word = RequestQuery::current()->get('captcha_word');
+        else {
+            $body = new RequestBody();
+            $word = $body->asQuery()->get('captcha_word');
+        }
+
+        if ($entity == null)
+            $entity = $word;
+
+        parent::__construct($entity);
+    }
+
+    protected function main(){
+        $this->validateEntity('validation.result.captcha', new ValidationCaptchaResult());
+    }
+}
+
+class ValidationCaptchaResult extends ValidationResult {
+
+    public function check($value){
+        $captcha = Captcha::current();
+        return $captcha->isValid($value);
+    }
+}
+
 }

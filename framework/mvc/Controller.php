@@ -16,6 +16,7 @@ use regenix\mvc\route\Router;
 use regenix\mvc\template\TemplateLoader;
 use regenix\lang\String;
 use regenix\mvc\MIMETypes;
+use regenix\validation\Validator;
 
 abstract class Controller extends StrictObject {
 
@@ -73,6 +74,9 @@ abstract class Controller extends StrictObject {
      * @var array[string, any]
      */
     public $routeArgs = array();
+
+    /** @var Validator[] */
+    protected $validators = array();
 
     /**
      * @var bool
@@ -136,13 +140,13 @@ abstract class Controller extends StrictObject {
     
     public function callAfter(){
         $this->onAfter();
-        if ($this->useSession){
-            $this->flash->touchAll();
-        }
     }
     
     public function callFinally(){
         $this->onFinally();
+        if ($this->useSession){
+            $this->flash->touchAll();
+        }
     }
 
     public function callReturn($result){
@@ -168,6 +172,28 @@ abstract class Controller extends StrictObject {
 
     final public function callHttpException(HttpException $e){
         $this->onHttpException($e);
+    }
+
+    /**
+     * @param Validator $validator
+     * @param bool $method
+     * @return $this
+     */
+    protected function validate(Validator $validator, $method = false){
+        $validator->validate($method);
+        $this->validators[] = $validator;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    protected function hasErrors(){
+        foreach($this->validators as $validator){
+            if ($validator->hasErrors())
+                return true;
+        }
+        return false;
     }
 
     /**
@@ -216,11 +242,11 @@ abstract class Controller extends StrictObject {
      */
     public function redirect($action, array $args = array(), $permanent = false){
         if (strpos($action, '.') === false)
-            $action = get_class($this) . '.' . $action;
+            $action = '.' . get_class($this) . '.' . $action;
 
         $url = Router::path($action, $args, 'GET');
         if ($url === null)
-            throw CoreException::formated('Can`t reverse url for action "%s(%s)"',
+            throw new CoreException('Can`t reverse url for action "%s(%s)"',
                 $action, implode(', ', array_keys($args)));
 
         $this->redirectUrl($url, $permanent);
@@ -289,6 +315,12 @@ abstract class Controller extends StrictObject {
         $this->put("flash", $this->flash);
         $this->put("session", $this->session);
         $this->put("request", $this->request);
+
+        $errors = array();
+        foreach($this->validators as $validator){
+            $errors = array_merge($errors, $validator->getErrors());
+        }
+        $this->put("errors", $errors);
         
         $template = template\TemplateLoader::load($template);
         $template->putArgs( $this->renderArgs );

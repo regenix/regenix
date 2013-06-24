@@ -39,7 +39,7 @@ abstract class Widget extends StrictObject
         $uid   = str_replace('\\', '.', get_class($this));
         if (String::startsWith($uid, 'widgets.'))
             $uid = substr($uid, 8);
-        elseif (String::startsWith($uid, 'framework.widgets.'))
+        elseif (String::startsWith($uid, 'regenix.widgets.'))
             $uid = substr($uid, 18);
 
         $this->uid = $uid;
@@ -112,7 +112,7 @@ abstract class Widget extends StrictObject
         else if (class_exists($extClass = $class . 'Widget'))
             return new $extClass($args);
         else
-            throw WidgetNotFoundException::formated('Widget "%s" not found', $uid);
+            throw new WidgetNotFoundException('Widget "%s" not found', $uid);
     }
 
     /** @var array */

@@ -190,7 +190,7 @@ final class Cache implements IClassInitialization {
     /**
      * @param int $driver
      * @param array $config
-     * @throws static
+     * @throws \regenix\lang\CoreException
      */
     public static function setDriver($driver = self::DRIVER_APC, array $config = array()){
         $config = array_merge(self::$defaultConfig, $config);
@@ -219,7 +219,7 @@ final class Cache implements IClassInitialization {
                 $mem = new SHMObject((string)$config['id'], (int)$config['size'], (int)$config['maxsize']);
             } break;
             default: {
-               throw CoreException::formated('Unknown cache driver type: #%s', $driver);
+               throw new CoreException('Unknown cache driver type: #%s', $driver);
             }
         }
         self::$mem = $mem;
@@ -257,7 +257,7 @@ final class Cache implements IClassInitialization {
                         self::setDriver(self::DRIVER_NONE);
                 } break;
                 default: {
-                    throw CoreException::formated('Unknown cache driver type: #%s', $driver);
+                    throw new CoreException('Unknown cache driver type: #%s', $driver);
                 }
             }
         }

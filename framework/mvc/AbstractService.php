@@ -56,19 +56,19 @@ abstract class AbstractService extends StrictObject {
     private static $services = array();
 
     public function beginTransaction(){
-        throw CoreException::formated('Transactions are not supported');
+        throw new CoreException('Transactions are not supported');
     }
 
     public function inTransaction(){
-        throw CoreException::formated('Transactions are not supported');
+        throw new CoreException('Transactions are not supported');
     }
 
     public function commit(){
-        throw CoreException::formated('Transactions are not supported');
+        throw new CoreException('Transactions are not supported');
     }
 
     public function rollback(){
-        throw CoreException::formated('Transactions are not supported');
+        throw new CoreException('Transactions are not supported');
     }
 
     /**
@@ -215,7 +215,7 @@ abstract class AbstractService extends StrictObject {
     public function reload(AbstractActiveRecord $object, array $fields = array()){
         $id = $this->getId($object);
         if ( !$id )
-            throw CoreException::formated('Can`t reload non-exist document');
+            throw new CoreException('Can`t reload non-exist document');
 
         $data = $this->findDataById($id, $fields);
         if ( $data ){
@@ -225,13 +225,13 @@ abstract class AbstractService extends StrictObject {
             return false;
     }
 
-    public function __callGetter(AbstractActiveRecord $object, $field){
+    public function &__callGetter(AbstractActiveRecord $object, $field){
         $meta  = $this->getMeta();
         $info  = $meta['fields'][$field];
         if (!$info)
-            throw CoreException::formated('Property `%s` not defined in `%s` class', $field, get_class($this));
+            throw new CoreException('Property `%s` not defined in `%s` class', $field, get_class($this));
 
-        $value = $object->__data[$field];
+        $value =& $object->__data[$field];
 
         if ( $info['ref'] && $info['ref']['lazy'] ){
             if ( $info['is_array'] ){
@@ -265,6 +265,12 @@ abstract class AbstractService extends StrictObject {
                 }
             }
         }
+
+        if ($info['getter']){
+            $method = 'get' . $field;
+            $value = $object->{$method}($value);
+        }
+
         return $value;
     }
 
@@ -315,7 +321,7 @@ abstract class AbstractService extends StrictObject {
             $field = $idField['field'];
             $object->__data[$field] = $this->typedFetch($id, $idField);
         } else
-            throw CoreException::formated('Document `%s` has no @id field', $meta['name']);
+            throw new CoreException('Document `%s` has no @id field', $meta['name']);
     }
 
     protected static function registerModelMetaClass(&$info, \ReflectionClass $class, Annotations $classInfo){
@@ -345,7 +351,8 @@ abstract class AbstractService extends StrictObject {
                 'lazy' => $property->get('ref')->getBoolean('$lazy'),
                 'small' => $property->get('ref')->getBoolean('$small')
             );
-            if ( !String::startsWith('models\\', $cur['type']) )
+
+            if ($cur['type'][0] !== '\\' && !String::startsWith('models\\', $cur['type']) )
                 $cur['type'] = 'models\\' . $cur['type'];
         }
 
@@ -534,7 +541,7 @@ abstract class ActiveRecordCursor implements \Iterator {
 class QueryException extends CoreException {
 
     public function __construct($message){
-        parent::__construct('Query build error: ' . $message);
+        parent::__construct('Query build error: ' . String::formatArgs($message, array_slice(func_get_args(), 1)));
     }
 }
 
@@ -557,7 +564,7 @@ abstract class AbstractQuery {
 
     public function field($name){
         if (!($meta = $this->meta['fields'][$name]))
-            throw QueryException::formated('field `%s` not exists in `%s` document type', $name, $this->service->getModelClass());
+            throw new QueryException('field `%s` not exists in `%s` document type', $name, $this->service->getModelClass());
 
         $this->stackField = $name;
         return $meta['column'];
@@ -567,7 +574,7 @@ abstract class AbstractQuery {
         $name = $this->stackField;
         $this->stackField = '';
         if (!$name){
-            throw QueryException::formated('field is not set');
+            throw new QueryException('field is not set');
         }
 
         $column = $this->meta['fields'][$name]['column'];
@@ -643,7 +650,7 @@ abstract class AbstractQuery {
     }
 
     protected function filterCustomOperator($field, $value, $operator){
-        throw QueryException::formated('unknown filter operator - "%s %s"', $field, $operator);
+        throw new QueryException('unknown filter operator - "%s %s"', $field, $operator);
     }
 
     /**
@@ -656,7 +663,7 @@ abstract class AbstractQuery {
     public function filter(){
         $values = func_get_args();
         if (sizeof($values) % 2 !== 0)
-            throw QueryException::formated('number of fields and values ​​are not the same');
+            throw new QueryException('number of fields and values ​​are not the same');
 
         $field = '';
         foreach($values as $i => $value){

@@ -1,7 +1,7 @@
 {extends 'regenix/test/base'}
 
 {if $detail}
-    {include 'framework/test/Tester/detail.html'}
+    {include 'regenix/test/Tester/detail.html'}
 {else}
     <h2>Status: <b>{$result['result'] ? 'SUCCESS' : 'FAIL'}</b></h2>
     <div id="detail">

@@ -82,13 +82,13 @@ class RegenixTemplate extends BaseTemplate {
         public function call($args, RegenixTPL $ctx){
             $action = $args['_arg'];
             /*if (!$action)
-                throw CoreException::formated('Action argument of reverse is empty');*/
+                throw new CoreException('Action argument of reverse is empty');*/
 
             unset($args['_arg']);
             $url = Router::path($action ? TemplateLoader::$CONTROLLER_NAMESPACE . $action : null, $args);
 
             if ($url === null)
-                throw CoreException::formated('Can`t reverse url for action "%s(%s)"',
+                throw new CoreException('Can`t reverse url for action "%s(%s)"',
                     $action, implode(', ', array_keys($args)));
 
             return $url;
@@ -106,7 +106,7 @@ class RegenixTemplate extends BaseTemplate {
             $file = '/public/' . $app->getName() . '/' . $args['_arg'];
             if (APP_MODE_STRICT){
                 if (!file_exists(ROOT . $file))
-                    throw CoreStrictException::formated('File `%s` not found, at `file` tag', $file);
+                    throw new CoreStrictException('File `%s` not found, at `file` tag', $file);
             }
 
             return $file;
@@ -169,7 +169,7 @@ class RegenixTemplate extends BaseTemplate {
         public function call($args, RegenixTPL $ctx){
             $app =  Regenix::app();
             if (!$app->config->getBoolean('captcha.enable'))
-                throw CoreException::formated('Captcha is not enable in configuration, needs `captcha.enable = on`');
+                throw new CoreException('Captcha is not enable in configuration, needs `captcha.enable = on`');
 
             return Captcha::URL;
         }
@@ -232,7 +232,7 @@ class RegenixTemplate extends BaseTemplate {
             if ($tpl)
                 return $tpl;
 
-            throw CoreException::formated('Unknown html asset for `%s`', $file);
+            throw new CoreException('Unknown html asset for `%s`', $file);
         }
     }
 
@@ -280,7 +280,7 @@ namespace {
 
                 return $result;
             } else
-                throw CoreException::formated('TPL class may only be used in templates');
+                throw new CoreException('TPL class may only be used in templates');
         }
     }
 

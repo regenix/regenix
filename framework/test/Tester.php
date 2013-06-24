@@ -15,7 +15,7 @@ class Tester extends Controller {
 
         if ($moduleWithVersion){
             if (!is_dir(ROOT . 'modules/' . $moduleWithVersion . '/'))
-                throw CoreException::formated('Module `%s` not found', $moduleWithVersion);
+                throw new CoreException('Module `%s` not found', $moduleWithVersion);
 
             SystemCache::removeAll();
             ClassScanner::addClassRelativePath('modules/' . $moduleWithVersion);

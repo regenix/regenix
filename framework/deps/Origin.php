@@ -72,7 +72,7 @@ abstract class Origin {
     public static function register($originClass){
         $reflect = new \ReflectionClass($originClass);
         if (!$reflect->isSubclassOf(Origin::type)){
-            throw CoreException::formated('Repository origin must be extends `%s` class', Origin::type);
+            throw new CoreException('Repository origin must be extends `%s` class', Origin::type);
         }
 
         self::$originTypes[] = $originClass;
@@ -143,9 +143,9 @@ class GithubOrigin extends Origin {
             return $response->asJson();
         } else {
             if ($response->status === 404){
-                throw HttpException::formated(404, 'Not found `%s` resource in repository', $path);
+                throw new HttpException(404, 'Not found `%s` resource in repository', $path);
             } else
-                throw ConnectException::formated("Can`t download `%s` resource from repository", $response->url);
+                throw new ConnectException("Can`t download `%s` resource from repository", $response->url);
         }
     }
 
@@ -204,7 +204,7 @@ class FileOrigin extends Origin {
             $data = file_get_contents($this->dir . $this->env . '/' . $path);
             return json_decode($data, true);
         } catch (\Exception $e){
-            throw ConnectException::formated("Can`t download `%s` resource from repository", $this->dir . $path);
+            throw new ConnectException("Can`t download `%s` resource from repository", $this->dir . $path);
         }
     }
 

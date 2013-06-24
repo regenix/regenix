@@ -98,10 +98,6 @@ class CoreException extends \Exception {
         parent::__construct(String::formatArgs($message, $args));
     }
 
-    public static function formated($message){
-        return new static(func_get_args());
-    }
-
     public function getSourceLine(){
         return $this->getLine();
     }
@@ -442,7 +438,7 @@ class ClassScanner {
             } else {
                 self::$metaInfo = $meta;
             }
-
+            self::$scanned[$hash] = true;
         } else
         foreach(self::$paths as $path){
             $hash    = sha1($path);
@@ -649,12 +645,12 @@ class ClassScanner {
     }
 
     /**
+     * @throws CoreException
      * @return array
-     * @throws static
      */
     public static function getDebugUseClasses(){
         if (!self::$debug)
-            throw CoreException::formated('Unable to get a list of classes is not used in debug mode');
+            throw new CoreException('Unable to get a list of classes is not used in debug mode');
 
         return self::$debugUseClasses;
     }
@@ -965,7 +961,7 @@ abstract class String {
 }
 
 
-class ArrayTyped {
+class ArrayTyped implements \Iterator {
 
     protected $data;
 
@@ -1052,16 +1048,36 @@ class ArrayTyped {
         $value = $this->data[$name];
         return isset($value) ? (double)$value : (double)$def;
     }
+
+    public function current(){
+        return current($this->data);
+    }
+
+    public function next(){
+        next($this->data);
+    }
+
+    public function key(){
+        return key($this->data);
+    }
+
+    public function valid(){
+        return key($this->data) !== null;
+    }
+
+    public function rewind(){
+        reset($this->data);
+    }
 }
 
 abstract class StrictObject {
 
     public function __set($name, $value){
-        throw CoreException::formated('Property `%s` not defined in `%s` class', $name, get_class($this));
+        throw new CoreException('Property `%s` not defined in `%s` class', $name, get_class($this));
     }
 
     public function __get($name){
-        throw CoreException::formated('Property `%s` not defined in `%s` class', $name, get_class($this));
+        throw new CoreException('Property `%s` not defined in `%s` class', $name, get_class($this));
     }
 }
 
@@ -1310,13 +1326,13 @@ class File extends StrictObject {
 
     /**
      * @param string $mode
-     * @return resource
      * @throws FileIOException
-     * @throws static
+     * @throws CoreException
+     * @return resource
      */
     public function open($mode){
         if ($this->handle)
-            throw CoreException::formated('File "%s" already open, close the file before opening', $this->getPath());
+            throw new CoreException('File "%s" already open, close the file before opening', $this->getPath());
 
         $handle = fopen($this->path, $mode);
         if (!$handle)
@@ -1456,5 +1472,9 @@ class File extends StrictObject {
 
     public function __toString() {
         return String::format( 'io\\File("%s")', $this->path );
+    }
+
+    public static function sanitize($fileName){
+        return preg_replace('/[^a-zA-Z0-9-_\.]/', '', $fileName);
     }
 }

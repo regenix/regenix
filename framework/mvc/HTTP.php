@@ -3,6 +3,7 @@
 namespace regenix\mvc;
 
 use regenix\Regenix;
+use regenix\lang\File;
 use regenix\lang\StrictObject;
 use regenix\lang\CoreException;
 use regenix\lang\ArrayTyped;
@@ -57,12 +58,14 @@ class Request extends StrictObject {
         $req = new Request($headers);
         $req->setMethod($_SERVER['REQUEST_METHOD']);
         $req->setUri($_SERVER['REQUEST_URI']);
-        $req->host = $_SERVER['HTTP_HOST'];
         $req->userAgent = $_SERVER['HTTP_USER_AGENT'];
         $req->referer   = $_SERVER['HTTP_REFERER'];
-        $req->port      = (int)$_SERVER['SERVER_PORT'];
-        $req->protocol  = 'http'; // TODO //$_SERVER['SERVER_PROTOCOL'];
-        
+        $req->protocol  = $_SERVER['HTTPS'] ? 'https' : 'http';
+
+        $host = explode(':', $_SERVER['HTTP_HOST']);
+        $req->host = $host[0];
+        $req->port = $host[1] ? (int)$host[1] : ($_SERVER['HTTPS'] ? 443 : 80);
+
         $req->currentUrl = URL::buildFromUri( $req->host, $req->uri, $req->protocol, $req->port );
         return $req;
     }
@@ -249,9 +252,10 @@ class Request extends StrictObject {
         } else
             return false;
     }
-    
+
     /**
-     * @param string|URL $url
+     * @param $baseUrl
+     * @internal param \regenix\mvc\URL|string $url
      * @return boolean
      */
     public function isBase($baseUrl){
@@ -259,6 +263,23 @@ class Request extends StrictObject {
             $baseUrl = new URL($baseUrl);
         }
         return $this->currentUrl->constraints($baseUrl);
+    }
+
+    /**
+     * @param string $domain
+     * @param bool $cutWWW
+     * @return bool
+     */
+    public function isDomain($domain, $cutWWW = true){
+        $host = $this->currentUrl->getHost();
+        if ($cutWWW){
+            if (String::startsWith($host, 'www.'))
+                $host = substr($host, 4);
+
+            if (String::startsWith($domain, 'www.'))
+                $domain = substr($domain, 4);
+        }
+        return (strtolower($host) === strtolower($domain));
     }
 
     private static $instance;
@@ -554,7 +575,7 @@ class Cookie extends StrictObject {
      * @param null|int|string $expires
      */
     public function put($name, $value, $expires = null){
-        setcookie($name, $value, $expires ? Time::parseDuration($expires) : $expires );
+        setcookie($name, $value, $expires ? Time::parseDuration($expires) : $expires, '/');
         $this->data = new ArrayTyped($_COOKIE);
     }
 
@@ -870,6 +891,192 @@ interface RequestBindValue {
     public function onBindValue($value);
 }
 
+class UploadFile extends File {
+
+    protected $meta;
+    protected $uploadName;
+
+    /** @var File */
+    protected $uploadFile;
+
+    public function __construct($uploadName, $meta){
+        $this->uploadName = $uploadName;
+        $this->meta       = $meta;
+
+        parent::__construct($meta['tmp_name']);
+    }
+
+    /**
+     * @param $uploadUrl
+     * @return \regenix\lang\File
+     * @return File
+     */
+    public static function buildFromUrl($uploadUrl){
+        $file = new File(ROOT . $uploadUrl);
+        return $file->isFile() ? $file : null;
+    }
+
+    /**
+     * @param $uploadUrl
+     */
+    public static function deleteFromUrl($uploadUrl){
+        $tmp = static::buildFromUrl($uploadUrl);
+        if ($tmp)
+            $tmp->delete();
+    }
+
+    /**
+     * get upload mime type
+     * @return string
+     */
+    public function getMimeType(){
+        return $this->meta['type'];
+    }
+
+    /**
+     * get extension by mime type
+     * @return string
+     */
+    public function getMimeExtension(){
+        return MIMETypes::getByMimeType($this->getMimeType());
+    }
+
+    /**
+     * Get user upload file name
+     * @param null $suffix
+     * @return mixed
+     */
+    public function getUserName($suffix = null){
+        return basename($this->meta['name'], $suffix);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUserNameWithoutExtension(){
+        return $this->getUserName('.' . $this->getUserExtension());
+    }
+
+    /**
+     * Get real extension
+     * @return string
+     */
+    public function getUserExtension(){
+        $tmp = new File($this->getUserName());
+        return $tmp->getExtension();
+    }
+
+    /**
+     * @return int
+     */
+    public function length(){
+        return $this->meta['size'];
+    }
+
+    /**
+     * Get uploaded file, after call doUpload...
+     * @return File
+     */
+    public function getUploadedFile(){
+        return $this->uploadFile;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUploadedPath(){
+        return $this->uploadFile ? $this->uploadFile->getPath() : '';
+    }
+
+    /**
+     * Get url of uploaded file
+     * @return string|null
+     */
+    public function getUploadedUrl(){
+        if ($this->uploadFile){
+            return static::convertToPathToUrl($this->uploadFile->getPath());
+        } else {
+            return null;
+        }
+    }
+
+    public static function convertToPathToUrl($path){
+        $src = str_replace(array('//', '///', '////', '/////'), '/', $path);
+        return str_replace(ROOT, '/', $src);
+    }
+
+    /**
+     * Move upload file to new filename
+     * @param $filename
+     * @return bool
+     */
+    protected function moveTo($filename){
+        return move_uploaded_file($this->getPath(), $filename);
+    }
+
+    /**
+     * @param string $prefix
+     * @param null|string $uploadPath
+     * @return bool
+     * @throws \regenix\lang\CoreException
+     */
+    public function doUpload($prefix = '', $uploadPath = null){
+        $uploadPath = $uploadPath ? $uploadPath : Regenix::app()->getPublicPath();
+
+        $ext = $this->getMimeExtension();
+        if (!$ext)
+            $ext = $this->getUserExtension();
+
+        $filename = File::sanitize($this->getUserNameWithoutExtension())
+            . md5($_SERVER["REMOTE_ADDR"] . $this->getUserName() . time())
+            . ($ext ? '.' . $ext : '');
+
+        $fullPath = new File($uploadPath . $prefix);
+        if (!$fullPath->isDirectory()){
+            if (!$fullPath->mkdirs()){
+                throw new CoreException('Can`t create upload dir for "%s" prefix', $prefix);
+            }
+        }
+
+        $this->uploadFile = new File($fullPath->getPath() . '/' . $filename);
+        return $this->moveTo($this->uploadFile->getPath());
+    }
+
+    /**
+     * @param $fileName
+     * @param string $prefix
+     * @param null $uploadPath
+     * @return bool
+     * @throws \regenix\lang\CoreException
+     */
+    public function doUploadToFile($fileName, $prefix = '', $uploadPath = null){
+        $uploadPath = $uploadPath ? $uploadPath : Regenix::app()->getPublicPath();
+
+        $ext = $this->getMimeExtension();
+        if (!$ext)
+            $ext = $this->getUserExtension();
+
+        $fullPath = new File($uploadPath . $prefix);
+        if (!$fullPath->isDirectory()){
+            if (!$fullPath->mkdirs()){
+                throw new CoreException('Can`t create upload dir for "%s" prefix', $prefix);
+            }
+        }
+
+        $this->uploadFile = new File($fullPath->getPath() . '/' . $fileName);
+        return $this->moveTo($fullPath->getPath() . '/' . $fileName);
+    }
+
+    /**
+     *
+     */
+    public function deleteUploaded(){
+        $file = $this->getUploadedFile();
+        if ($file)
+            $file->delete();
+    }
+}
+
 class RequestBody extends StrictObject {
 
     const type = __CLASS__;
@@ -888,6 +1095,52 @@ class RequestBody extends StrictObject {
     }
 
     /**
+     * @param $name
+     * @return UploadFile
+     */
+    public function getFile($name){
+        $meta = $_FILES[$name];
+
+        if ($meta){
+            return new UploadFile($name, $meta);
+        } else
+            return null;
+    }
+
+    /**
+     * @param string $prefix
+     * @return array
+     * @return UploadFile[]
+     */
+    public function getFiles($prefix){
+        $meta = $_FILES[$prefix];
+        if (!is_array($meta))
+            $meta = array($meta);
+
+        $result = array();
+        foreach($meta as $el){
+            $result[] = new UploadFile($prefix, $el);
+        }
+        return $result;
+    }
+
+    /**
+     * @return UploadFile[string]
+     */
+    public function getAllFiles(){
+        $result = array();
+        foreach($_FILES as $name => $meta){
+            if (is_array($meta)){
+                foreach($result as $el){
+                    $result[$name][] = new UploadFile($name, $el);
+                }
+            } else
+                $result[$name] = new UploadFile($name, $meta);
+        }
+        return $result;
+    }
+
+    /**
      * parse data as json
      * @return array
      */
@@ -901,9 +1154,14 @@ class RequestBody extends StrictObject {
      * @return ArrayTyped
      */
     public function asQuery(){
-        $result = array();
-        parse_str((string)$this->getData(), $result);
-        return new ArrayTyped($result);
+        return new ArrayTyped($_POST);
+    }
+
+    /**
+     * @return array
+     */
+    public function asArray(){
+        return $_POST;
     }
 
     /**
@@ -912,6 +1170,45 @@ class RequestBody extends StrictObject {
      */
     public function asString(){
         return (string)$this->getData();
+    }
+
+    /**
+     * @param $object
+     * @param string $prefix
+     * @param array $fields
+     * @param string $method - query or json
+     * @throws \regenix\lang\CoreException
+     * @throws \InvalidArgumentException
+     * @return object
+     */
+    public function appendTo(&$object, $fields = array(), $prefix = '', $method = 'query'){
+        $data = null;
+        switch($method){
+            case 'query': $data = $this->asQuery(); break;
+            case 'json' : $data = $this->asJson(); break;
+            default: {
+                throw new CoreException('Unknown method `%s` for appendTo', $method);
+            }
+        }
+
+        if (is_object($object)) {
+            $class = new \ReflectionClass($object);
+            foreach($data as $name => $value){
+                if ($fields && !in_array($name, $fields, true)) continue;
+                if ($prefix && !String::startsWith($name, $prefix)) continue;
+
+                $property = $prefix ? substr($name, strlen($prefix)) : $name;
+                if ($class->hasProperty($property)){
+                    $prop = $class->getProperty($property);
+                    if ($prop->isPublic() && !$prop->isStatic()){
+                        $prop->setValue($object, $value);
+                    }
+                }
+            }
+        } else
+            throw new \InvalidArgumentException('Argument 1 must be object');
+
+        return $object;
     }
 }
 
@@ -948,8 +1245,6 @@ class URL extends StrictObject {
      * @var string
      */
     private $path;
-
-
 
     /**
      *
@@ -1096,6 +1391,29 @@ class URL extends StrictObject {
         parse_str($query, $result);
 
         return $result;
+    }
+
+    /**
+     * Function: sanitize
+     * Returns a sanitized string, typically for URLs.
+     *
+     * Parameters:
+     *     $string - The string to sanitize.
+     *     $force_lowercase - Force the string to lowercase?
+     *     $anal - If set to *true*, will remove all non-alphanumeric characters.
+     */
+    public static function sanitize($string, $forceLowercase = true, $anal = false) {
+        $strip = array("~", "`", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "=", "+", "[", "{", "]",
+            "}", "\\", "|", ";", ":", "\"", "'", "&#8216;", "&#8217;", "&#8220;", "&#8221;", "&#8211;", "&#8212;",
+            "â€”", "â€“", ",", "<", ".", ">", "/", "?");
+        $clean = trim(str_replace($strip, "", strip_tags($string)));
+        $clean = preg_replace('/\s+/', "-", $clean);
+        $clean = ($anal) ? preg_replace("/[^a-zA-Z0-9]/", "", $clean) : $clean ;
+        return ($forceLowercase) ?
+            (function_exists('mb_strtolower')) ?
+                mb_strtolower($clean, 'UTF-8') :
+                strtolower($clean) :
+            $clean;
     }
 }
 
@@ -1288,6 +1606,15 @@ abstract class MIMETypes {
         }
 
         return self::$exts[strtolower( $ext )];
+    }
+
+    /**
+     * get extension by mimetype
+     * @param $mimeType
+     * @return string
+     */
+    public static function getByMimeType($mimeType){
+        return array_search(strtolower($mimeType), self::$exts);
     }
 
     /**

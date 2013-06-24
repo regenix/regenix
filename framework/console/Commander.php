@@ -42,15 +42,16 @@ class Commander implements IClassInitialization {
         $this->_registerCurrentapp();
     }
 
-    private function _registerapps(){
-        $dirs = scandir(Application::getSrcDir());
-        foreach ((array)$dirs as $dir){
-            if ($dir == '.' || $dir == '..') continue;
-            $this->apps[ $dir ] = new Application( $dir, false );
+    private function _registerApps(){
+        $path = new File(Application::getSrcDir());
+        foreach ($path->findFiles() as $path){
+            if ($path->isDirectory()){
+                $this->apps[ $path->getName() ] = new Application( $path, false );
+            }
         }
     }
 
-    private function _registerCurrentapp(){
+    private function _registerCurrentApp(){
         $tmpFile = new File(sys_get_temp_dir() . '/regenix/.current');
 
         if ($tmpFile->isFile()){
@@ -92,7 +93,7 @@ class Commander implements IClassInitialization {
 
         $command = $this->args[0];
         if (!$command || !self::$commands[$command]){
-            throw CoreException::formated('Command `%s` not found', $command);
+            throw new CoreException('Command `%s` not found', $command);
         }
 
         /*$method = $this->args[1];
@@ -102,7 +103,7 @@ class Commander implements IClassInitialization {
         /** @var $cmd ConsoleCommand */
         $cmd = self::$commands[$command];
         if (!method_exists($cmd, $method)){
-            throw CoreException::formated('Command method `%s %s` not found', $command, $method);
+            throw new CoreException('Command method `%s %s` not found', $command, $method);
         }
 
         $cmd->__loadInfo($method, $this->app, (array)array_slice($this->args, 1), (array)$this->options);
@@ -115,7 +116,7 @@ class Commander implements IClassInitialization {
         $reflection = new \ReflectionClass($commands);
         $group = $reflection->getConstant('GROUP');
         if (!$group)
-            throw CoreException::formated('Console commands GROUP can not empty');
+            throw new CoreException('Console commands GROUP can not empty');
 
         self::$commands[$group] = $commands;
     }

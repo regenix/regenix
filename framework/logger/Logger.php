@@ -49,7 +49,7 @@ abstract class Logger implements IClassInitialization {
             case 'info': return self::LEVEL_INFO;
             case 'debug': return self::LEVEL_DEBUG;
             default:
-                throw CoreException::formated('Logger level `%s` unknown', $level);
+                throw new CoreException('Logger level `%s` unknown', $level);
         }
     }
 
@@ -127,7 +127,7 @@ class LoggerDefaultHandler extends LoggerHandler {
 
         if (!$path->exists())
             if (!$path->mkdirs()){
-                throw CoreException::formated('Can`t create `%s` directory for logs', $path->getPath());
+                throw new CoreException('Can`t create `%s` directory for logs', $path->getPath());
             }
         $this->fp = fopen($file, 'a+');
     }

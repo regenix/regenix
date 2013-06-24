@@ -97,12 +97,12 @@ abstract class AbstractActiveRecord extends StrictObject
         $service = static::getService();
         $meta    = $service->getMeta();
         if ($meta['fields'][$name]['readonly'])
-            throw CoreException::formated('Property `%s` for read only, at `%s` class', $name, get_class($this));
+            throw new CoreException('Property `%s` for read only, at `%s` class', $name, get_class($this));
 
         $service->__callSetter($this, $name, $value, true);
     }
 
-    public function __get($name){
+    public function &__get($name){
         $service = static::getService();
         return $service->__callGetter($this, $name);
     }

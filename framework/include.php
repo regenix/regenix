@@ -54,6 +54,9 @@ abstract class Regenix {
     /** @var array */
     private static $profileLog = array();
 
+    /** @var array */
+    private static $externalApps = array();
+
     /**
      * Get current version of regenix framework
      * @return string
@@ -102,7 +105,7 @@ abstract class Regenix {
         set_include_path($rootDir);
         self::$tempPath = sys_get_temp_dir() . '/';
 
-        unset($_POST, $_GET, $_REQUEST);
+        unset($_GET, $_REQUEST);
 
         self::trace('Start add framework class path');
 
@@ -178,6 +181,25 @@ abstract class Regenix {
     }
 
     /**
+     * Add application from external directory
+     * @param $path
+     * @throws lang\CoreException
+     */
+    public static function addExternalApp($path){
+        if (self::$startTime){
+            throw new CoreException('Method addExternalApp() must be called to initialize the framework');
+        }
+        $path = str_replace('\\', '/', $path);
+        if (substr($path, -1) !== '/')
+            $path .= '/';
+
+        if (!is_dir($path))
+            die('Fatal error: Can\'t add external application from non-exists directory - "' . $path . '"');
+
+        self::$externalApps[$path] = $path;
+    }
+
+    /**
      * Get current application
      * @return Application
      */
@@ -225,7 +247,7 @@ abstract class Regenix {
         if ($zip->open($zipFile)){
             $result = $zip->extractTo($appDir);
             if (!$result)
-                throw CoreException::formated('Can`t extract zip archive "%s" in apps directory', basename($zipFile));
+                throw new CoreException('Can`t extract zip archive "%s" in apps directory', basename($zipFile));
 
             $zip->close();
         }
@@ -242,10 +264,23 @@ abstract class Regenix {
 
     private static function _registerApps(){
         $file = new File(Application::getSrcDir());
-        foreach($file->findFiles() as $path){
+
+        $paths = array();
+        foreach(self::$externalApps as $path){
+            $paths[] = new File($path);
+        }
+        $paths = array_merge($paths, $file->findFiles());
+
+        foreach($paths as $path){
             if ($path->isDirectory()){
-                $name = $path->getName();
-                self::$apps[ $name ] = new Application($name);
+                $name = $origin = $path->getName();
+                $i = 1;
+                while(isset(self::$apps[$name])){
+                    $name = $origin . '_' . $i;
+                    $i++;
+                }
+
+                self::$apps[ $name ] = new Application($path);
             }
         }
     }
@@ -268,8 +303,8 @@ abstract class Regenix {
     }
     
     public static function processRoute(){
-        $app =  Regenix::app();
-        $router  = $app->router;
+        $app = Regenix::app();
+        $router = $app->router;
         
         $request = Request::current();
         $request->setBasePath( $app->getUriPath() );
@@ -300,7 +335,7 @@ abstract class Regenix {
             $declClass = $reflection->getDeclaringClass();
             
             if ( $declClass->isAbstract() ){
-                throw CoreException::formated('Can\'t use "%s.%s()" as action method', $controllerClass, $actionMethod);
+                throw new CoreException('Can\'t use "%s.%s()" as action method', $controllerClass, $actionMethod);
             }
 
             SDK::trigger('beforeRequest', array($controller));
@@ -345,7 +380,7 @@ abstract class Regenix {
         }
         
         if ( !$response ){
-            throw CoreException::formated('Unknown type of action `%s.%s()` result for response', $controllerClass, $actionMethod);
+            throw new CoreException('Unknown type of action `%s.%s()` result for response', $controllerClass, $actionMethod);
         }
         
         $response->send();
@@ -358,7 +393,7 @@ abstract class Regenix {
 
         switch($error['type']){
             case E_PARSE: $title = 'Parse Error'; break;
-            case E_COMPILE_ERROR: $title = 'Compiler Error'; break;
+            case E_COMPILE_ERROR: $title = 'Compile Error'; break;
             case E_CORE_ERROR: $title = 'Core Error'; break;
         }
 
@@ -488,7 +523,7 @@ abstract class Regenix {
                 if ( $errno === E_DEPRECATED
                     || $errno === E_USER_DEPRECATED
                     || $errno === E_WARNING ){
-                    throw CoreStrictException::formated($errstr);
+                    throw new CoreStrictException($errstr);
                 }
 
                 // ignore tmp dir
@@ -497,7 +532,7 @@ abstract class Regenix {
 
                 if (String::startsWith($errstr, 'Undefined variable:')
                         || String::startsWith($errstr, 'Use of undefined constant')){
-                    throw CoreStrictException::formated($errstr);
+                    throw new CoreStrictException($errstr);
                 }
             }
         }
@@ -597,7 +632,9 @@ abstract class Regenix {
         const type = __CLASS__;
 
         private $name;
-        private $paths = array();
+
+        /** @var URL[] */
+        private $rules = array();
 
         /** @var string */
         private $currentPath;
@@ -606,7 +643,7 @@ abstract class Regenix {
         private $mode = 'dev';
 
         /** @var string */
-        private $secret;
+        public $secret;
 
         /** @var PropertiesConfiguration */
         public $config;
@@ -626,12 +663,17 @@ abstract class Regenix {
         /** @var array */
         protected $assets;
 
+        /** @var File */
+        protected $path;
+
         /**
-         * @param string $appName root directory name of app
+         * @param lang\File $appPath
          * @param bool $inWeb
+         * @internal param string $appName root directory name of app
          */
-        public function __construct($appName, $inWeb = true){
-            $this->name   = $appName;
+        public function __construct(File $appPath, $inWeb = true){
+            $this->path = $appPath;
+            $this->name = $appName = $appPath->getName();
 
             SystemCache::setId($appName);
             $cacheName = 'app.conf';
@@ -644,15 +686,8 @@ abstract class Regenix {
                 SystemCache::setWithCheckFile($cacheName, $this->config, $configFile);
             }
 
-            //if ($inWeb){
-            $port = $this->config->getNumber('http.port', 0);
-            if ($port){
-                Request::current()->setPort($port);
-            }
-
             $this->applyConfig( $this->config );
-            if (IS_CORE_DEBUG)
-                Regenix::trace('New app - ' . $appName);
+            Regenix::trace('New app - ' . $appName);
         }
 
         /**
@@ -668,19 +703,20 @@ abstract class Regenix {
          * @return string
          */
         public function getPath(){
-            return self::getSrcDir() . $this->name . '/';
+            return $this->path->getPath() . '/';
+            //return self::getSrcDir() . $this->name . '/';
         }
 
         public function getViewPath(){
-            return self::getPath() . 'app/views/';
+            return $this->getPath() . 'app/views/';
         }
 
         public function getModelPath(){
-            return self::getPath() . 'app/models/';
+            return $this->getPath() . 'app/models/';
         }
 
         public function getTestPath(){
-            return self::getPath() . 'tests/';
+            return $this->getPath() . 'tests/';
         }
 
         public function getLogPath(){
@@ -702,9 +738,9 @@ abstract class Regenix {
          *   domain.com:80/s1/
          *   domain.com:80/s2/
          */
-        public function setPaths(array $paths){
-            foreach(array_unique($paths) as $path){
-                $this->paths[ $path ] = new URL( $path );
+        public function setRules(array $rules){
+            foreach(array_unique($rules) as $rule){
+                $this->rules[ $rule ] = new URL( $rule );
             }
         }
 
@@ -714,8 +750,8 @@ abstract class Regenix {
          * @param \regenix\config\Configuration|\regenix\config\PropertiesConfiguration $config
          */
         public function applyConfig(PropertiesConfiguration $config){
-            $paths = $config->getArray("app.paths", array('/'));
-            $this->setPaths( $paths );
+            $rules = $config->getArray("app.rules", array('/'));
+            $this->setRules( $rules );
         }
 
 
@@ -724,7 +760,7 @@ abstract class Regenix {
          */
         public function findCurrentPath(){
             $request = Request::current();
-            foreach ($this->paths as $url){
+            foreach ($this->rules as $url){
                 if ( $request->isBase( $url ) )
                     return $url;
             }
@@ -752,12 +788,12 @@ abstract class Regenix {
             $versions = $all[$group];
 
             if (!$versions)
-                throw CoreException::formated('Asset `%s` not found', $group);
+                throw new CoreException('Asset `%s` not found', $group);
 
             if ($version){
                 $info = $versions[$version];
                 if (!is_array($info)){
-                    throw CoreException::formated('Asset `%s/%s` not found', $group, $version);
+                    throw new CoreException('Asset `%s/%s` not found', $group, $version);
                 }
             } else {
                 list($version, $info) = each($versions);
@@ -765,7 +801,7 @@ abstract class Regenix {
 
             $meta = $this->repository->getLocalMeta($group, $version);
             if (!$meta)
-                throw CoreException::formated('Meta information not found for `%s` asset, please run `deps update` for fix it', $group);
+                throw new CoreException('Meta information not found for `%s` asset, please run `deps update` for fix it', $group);
 
             $info['version'] = $version;
             return $info + $meta;
@@ -819,7 +855,6 @@ abstract class Regenix {
             return $this->mode === $mode;
         }
 
-
         public function register($inWeb = true){
             Regenix::trace('.register() application pre-start');
 
@@ -838,7 +873,7 @@ abstract class Regenix {
                 $this->bootstrap->onEnvironment($this->mode);
 
             if (!$this->mode)
-                throw CoreException::formated('App mode must be set in `conf/environment.php` or `conf/application.conf`');
+                throw new CoreException('App mode must be set in `conf/environment.php` or `conf/application.conf`');
 
             define('IS_PROD', $this->isProd());
             define('IS_DEV', $this->isDev());
@@ -921,7 +956,7 @@ abstract class Regenix {
                 foreach($this->assets as $group => $versions){
                     foreach($versions as $version => $el){
                         if (!$this->repository->isValid($group, $version)){
-                            throw CoreException::formated('Asset `%s/%s` not valid or not exists, please run in console `regenix deps update`', $group, $version);
+                            throw new CoreException('Asset `%s/%s` not valid or not exists, please run in console `regenix deps update`', $group, $version);
                         }
                     }
                 }
@@ -938,9 +973,9 @@ abstract class Regenix {
             foreach((array)$this->deps['modules'] as $name => $conf){
                 $dep = $this->repository->findLocalVersion($name, $conf['version']);
                 if (!$dep){
-                    throw CoreException::formated('Can`t find `%s/%s` module, please run in console `regenix deps update`', $name, $conf['version']);
+                    throw new CoreException('Can`t find `%s/%s` module, please run in console `regenix deps update`', $name, $conf['version']);
                 } elseif (IS_DEV && !$this->repository->isValid($name, $dep['version'])){
-                    throw CoreException::formated('Module `%s` not valid or not exists, please run in console `regenix deps update`', $name);
+                    throw new CoreException('Module `%s` not valid or not exists, please run in console `regenix deps update`', $name);
                 }
                 Module::register($name, $dep['version']);
             }
@@ -951,18 +986,18 @@ abstract class Regenix {
 
         private function _registerSystemController(){
             if ($this->config->getBoolean('captcha.enable')){
-                $this->router->addRoute('GET', Captcha::URL, 'framework.mvc.SystemController.captcha');
+                $this->router->addRoute('GET', Captcha::URL, 'regenix.mvc.SystemController.captcha');
             }
 
             if ($this->config->getBoolean('i18n.js')){
-                $this->router->addRoute('GET', '/system/i18n.js', 'framework.mvc.SystemController.i18n_js');
-                $this->router->addRoute('GET', '/system/i18n.{_lang}.js', 'framework.mvc.SystemController.i18n_js');
+                $this->router->addRoute('GET', '/system/i18n.js', 'regenix.mvc.SystemController.i18n_js');
+                $this->router->addRoute('GET', '/system/i18n.{_lang}.js', 'regenix.mvc.SystemController.i18n_js');
             }
         }
 
         private function _registerTests(){
-            $this->router->addRoute('*', '/@test', 'framework.test.Tester.run');
-            $this->router->addRoute('GET', '/@test.json', 'framework.test.Tester.runAsJson');
+            $this->router->addRoute('*', '/@test', 'regenix.test.Tester.run');
+            $this->router->addRoute('GET', '/@test.json', 'regenix.test.Tester.runAsJson');
         }
 
         private function _registerRoute(){
@@ -1030,11 +1065,11 @@ abstract class Regenix {
          * @param string $trigger
          * @param callable $callback
          * @param bool $prepend
-         * @throws static
+         * @throws CoreException
          */
         public static function addHandler($trigger, $callback, $prepend = false){
             if (IS_DEV && !self::$types[$trigger])
-                throw CoreException::formated('Trigger type `%s` is not registered', $trigger);
+                throw new CoreException('Trigger type `%s` is not registered', $trigger);
 
             if (!self::$handlers[$trigger])
                 self::$handlers[$trigger] = array();
@@ -1049,7 +1084,7 @@ abstract class Regenix {
          */
         public static function trigger($name, array $args = array()){
             if (IS_DEV && !self::$types[$name])
-                throw CoreException::formated('Trigger type `%s` is not registered', $name);
+                throw new CoreException('Trigger type `%s` is not registered', $name);
 
             foreach((array)self::$handlers[$name] as $handle){
                 call_user_func_array($handle, $args);
