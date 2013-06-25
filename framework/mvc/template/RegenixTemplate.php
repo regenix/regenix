@@ -243,9 +243,13 @@ class RegenixTemplate extends BaseTemplate {
         }
 
         public function call($args, RegenixTPL $ctx){
-            $info   = Regenix::getDebugInfo();
-            return String::format('<!-- execute: %s ms. -->' . "\n" . '<!-- memory: %s kb. -->',
-                round($info['time'], 2), round($info['memory'] / 1024));
+            $info   = Regenix::getDebugInfo($args['trace']);
+            if ($args['trace'])
+                return String::format('<!-- execute: %s ms. -->' . "\n" . '<!-- memory: %s kb. -->' . "\n<!-- trace: \n%s\n-->",
+                    round($info['time'], 2), round($info['memory'] / 1024), print_r($info['trace'], true));
+            else
+                return String::format('<!-- execute: %s ms. -->' . "\n" . '<!-- memory: %s kb. -->',
+                    round($info['time'], 2), round($info['memory'] / 1024));
         }
     }
 }

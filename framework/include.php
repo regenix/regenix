@@ -858,9 +858,11 @@ abstract class Regenix {
         public function register($inWeb = true){
             Regenix::trace('.register() application pre-start');
 
-            ClassScanner::addClassPath($this->getPath());
             Application::$instance = $this;
             SystemCache::setId($this->name);
+
+            if (file_exists($boostrap = $this->getPath() . 'app/Bootstrap.php'))
+                require $boostrap;
 
             if (class_exists('\\Bootstrap')){
                 $this->bootstrap = new \Bootstrap();
@@ -873,7 +875,7 @@ abstract class Regenix {
                 $this->bootstrap->onEnvironment($this->mode);
 
             if (!$this->mode)
-                throw new CoreException('App mode must be set in `conf/environment.php` or `conf/application.conf`');
+                throw new CoreException('App mode must be set in `Bootstrap::onEnvironment()` or `conf/application.conf`');
 
             define('IS_PROD', $this->isProd());
             define('IS_DEV', $this->isDev());
@@ -882,6 +884,8 @@ abstract class Regenix {
 
             define('APP_MODE', $this->mode);
             $this->config->setEnv( $this->mode );
+
+            ClassScanner::addClassPath($this->getPath());
 
             define('APP_PUBLIC_PATH', $this->config->get('app.public', '/public/' . $this->name . '/'));
             $this->secret = $this->config->getString('app.secret');
