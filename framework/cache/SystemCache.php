@@ -100,6 +100,23 @@ class SystemCache {
         }
         return null;
     }
+
+    public static function getIf($name, $callback, $cacheInFiles = false){
+        if ( !SYSTEM_CACHED && !$cacheInFiles )
+            return null;
+
+        if (IS_DEV && !is_callable($callback))
+            throw new \InvalidArgumentException('Callback must be callable');
+
+        $result = self::get($name, $cacheInFiles);
+        if ($result){
+            $st = call_user_func($callback);
+            if ($st){
+                return $result;
+            }
+        }
+        return null;
+    }
     
     public static function setWithCheckFile($name, $value, $filePath, $lifetime = 3600, $cacheInFiles = false){
         if ( !SYSTEM_CACHED && !$cacheInFiles )

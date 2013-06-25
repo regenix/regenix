@@ -445,7 +445,19 @@ class ClassScanner {
             if (self::$scanned[$hash])
                 continue;
 
-            $results = $cached ? SystemCache::getWithCheckFile('lang.sc.' . $hash, $path, true) : null;
+            if (IS_DEV){
+                $results = $cached ? SystemCache::getIf('lang.sc.' . $hash, function() use ($path){
+                    $upd = SystemCache::get('lang.sc.$upd', true);
+                    if (!$upd)
+                        return false;
+
+                    $file = new File($path);
+                    return !$file->isModified($upd, true);
+                }, true) : null;
+            } else {
+                $results = $cached ? SystemCache::getWithCheckFile('lang.sc.' . $hash, $path, true) : null;
+            }
+
             if ($results === null){
                 $results = self::scanPath($path);
                 if ($cached){
