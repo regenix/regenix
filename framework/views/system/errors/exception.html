@@ -18,9 +18,20 @@
     </div>
     {/if}
 </div>
+    {if $controller}
+        <b class="stackTraceTitle">Controller:</b>
+        <pre class="stackTrace">Action: {get_class($controller)}-><b>{$controller->actionMethod}</b>( ... )
+Router args: %{ print_r($controller->routeArgs) }</pre>
+    {/if}
     {if $stack}
         <b class="stackTraceTitle">Stack Trace:</b>
         <pre class="stackTrace">{$exception -> getTraceAsString()}</pre>
+    {/if}
+    {if $debug_info}
+        <b class="stackTraceTitle">Debug Info:</b>
+        <pre class="stackTrace">time: <b>{round($debug_info['time'])}</b> ml.sec
+memory: <b>{round($debug_info['memory'] / 1024)}</b> kb
+        </pre>
     {/if}
 {else}
 <div class="error">

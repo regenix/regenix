@@ -29,9 +29,9 @@ class RESTController extends Controller{
      */
     protected function onHttpException(HttpException $e){
         if ($e->getStatus() === HttpException::E_NOT_FOUND)
-            $this->renderJson(array('status' => 'success', 'message' => $e->getMessage(), 'data' => null));
+            $this->renderJson(array('status' => 'fail', 'code' => 'not_found', 'message' => $e->getMessage(), 'data' => null));
         else
-            $this->renderJson(array('status' => 'error', 'message' => $e->getMessage()));
+            $this->renderJson(array('status' => 'fail', 'message' => $e->getMessage()));
     }
 
     /**
@@ -47,5 +47,12 @@ class RESTController extends Controller{
     protected function onException(\Exception $e){
         $this->response->setStatus(500);
         $this->renderJSON(array('status' => 'error', 'data' => null, 'message' => $e->getMessage()));
+    }
+}
+
+class RESTException extends HttpException {
+
+    public function __construct($message = ''){
+        parent::__construct(HttpException::E_BAD_REQUEST, $message);
     }
 }

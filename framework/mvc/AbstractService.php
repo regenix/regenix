@@ -512,6 +512,22 @@ abstract class ActiveRecordCursor implements \Iterator {
     abstract public function count();
 
     /**
+     * @param $currentPage
+     * @param int $elementOnPage
+     * @return Pagination
+     */
+    public function pagination($currentPage, $elementOnPage = 20){
+        if (!$currentPage)
+            $currentPage = 1;
+
+        $count = $this->count();
+
+        $this->skip(($currentPage - 1) * $elementOnPage)->limit($elementOnPage);
+        return new Pagination($currentPage, $elementOnPage, $count);
+    }
+
+
+    /**
      * @return mixed
      */
     abstract public function explain();

@@ -234,7 +234,7 @@ abstract class Regenix {
 
     private static function _deployZip($zipFile){
         $name   = basename($zipFile, '.zip');
-        $appDir = Application::getSrcDir() . $name . '/';
+        $appDir = Application::getApplicationsPath() . $name . '/';
 
         // check directory exists
         if (file_exists($appDir)){
@@ -257,13 +257,13 @@ abstract class Regenix {
     }
 
     private static function _deploy(){
-        foreach (glob(Application::getSrcDir() . "*.zip") as $zipFile) {
+        foreach (glob(Application::getApplicationsPath() . "*.zip") as $zipFile) {
             self::_deployZip($zipFile);
         }
     }
 
     private static function _registerApps(){
-        $file = new File(Application::getSrcDir());
+        $file = new File(Application::getApplicationsPath());
 
         $paths = array();
         foreach(self::$externalApps as $path){
@@ -474,7 +474,10 @@ abstract class Regenix {
 
         $template->putArgs(array('exception' => $e,
             'stack' => $stack, 'info' => $info, 'hash' => $hash,
-            'desc' => $e->getMessage(), 'file' => $file, 'source' => $source
+            'desc' => $e->getMessage(), 'file' => $file, 'source' => $source,
+            'app' => Regenix::app(),
+            'debug_info' => Regenix::getDebugInfo(),
+            'controller' => Controller::current()
         ));
 
         Logger::error('%s, in file `%s(%s)`, id: %s', $e->getMessage(), $file ? $file : "nofile", (int)$stack['line'], $hash);
@@ -527,7 +530,7 @@ abstract class Regenix {
                 }
 
                 // ignore tmp dir
-                if (!$app || String::startsWith($errfile, $app->getPath() . 'tmp/') )
+                if (!$app || String::startsWith($errfile, $app->getTempPath()) )
                     return false;
 
                 if (String::startsWith($errstr, 'Undefined variable:')
@@ -578,7 +581,7 @@ abstract class Regenix {
                 {
                     self::catchError($error,
                         $app->config->getBoolean('logger.fatal.enable',true)
-                            ? $app->getPath() . 'log/'
+                            ? $app->getLogPath()
                             : false);
 
                     break;
@@ -707,12 +710,16 @@ abstract class Regenix {
             //return self::getSrcDir() . $this->name . '/';
         }
 
+        public function getSrcPath(){
+            return $this->getPath() . 'src/';
+        }
+
         public function getViewPath(){
-            return $this->getPath() . 'app/views/';
+            return $this->getSrcPath() . 'views/';
         }
 
         public function getModelPath(){
-            return $this->getPath() . 'app/models/';
+            return $this->getSrcPath() . 'models/';
         }
 
         public function getTestPath(){
@@ -721,6 +728,10 @@ abstract class Regenix {
 
         public function getLogPath(){
             return ROOT . 'logs/' . $this->name . '/';
+        }
+
+        public function getTempPath(){
+            return Regenix::getTempPath();
         }
 
         /**
@@ -780,8 +791,8 @@ abstract class Regenix {
         /**
          * @param string $group
          * @param bool $version, if false return last version
+         * @throws lang\CoreException
          * @return array
-         * @throws static
          */
         public function getAsset($group, $version = false){
             $all      = $this->getAssets();
@@ -861,7 +872,7 @@ abstract class Regenix {
             Application::$instance = $this;
             SystemCache::setId($this->name);
 
-            if (file_exists($boostrap = $this->getPath() . 'app/Bootstrap.php'))
+            if (file_exists($boostrap = $this->getSrcPath() . 'Bootstrap.php'))
                 require $boostrap;
 
             if (class_exists('\\Bootstrap')){
@@ -885,7 +896,7 @@ abstract class Regenix {
             define('APP_MODE', $this->mode);
             $this->config->setEnv( $this->mode );
 
-            ClassScanner::addClassPath($this->getPath());
+            ClassScanner::addClassPath($inWeb ? $this->getSrcPath() : $this->getPath());
 
             define('APP_PUBLIC_PATH', $this->config->get('app.public', '/public/' . $this->name . '/'));
             $this->secret = $this->config->getString('app.secret');
@@ -1037,7 +1048,7 @@ abstract class Regenix {
         }
 
         private static $srcDir = null;
-        public static function getSrcDir(){
+        public static function getApplicationsPath(){
             if ( self::$srcDir ) return self::$srcDir;
 
             return self::$srcDir = str_replace(DIRECTORY_SEPARATOR, '/', ROOT . 'apps/');

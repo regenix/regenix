@@ -112,7 +112,7 @@ class CoreException extends \Exception {
 
         $app = Regenix::app();
         if ($app){
-            $appDir = str_replace('\\', '/', Application::getSrcDir());
+            $appDir = str_replace('\\', '/', Application::getApplicationsPath());
             $moduleDir  = ROOT . 'modules/';
             foreach($e->getTrace() as $stack){
                 $dir = str_replace('\\', '/', dirname($stack['file']));
@@ -1302,7 +1302,6 @@ class File extends StrictObject {
                 return true;
 
             $files  = $this->findFiles();
-
             foreach($files as $file){
                 $m_time = $file->lastModified();
                 if ($m_time > $currentTime)

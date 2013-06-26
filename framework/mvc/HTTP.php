@@ -239,6 +239,13 @@ class Request extends StrictObject {
         return false;
     }
 
+    /**
+     * @return bool
+     */
+    public function isAjax(){
+        return strtolower($this->getHeader('x-requested-with')) === 'xmlhttprequest';
+    }
+
 
     /**
      * @param string $etag

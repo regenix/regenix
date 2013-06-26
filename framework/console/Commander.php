@@ -43,7 +43,7 @@ class Commander implements IClassInitialization {
     }
 
     private function _registerApps(){
-        $path = new File(Application::getSrcDir());
+        $path = new File(Application::getApplicationsPath());
         foreach ($path->findFiles() as $path){
             if ($path->isDirectory()){
                 $this->apps[ $path->getName() ] = new Application( $path, false );

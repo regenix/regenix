@@ -446,6 +446,14 @@ abstract class Controller extends StrictObject {
     }
 
     /**
+     * If not ajax request to 404 exception
+     */
+    public function forAjaxOnly(){
+        if (!$this->request->isAjax())
+            $this->notFound('For ajax only');
+    }
+
+    /**
      * @return Controller
      */
     public static function current(){
@@ -465,5 +473,30 @@ class Result extends \Exception {
 
     public function getResponse(){
         return $this->response;
+    }
+}
+
+class Pagination extends StrictObject {
+
+    public $currentPage;
+    public $elementOnPage;
+    public $allCount;
+
+    public $pageCount;
+
+    public function __construct($currentPage, $elementOnPage, $allCount){
+        $this->currentPage = $currentPage;
+        $this->elementOnPage = $elementOnPage;
+        $this->allCount    = $allCount;
+
+        $this->pageCount = ceil($this->allCount / $this->elementOnPage);
+    }
+
+    public function isLast(){
+        return $this->currentPage >= $this->pageCount;
+    }
+
+    public function isFirst(){
+        return $this->currentPage <= 1;
     }
 }
