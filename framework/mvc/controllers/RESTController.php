@@ -4,9 +4,7 @@ namespace regenix\mvc\controllers;
 use regenix\exceptions\HttpException;
 use regenix\mvc\Controller;
 
-class RESTController extends Controller{
-
-    private $errors = array();
+class RESTController extends Controller {
 
     /**
      * Render return value as JSON
@@ -16,7 +14,7 @@ class RESTController extends Controller{
         if ($this->hasErrors()){
             $errors = array();
             foreach($this->validators as $validator){
-                array_push($errors, $validator->getErrors());
+                $errors = array_merge($errors, $validator->getErrors());
             }
             $this->renderJson(array('status' => 'fail', 'data' => $errors));
         } else

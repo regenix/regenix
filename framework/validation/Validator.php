@@ -1,6 +1,7 @@
 <?php
 namespace regenix\validation;
 
+use regenix\exceptions\TypeException;
 use regenix\lang\CoreException;
 use regenix\lang\File;
 use regenix\lang\String;
@@ -16,6 +17,9 @@ abstract class Validator {
 
     /** @var array */
     protected $errors;
+
+    /** @var array */
+    protected $map = array();
 
     public function __construct($entity){
         $this->entity = $entity;
@@ -48,6 +52,11 @@ abstract class Validator {
             } else
                 throw new ValidationException('`%s` attribute must be object or array', $attribute);
         }
+
+        foreach($this->map as $callback){
+            $value = call_user_func($callback, $value);
+        }
+        $this->map = array();
 
         return $value;
     }
@@ -86,6 +95,14 @@ abstract class Validator {
                 'validator' => $validator
             );
         }
+    }
+
+    protected function map($callback){
+        if (!is_callable($callback))
+            throw new TypeException('$callback', 'Callable');
+
+        $this->map[] = $callback;
+        return $this;
     }
 
     protected function isEmpty($attribute){
@@ -205,9 +222,13 @@ abstract class ValidationResult {
         return $this->ok;
     }
 
+    protected function getMessageAttr(){
+        return array();
+    }
+
     abstract public function check($value);
     public function getMessage($attr){
-        return I18n::get($this->message, array('attr' => $attr));
+        return I18n::get($this->message, array_merge(array('attr' => $attr), $this->getMessageAttr()));
     }
 }
 
@@ -236,6 +257,10 @@ class ValidationMinLengthResult extends ValidationResult {
     public function check($value){
         return strlen((string)$value) >= $this->min;
     }
+
+    public function getMessageAttr(){
+        return array('param' => $this->min);
+    }
 }
 
 class ValidationMaxLengthResult extends ValidationResult {
@@ -249,6 +274,10 @@ class ValidationMaxLengthResult extends ValidationResult {
     public function check($value){
         return strlen((string)$value) <= $this->max;
     }
+
+    public function getMessageAttr(){
+        return array('param' => $this->max);
+    }
 }
 
 class ValidationMatchesResult extends ValidationResult {
@@ -261,6 +290,10 @@ class ValidationMatchesResult extends ValidationResult {
 
     public function check($value){
         return preg_match($this->pattern, $value);
+    }
+
+    public function getMessageAttr(){
+        return array('param' => $this->pattern);
     }
 }
 
@@ -292,6 +325,10 @@ class ValidationFileMaxSizeResult extends ValidationResult {
 
         return $file->length() <= $this->size;
     }
+
+    public function getMessageAttr(){
+        return array('param' => $this->size);
+    }
 }
 
 class ValidationFileTypeResult extends ValidationResult {
@@ -313,5 +350,9 @@ class ValidationFileTypeResult extends ValidationResult {
         }
 
         return in_array($ext, $this->types, true);
+    }
+
+    public function getMessageAttr(){
+        return array('param' => implode(', ', $this->types));
     }
 }
