@@ -108,6 +108,11 @@ class DepsCommand extends ConsoleCommand {
         try {
             $this->write(($step ? '  try '.$step.': ' : '->').' %s/%s/%s', $env, $group, $dep['version']);
             $local  = $this->repository->findLocalVersion($group, $dep['version']);
+            if ($dep['skip']){
+                $this->writeln('[manual skip]');
+                return;
+            }
+
             $result = $this->repository->download($group, $dep['version'], $this->opts->getBoolean('force'));
             if (!$this->repository->isValid($group, $result['version'])){
                 $this->writeln('[error, download invalid]');

@@ -659,8 +659,9 @@ abstract class AbstractQuery {
 
         if ($prefix == '$eq'){
             $this->data[$column] = $typed ? $this->getValue($field, $value) : $value;
-        } else
+        } else {
             $this->data[$column][$prefix] = $typed ? $this->getValue($field, $value) : $value;
+        }
 
         return $this;
     }

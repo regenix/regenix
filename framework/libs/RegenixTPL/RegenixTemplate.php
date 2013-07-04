@@ -238,6 +238,11 @@ class RegenixTemplate {
             }
 
             if ( ($ch == '{' && !$openTag) || ($ch == '{' && $source[$i] == '{' && $openTag) ){
+                if ($ch == '{' && $source[$i] == '{' && !$openTag){
+                    $str .= $source[$i];
+                    $i++;
+                    continue;
+                }
                 if ($sk == 0){
                     switch($source[$i-2]){
                         case '#':
@@ -252,6 +257,13 @@ class RegenixTemplate {
             }
 
             if ( ($ch == '}' && !$openTag) || ($ch == '}' && $source[$i] == '}' && $openTag) ){
+                if ($ch == '}' && $source[$i] == '}' && !$openTag){
+                    $str .= $source[$i];
+                    $i++;
+                    //var_dump($str);
+                    continue;
+                }
+
                 $sk -= 1;
                 if ($openTag)
                     $i++;
@@ -279,6 +291,7 @@ class RegenixTemplate {
                         } break;
                         default: {
                             $tmp = explode(' ', $expr, 2);
+
                             $cmd = $tmp[0];
                             if ($cmd[0] == '/')
                                 $str .= '<?php end'.substr($cmd,1).'?>';
