@@ -65,7 +65,7 @@ class RegenixTemplate extends BaseTemplate {
             $path = TemplateLoader::$ASSET_PATH . $name;
             $path = str_replace('//', '/', $path);
 
-            if ($name && !is_file(ROOT . $path)){
+            if ($name && !file_exists(ROOT . $path)){
                 throw new FileNotFoundException(new File($path));
             }
 

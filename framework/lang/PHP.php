@@ -1470,14 +1470,27 @@ class File extends StrictObject {
     }
 
     /**
+     * @param bool $recursive
      * @return File[]
      */
-    public function findFiles(){
+    public function findFiles($recursive = false){
         $files = $this->find();
-        if ($files)
+        if ($files){
             foreach($files as &$file){
                 $file = new File($file);
             }
+            unset($file);
+        }
+        if ($recursive){
+            $addFiles = array();
+            /** @var $file File */
+            foreach($files as $file){
+                if ($file->isDirectory()){
+                    $addFiles = array_merge($addFiles, $file->findFiles(true));
+                }
+            }
+            $files = array_merge($files, $addFiles);
+        }
         return $files;
     }
 

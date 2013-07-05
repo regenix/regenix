@@ -742,6 +742,14 @@ abstract class Regenix {
             return ROOT . 'public/' . $this->name . '/';
         }
 
+        /**
+         * get public upload uri
+         * @return string
+         */
+        public function getPublicUri(){
+            return '/public/' . $this->name . '/';
+        }
+
         /*
          * пути можно указывать с доменами и с портами
          * examples:
