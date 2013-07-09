@@ -30,6 +30,9 @@ class RegenixTemplate {
 
     const type = __CLASS__;
 
+    private static $openChar = '{';
+    private static $closeChar = '}';
+
     private static $control = array(
         'if' => 1,
         'else' => 1,
@@ -249,6 +252,7 @@ class RegenixTemplate {
                         case '_':
                         case '%':
                         case '@':
+                        case '\\':
                             $mod = $source[$i-2];
                     }
                     $lastE = $i;
@@ -277,6 +281,9 @@ class RegenixTemplate {
                     $str  = substr($str, 0, $mod ? -2 : -1);
 
                     switch($mod){
+                        case '\\': {
+                            $str .= '{' . $expr . '}';
+                        } break;
                         case '%': {
                             $str .= '<?php ' . $expr . ' ?>';
                         } break;
@@ -367,7 +374,8 @@ class RegenixTemplate {
         $this->compile($__cached);
         $this->args = $__args;
         $_tags = $this->tags;
-        $_TPL = $this;
+        $_TPL  = $this;
+
         if ($__args)
             extract($__args, EXTR_PREFIX_INVALID | EXTR_OVERWRITE, 'arg_');
 

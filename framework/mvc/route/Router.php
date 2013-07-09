@@ -107,6 +107,8 @@ class Router extends StrictObject {
      * @return mixed|null|string
      */
     public function reverse($action, array $args = array(), $method = '*'){
+        $originalAction = $action;
+
         if ($action !== null){
             $action = strtolower($action);
             $action = str_replace('\\', '.', $action);
@@ -133,7 +135,7 @@ class Router extends StrictObject {
                 }
 
                 // search args in route address
-                preg_match_all('#^' . $cur . '$#i', $action, $matches);
+                preg_match_all('#^' . $cur . '$#i', $originalAction, $matches);
                 foreach($matches as $i => $el){
                     if ($i){
                         $args[$routeKeys[$i-1]] = current($el);

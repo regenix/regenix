@@ -6,13 +6,44 @@ use regenix\mvc\Controller;
 
 class RESTController extends Controller {
 
+    private $errorMessages = array();
+
+    /**
+     * @param $errorMessage
+     */
+    protected function addUserError($errorMessage){
+        $this->errorMessages[] = $errorMessage;
+    }
+
+    /**
+     * Clear all validation and user errors.
+     */
+    protected function clearErrors(){
+        $this->errorMessages = array();
+        $this->validators = array();
+    }
+
+    /**
+     * @return bool
+     */
+    protected function hasErrors(){
+        return (!!$this->errorMessages) || parent::hasErrors();
+    }
+
+    /**
+     * @param string $message
+     */
+    protected function fail($message = ''){
+        $this->renderJson(array('status' => 'fail', 'message' => $message));
+    }
+
     /**
      * Render return value as JSON
      * @param $result
      */
     protected function onReturn($result){
         if ($this->hasErrors()){
-            $errors = array();
+            $errors = $this->errorMessages;
             foreach($this->validators as $validator){
                 $errors = array_merge($errors, $validator->getErrors());
             }

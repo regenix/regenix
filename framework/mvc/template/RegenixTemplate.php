@@ -85,7 +85,8 @@ class RegenixTemplate extends BaseTemplate {
                 throw new CoreException('Action argument of reverse is empty');*/
 
             unset($args['_arg']);
-            $url = Router::path($action ? TemplateLoader::$CONTROLLER_NAMESPACE . $action : null, $args);
+            $action = $action ? ($action[0] != '.' ? TemplateLoader::$CONTROLLER_NAMESPACE . $action : $action) : null;
+            $url = Router::path($action, $args);
 
             if ($url === null)
                 throw new CoreException('Can`t reverse url for action "%s(%s)"',
