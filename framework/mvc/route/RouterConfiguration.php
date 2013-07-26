@@ -72,6 +72,53 @@ class RouterConfiguration extends Configuration {
                         $this->data[] = $rule;
                     }
                     continue;
+                } else if (String::startsWith($action, 'resource:')){
+                    $resource = trim(substr($action, 9));
+
+                    if ($resource[0] != '.')
+                        $resource = '.controllers.' . $resource;
+
+                    $this->data[] = array(
+                        'method' => 'GET',
+                        'headers' => $headers,
+                        'path' => $path,
+                        'action' => $resource . '.index',
+                        'params' => $params
+                    );
+
+                    $this->data[] = array(
+                        'method' => 'POST',
+                        'headers' => $headers,
+                        'path' => $path,
+                        'action' => $resource . '.create',
+                        'params' => $params
+                    );
+
+                    $this->data[] = array(
+                        'method' => 'GET',
+                        'headers' => $headers,
+                        'path' => $path . '/{id}',
+                        'action' => $resource . '.show',
+                        'params' => $params
+                    );
+
+                    $this->data[] = array(
+                        'method' => 'PUT',
+                        'headers' => $headers,
+                        'path' => $path . '/{id}',
+                        'action' => $resource . '.update',
+                        'params' => $params
+                    );
+
+                    $this->data[] = array(
+                        'method' => 'DELETE',
+                        'headers' => $headers,
+                        'path' => $path . '/{id}',
+                        'action' => $resource . '.destroy',
+                        'params' => $params
+                    );
+
+                    continue;
                 }
                 
                 if (is_numeric($prefix)){
