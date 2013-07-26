@@ -57,6 +57,9 @@ abstract class Regenix {
     /** @var array */
     private static $externalApps = array();
 
+    /** @var AbstractGlobalBootstrap */
+    private static $bootstrap = null;
+
     /**
      * Get current version of regenix framework
      * @return string
@@ -114,6 +117,14 @@ abstract class Regenix {
         self::trace('Finish init core');
 
         if ($inWeb){
+
+            if (file_exists($globalFile = Application::getApplicationsPath() . '/GlobalBootstrap.php')){
+                require $globalFile;
+                self::$bootstrap = new \GlobalBootstrap();
+                if (!(self::$bootstrap instanceof AbstractGlobalBootstrap))
+                    throw new CoreException("GlobalBootstrap class must be extends AbstractGlobalBootstrap");
+            }
+
             self::_registerTriggers();
             self::_deploy();
             self::trace('Deploy finish.');
@@ -158,6 +169,9 @@ abstract class Regenix {
             $commander = Commander::current();
             $commander->run();
         } catch (\Exception $e){
+            if (self::$bootstrap)
+                self::$bootstrap->onException($e);
+
             echo "\n    Exception error: " . str_replace('\\', '.', get_class($e)) . "\n";
             echo "\n        message: " . $e->getMessage();
             echo "\n        file: " . $e->getFile();
@@ -176,6 +190,9 @@ abstract class Regenix {
             self::init($rootDir);
             self::processRoute();
         } catch (\Exception $e){
+            if (self::$bootstrap)
+                self::$bootstrap->onException($e);
+
             self::catchException($e);
         }
     }
@@ -244,6 +261,9 @@ abstract class Regenix {
         }
 
         $zip = new \ZipArchive();
+        if (self::$bootstrap)
+            self::$bootstrap->onBeforeDeploy($zip, $appDir);
+
         if ($zip->open($zipFile)){
             $result = $zip->extractTo($appDir);
             if (!$result)
@@ -251,6 +271,9 @@ abstract class Regenix {
 
             $zip->close();
         }
+
+        if (self::$bootstrap)
+            self::$bootstrap->onAfterDeploy($zip, $appDir);
 
         $file = new File($zipFile);
         $file->delete();
@@ -264,6 +287,9 @@ abstract class Regenix {
 
     private static function _registerApps(){
         $file = new File(Application::getApplicationsPath());
+
+        if (self::$bootstrap)
+            self::$bootstrap->onBeforeRegisterApps($file);
 
         $paths = array();
         foreach(self::$externalApps as $path){
@@ -283,6 +309,9 @@ abstract class Regenix {
                 self::$apps[ $name ] = new Application($path);
             }
         }
+
+        if (self::$bootstrap)
+            self::$bootstrap->onAfterRegisterApps(self::$apps);
     }
 
     private static function _registerCurrentApp(){
@@ -293,8 +322,15 @@ abstract class Regenix {
             $url = $app->findCurrentPath();
             if ( $url ){
                 register_shutdown_function(array(Regenix::type, '__shutdown'), $app);
+                if (self::$bootstrap)
+                    self::$bootstrap->onBeforeRegisterCurrentApp($app);
+
                 $app->setUriPath( $url );
                 $app->register();
+
+                if (self::$bootstrap)
+                    self::$bootstrap->onAfterRegisterCurrentApp($app);
+
                 return;
             }
         }
@@ -308,9 +344,8 @@ abstract class Regenix {
         
         $request = Request::current();
         $request->setBasePath( $app->getUriPath() );
-                
-        $router->route($request);
 
+        $router->route($request);
         try {
             if (!$router->action){
                 throw new HttpException(404, 'Not found');
@@ -325,6 +360,7 @@ abstract class Regenix {
             $controller = new $controllerClass;
             $controller->actionMethod = $actionMethod;
             $controller->routeArgs    = $router->args;
+
             try {
                 $reflection = new \ReflectionMethod($controller, $actionMethod);
                 $controller->actionMethodReflection = $reflection;
@@ -337,6 +373,9 @@ abstract class Regenix {
             if ( $declClass->isAbstract() ){
                 throw new CoreException('Can\'t use "%s.%s()" as action method', $controllerClass, $actionMethod);
             }
+
+            if (self::$bootstrap)
+                self::$bootstrap->onBeforeRequest($request);
 
             SDK::trigger('beforeRequest', array($controller));
             
@@ -378,6 +417,9 @@ abstract class Regenix {
             $controller->callAfter();
             SDK::trigger('afterRequest', array($controller));
         }
+
+        if (self::$bootstrap)
+            self::$bootstrap->onAfterRequest($request);
         
         if ( !$response ){
             throw new CoreException('Unknown type of action `%s.%s()` result for response', $controllerClass, $actionMethod);
@@ -386,9 +428,15 @@ abstract class Regenix {
         $response->send();
         $controller->callFinally();
         SDK::trigger('finallyRequest', array($controller));
+
+        if (self::$bootstrap)
+            self::$bootstrap->onFinallyRequest($request);
     }
 
     private static function catchError($error, $logPath){
+        if (self::$bootstrap)
+            self::$bootstrap->onError($error);
+
         $title = 'Fatal Error';
 
         switch($error['type']){
@@ -608,6 +656,24 @@ abstract class Regenix {
     }
 }
 
+
+    abstract class AbstractGlobalBootstrap {
+        public function onBeforeDeploy(\ZipArchive $zip, $newAppDir){}
+        public function onAfterDeploy(\ZipArchive $zip, $newAppDir){}
+
+        public function onBeforeRegisterApps(File &$pathToApps){}
+        public function onAfterRegisterApps(&$apps){}
+
+        public function onBeforeRegisterCurrentApp(Application $app){}
+        public function onAfterRegisterCurrentApp(Application $app){}
+
+        public function onException(\Exception $e){}
+        public function onError(array $error){}
+
+        public function onBeforeRequest(Request $request){}
+        public function onAfterRequest(Request $request){}
+        public function onFinallyRequest(Request $request){}
+    }
 
     abstract class AbstractBootstrap {
 
