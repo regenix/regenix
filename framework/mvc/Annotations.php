@@ -47,7 +47,7 @@ class Annotations {
      * @return ArrayTyped
      */
     public function get($annotation){
-        if ( IS_DEV ) $this->checkAnnotation($annotation);
+        if ( REGENIX_IS_DEV ) $this->checkAnnotation($annotation);
 
         $value = $this->data[$annotation];
         if ( $value[0] !== null )
@@ -63,7 +63,7 @@ class Annotations {
      * @return bool
      */
     public function has($annotation){
-        if ( IS_DEV ) $this->checkAnnotation($annotation);
+        if ( REGENIX_IS_DEV ) $this->checkAnnotation($annotation);
 
         return isset($this->data[$annotation]);
     }
@@ -73,7 +73,7 @@ class Annotations {
      * @return ArrayTyped[]
      */
     public function getAsArray($annotation){
-        if ( IS_DEV ) $this->checkAnnotation($annotation);
+        if ( REGENIX_IS_DEV ) $this->checkAnnotation($annotation);
 
         $result = array();
         $value = $this->data[$annotation];
@@ -227,7 +227,7 @@ class Annotations {
     private static $cached = array();
 
     private static function getAnnotation($comments, $cacheCode, $fileName, $line, $scope){
-        if (IS_PROD !== true){
+        if (REGENIX_IS_DEV === true){
 
             if ( self::$cached[ $cacheCode ] ){
                 return self::$cached[ $cacheCode ];
@@ -279,10 +279,10 @@ class Annotations {
             $class = new \ReflectionClass($class);
 
         return self::getAnnotation($class->getDocComment(), $class->getName(),
-                    IS_DEV ? $class->getFileName() : null,
-                    IS_DEV ? $class->getStartLine() : -1,
+                    REGENIX_IS_DEV ? $class->getFileName() : null,
+                    REGENIX_IS_DEV ? $class->getStartLine() : -1,
                     'class',
-                    IS_DEV ? $class->getName() : null
+                    REGENIX_IS_DEV ? $class->getName() : null
         );
     }
 
@@ -295,10 +295,10 @@ class Annotations {
         return self::getAnnotation(
                     $property->getDocComment(),
                     $class->getName() .'$p.'. $property->getName(),
-                    IS_DEV ? $class->getFileName() : null,
-                    IS_DEV ? $class->getStartLine() : -1,
+                    REGENIX_IS_DEV ? $class->getFileName() : null,
+                    REGENIX_IS_DEV ? $class->getStartLine() : -1,
                     'property',
-                    IS_DEV ? $property->getName() : null
+                    REGENIX_IS_DEV ? $property->getName() : null
         );
     }
 
@@ -311,10 +311,10 @@ class Annotations {
         return self::getAnnotation(
             $method->getDocComment(),
             $class->getName() .'$m.'. $method->getName(),
-            IS_DEV ? $class->getFileName() : null,
-            IS_DEV ? $class->getStartLine() : -1,
+            REGENIX_IS_DEV ? $class->getFileName() : null,
+            REGENIX_IS_DEV ? $class->getStartLine() : -1,
             'method',
-            IS_DEV ? $method->getName() : null
+            REGENIX_IS_DEV ? $method->getName() : null
         );
     }
 

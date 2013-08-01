@@ -39,7 +39,7 @@ class RegenixTemplate extends BaseTemplate {
     }
 
     public function render(){
-        self::$tpl->render( $this->args, IS_PROD );
+        self::$tpl->render( $this->args, REGENIX_IS_DEV !== true );
     }
 
     public function registerFunction($name, $callback, $className) {

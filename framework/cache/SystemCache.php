@@ -53,7 +53,7 @@ class SystemCache {
     }
 
     public static function get($name, $cacheInFiles = false){
-        return SYSTEM_CACHED === true ? apc_fetch('$.s.' . self::$id . '.' . $name)
+        return SYSTEM_CACHED === true ? (($value = apc_fetch('$.s.' . self::$id . '.' . $name)) === false ? null : $value)
             : ($cacheInFiles ? self::getFromFile($name) : null);
     }
     
@@ -105,7 +105,7 @@ class SystemCache {
         if ( !SYSTEM_CACHED && !$cacheInFiles )
             return null;
 
-        if (IS_DEV && !is_callable($callback))
+        if (REGENIX_IS_DEV && !is_callable($callback))
             throw new \InvalidArgumentException('Callback must be callable');
 
         $result = self::get($name, $cacheInFiles);

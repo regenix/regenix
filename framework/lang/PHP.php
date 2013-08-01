@@ -223,6 +223,30 @@ final class ClassMetaInfo {
     }
 
     /**
+     * will return true if extends of implements by $interfaceOrClass
+     * @param string $interfaceOrClass
+     * @return bool
+     */
+    public function isParentOf($interfaceOrClass){
+        if ($interfaceOrClass === $this->getName())
+            return true;
+
+        $childrens = $this->getChildrensAll();
+        foreach($childrens as $name => $el){
+            if ($name === $interfaceOrClass)
+                return true;
+        }
+
+        $implements = $this->getImplementsAll();
+        foreach($implements as $name => $el){
+            if ($name === $interfaceOrClass)
+                return true;
+        }
+
+        return false;
+    }
+
+    /**
      * @return bool
      */
     public function isClass(){
@@ -445,7 +469,7 @@ class ClassScanner {
             if (self::$scanned[$hash])
                 continue;
 
-            if (IS_DEV){
+            if (REGENIX_IS_DEV){
                 $results = $cached ? SystemCache::getIf('lang.sc.' . $hash, function() use ($path){
                     $upd = SystemCache::get('lang.sc.$upd', true);
                     if (!$upd)

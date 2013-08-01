@@ -102,7 +102,7 @@ class TemplateLoader {
     public static function getReflection($templateClass){
         $reflection = new \ReflectionClass($templateClass);
         
-        if ( IS_DEV ){
+        if ( REGENIX_IS_DEV ){
             if ( !$reflection->isSubclassOf( '\regenix\mvc\template\BaseTemplate' ) )
                 throw new CoreException(String::format('%s.class must be extends of BaseTemplate', $templateClass));
 

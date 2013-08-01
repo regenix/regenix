@@ -60,7 +60,7 @@ abstract class BaseTemplate implements IClassInitialization {
     private static $assetsTpls = array();
 
     public static function registerAssetTemplate($ext, $callback){
-        if (IS_DEV && !is_callable($callback)){
+        if (REGENIX_IS_DEV && !is_callable($callback)){
             throw new TypeException('$callback', 'callable');
         }
 
@@ -97,7 +97,7 @@ abstract class BaseTemplate implements IClassInitialization {
             $lastMod  = SystemCache::get('gr.assets.mod.' . $hashName);
             $lastHtml = SystemCache::get('gr.assets.html.' . $hashName);
 
-            if ($lastHtml && !$file->isModified($lastMod, IS_DEV)){
+            if ($lastHtml && !$file->isModified($lastMod, REGENIX_IS_DEV)){
                 return $lastHtml;
             }
 

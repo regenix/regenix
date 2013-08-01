@@ -357,7 +357,7 @@ class RegenixTemplate {
     public function compile($cached = true){
         $sha = sha1($this->file);
         $this->compiledFile = ($this->tmpDir . $sha . '.' . filemtime($this->file) . '.php');
-        if ( IS_DEV ){
+        if ( REGENIX_IS_DEV ){
             foreach(glob($this->tmpDir . $sha . '.*.php') as $file){
                 $file = realpath($file);
                 if ( $file == $this->compiledFile ) continue;

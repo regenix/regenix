@@ -246,7 +246,7 @@ abstract class AbstractActiveRecord extends StrictObject
     }
 
     public static function addHandle($event, $callback){
-        if (IS_DEV && !is_callable($callback))
+        if (REGENIX_IS_DEV && !is_callable($callback))
             throw new TypeException('$callback', 'callable');
 
         $class = get_called_class();

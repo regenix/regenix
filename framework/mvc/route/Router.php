@@ -228,7 +228,6 @@ class Router extends StrictObject {
                 } else*/ if ( $param->isArray() ){
                     $args[$name] = $controller->query->getArray($name);
                 } else if ( $parsedBody && ($v = $parsedBody[$name]) ){
-
                     if ($class !== null)
                         $args[$name] = RequestBinder::getValue($v, $class->getName());
                     else
@@ -247,7 +246,7 @@ class Router extends StrictObject {
     }
 
     public function route(Request $request){
-        $isCached = IS_PROD;
+        $isCached = REGENIX_IS_DEV !== true;
         if ($isCached){
             $hash  = $request->getHash();
             $datas = SystemCache::get('routes');

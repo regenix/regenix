@@ -8,6 +8,7 @@ namespace regenix {
     use regenix\deps\Repository;
     use regenix\exceptions\JsonFileException;
     use regenix\exceptions\TypeException;
+    use regenix\lang\DI;
     use regenix\lang\FileNotFoundException;
     use regenix\lang\CoreException;
     use regenix\exceptions\CoreStrictException;
@@ -85,6 +86,13 @@ abstract class Regenix {
         return $result;
     }
 
+    /**
+     * @return mixed
+     */
+    public static function getLastTrace(){
+        return end(self::$profileLog);
+    }
+
     private static function init($rootDir, $inWeb = true){
         ini_set('display_errors', 'Off');
         error_reporting(0);
@@ -146,6 +154,7 @@ abstract class Regenix {
             header_remove();
 
             define('IS_DEV', true);
+            define('REGENIX_IS_DEV', true);
             define('IS_PROD', false);
             define('APP_MODE', 'dev');
 
@@ -153,7 +162,7 @@ abstract class Regenix {
             define('CONSOLE_STDOUT', fopen('php://stdout', 'w+'));
         }
 
-        if (IS_PROD)
+        if (!REGENIX_IS_DEV)
             error_reporting(0);
     }
 
@@ -341,7 +350,7 @@ abstract class Regenix {
     public static function processRoute(){
         $app = Regenix::app();
         $router = $app->router;
-        
+
         $request = Request::current();
         $request->setBasePath( $app->getUriPath() );
 
@@ -357,7 +366,9 @@ abstract class Regenix {
             $actionMethod    = $tmp[ sizeof($tmp) - 1 ];
 
             /** @var $controller Controller */
-            $controller = new $controllerClass;
+            $controller = DI::getInstance($controllerClass);
+            //$controller = new $controllerClass;
+
             $controller->actionMethod = $actionMethod;
             $controller->routeArgs    = $router->args;
 
@@ -451,7 +462,7 @@ abstract class Regenix {
         $file = str_replace(str_replace('\\', '/', ROOT), '', $file);
 
         $source = null;
-        if (IS_DEV && file_exists($error['file']) && is_readable($error['file']) ){
+        if (REGENIX_IS_DEV && file_exists($error['file']) && is_readable($error['file']) ){
             $fp = fopen($error['file'], 'r');
             $n  = 1;
             $source = array();
@@ -920,7 +931,7 @@ abstract class Regenix {
             foreach((array)$info['files'] as $file){
                 $result[] = $path . $file;
 
-                if (IS_DEV && !is_file(ROOT . $path . $file)){
+                if (REGENIX_IS_DEV && !is_file(ROOT . $path . $file)){
                     throw new FileNotFoundException(new File($path . $file));
                 }
             }
@@ -964,6 +975,7 @@ abstract class Regenix {
 
             define('IS_PROD', $this->isProd());
             define('IS_DEV', $this->isDev());
+            define('REGENIX_IS_DEV', $this->isDev());
             define('IS_CORE_DEBUG', $this->config->getBoolean('core.debug'));
             define('APP_MODE_STRICT', $this->config->getBoolean('app.mode.strict', IS_DEV));
 
@@ -994,7 +1006,7 @@ abstract class Regenix {
             $this->_registerRoute();
             Regenix::trace('.registerRoute() application finish');
 
-            if (IS_DEV)
+            if (REGENIX_IS_DEV)
                 $this->_registerTests();
 
             if ($inWeb)
@@ -1012,7 +1024,7 @@ abstract class Regenix {
             $this->deps = array();
 
             if (is_file($file)){
-                if (IS_DEV){
+                if (REGENIX_IS_DEV){
                     $this->deps = json_decode(file_get_contents($file), true);
                     if (json_last_error()){
                         throw new JsonFileException('conf/deps.json');
@@ -1041,7 +1053,7 @@ abstract class Regenix {
 
             $this->assets = $this->repository->getAll('assets');
 
-            if (IS_DEV){
+            if (REGENIX_IS_DEV){
                 foreach($this->assets as $group => $versions){
                     foreach($versions as $version => $el){
                         if (!$this->repository->isValid($group, $version)){
@@ -1063,13 +1075,13 @@ abstract class Regenix {
                 $dep = $this->repository->findLocalVersion($name, $conf['version']);
                 if (!$dep){
                     throw new CoreException('Can`t find `%s/%s` module, please run in console `regenix deps update`', $name, $conf['version']);
-                } elseif (IS_DEV && !$this->repository->isValid($name, $dep['version'])){
+                } elseif (REGENIX_IS_DEV && !$this->repository->isValid($name, $dep['version'])){
                     throw new CoreException('Module `%s` not valid or not exists, please run in console `regenix deps update`', $name);
                 }
                 Module::register($name, $dep['version']);
             }
 
-            if (IS_DEV)
+            if (REGENIX_IS_DEV)
                 $this->getAssets();
         }
 
@@ -1140,7 +1152,7 @@ abstract class Regenix {
         private static $handlers = array();
 
         private static function setCallable($callback, array &$to, $prepend = false){
-            if ( IS_DEV && !is_callable($callback) ){
+            if ( REGENIX_IS_DEV && !is_callable($callback) ){
                 throw new TypeException('callback', 'callable');
             }
 
@@ -1157,7 +1169,7 @@ abstract class Regenix {
          * @throws CoreException
          */
         public static function addHandler($trigger, $callback, $prepend = false){
-            if (IS_DEV && !self::$types[$trigger])
+            if (REGENIX_IS_DEV && !self::$types[$trigger])
                 throw new CoreException('Trigger type `%s` is not registered', $trigger);
 
             if (!self::$handlers[$trigger])
@@ -1169,10 +1181,10 @@ abstract class Regenix {
         /**
          * @param string $name
          * @param array $args
-         * @throws static
+         * @throws lang\CoreException
          */
         public static function trigger($name, array $args = array()){
-            if (IS_DEV && !self::$types[$name])
+            if (REGENIX_IS_DEV && !self::$types[$name])
                 throw new CoreException('Trigger type `%s` is not registered', $name);
 
             foreach((array)self::$handlers[$name] as $handle){
