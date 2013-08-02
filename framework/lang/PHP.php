@@ -77,7 +77,7 @@ class FileNotOpenException extends CoreException {
 
     public function __construct(File $file){
         $this->path = $file->getPath();
-        parent::__construct( String::format('File "%s" is not open to read or write', $file->getPath()) );
+        parent::__construct( String::format('File "%s" is not opened to read or write', $file->getPath()) );
     }
 }
 
@@ -1134,9 +1134,9 @@ class File extends StrictObject {
      * @param \regenix\lang\File $parent
      */
     public function __construct($path, File $parent = null){
-        if ( $parent != null )
+        if ( $parent != null ){
             $this->path = $parent->getPath() . $path;
-        else
+        } else
             $this->path = $path;
     }
 
@@ -1151,6 +1151,20 @@ class File extends StrictObject {
 
         $path = tempnam(sys_get_temp_dir(), $prefix);
         return new File($path);
+    }
+
+    /**
+     * @param File $baseFile
+     * @return mixed
+     */
+    public function getRelativePath(File $baseFile){
+        $base = str_replace(array('\\', '////', '///', '//'), '/', $baseFile->getPath());
+        $path = str_replace(array('\\', '////', '///', '//'), '/', $this->path);
+
+        if (String::startsWith($path, $base)){
+            return substr($path, strlen($base));
+        } else
+            return $path;
     }
 
     /**

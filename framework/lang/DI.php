@@ -3,6 +3,10 @@ namespace regenix\lang;
 
 use regenix\mvc\Annotations;
 
+/**
+ * Class DI - Dependency Injection Container
+ * @package regenix\lang
+ */
 final class DI {
 
     private static $reflections = array();

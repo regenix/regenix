@@ -4,6 +4,8 @@ namespace regenix\mvc\route;
 
 use regenix\config\Configuration;
 use regenix\config\ConfigurationReadException;
+use regenix\lang\ClassNotFoundException;
+use regenix\lang\ClassScanner;
 use regenix\lang\CoreException;
 use regenix\lang\File;
 use regenix\lang\String;
@@ -12,16 +14,53 @@ class RouterConfiguration extends Configuration {
 
     const type = __CLASS__;
 
-    private static $routePattern = '#^(GET|POST|PUT|DELETE|OPTIONS|HEAD|WS|\*)[(]?([^)]*)(\))?\s+(.*/[^\s]*)\s+([^\s(]+)(.+)?(\s*)$#';
+    private static $routePattern = '#^(GET|POST|PUT|PATCH|DELETE|OPTIONS|HEAD|\*)[(]?([^)]*)(\))?\s+(.*/[^\s]*)\s+([^\s(]+)(.+)?(\s*)$#';
 
     /** @var File[] */
     private $modules = array();
+
+    /** @var array */
+    private $patterns = array();
+
+    /** @var File */
+    private $patternDir;
 
     public function addModule($code, $prefixNamespace, File $routeFile){
         if ($routeFile != null)
             $this->modules[$code] = array('prefix' => $prefixNamespace, 'file' => $routeFile);
         else
             $this->modules[$code] = true;
+    }
+
+    public function addPattern($code, $routes){
+        if ($code === 'module')
+            throw new CoreException('Code of route pattern cannot equals `%s`', $code);
+
+        $this->patterns[ $code ] = $routes;
+    }
+
+    public function setPatternDir(File $dir){
+        $this->patternDir = $dir;
+    }
+
+    public function validate(){
+        foreach($this->data as $route){
+            $action = $route['action'];
+            $class  = substr($action, 0, strrpos($action, '.'));
+            $method = substr($action, strrpos($action, '.') + 1);
+
+            if (strpos($class, '{') === false && strpos($class, '}') === false){
+                if (!ClassScanner::find(str_replace('.', '\\', $class))){
+                    throw new RouteActionNotFound($class . '.*');
+                }
+
+                if (strpos($method, '{') === false && strpos($method, '}') === false){
+                    if(!method_exists(str_replace('.', '\\', $class), $method)){
+                        throw new RouteActionNotFound($class . '.' . $method . '()');
+                    }
+                }
+            }
+        }
     }
 
     public function loadData(){
@@ -48,6 +87,15 @@ class RouterConfiguration extends Configuration {
                 $action  = $matches[5][0];
                 $params  = $matches[6][0];
 
+                $params = substr(trim($params), 1, -1);
+                $params   = explode(',', $params);
+                $args = array();
+                foreach($params as $el){
+                    list($key, $val) = explode(':', $el, 2);
+                    $args[trim($key)] = trim($val);
+                }
+                $params = $args;
+
                 if (String::startsWith($action, 'module:')){
                     $module = trim(substr($action, 7));
                     $info   = $this->modules[$module];
@@ -58,7 +106,11 @@ class RouterConfiguration extends Configuration {
 
                     if ($info === true) continue;
 
-                    $tmpRouter = new RouterConfiguration($info['file']);
+                    $tmpRouter = new RouterConfiguration();
+                    $tmpRouter->setFile($info['file']);
+                    $tmpRouter->setPatternDir(new File($info['file']->getParent() . '/routes/'));
+                    $tmpRouter->load();
+
                     $tmpRoutes = $tmpRouter->getRouters();
                     foreach($tmpRoutes as &$rule){
                         if (String::startsWith($rule['action'], '.controllers.')){
@@ -72,53 +124,57 @@ class RouterConfiguration extends Configuration {
                         $this->data[] = $rule;
                     }
                     continue;
-                } else if (String::startsWith($action, 'resource:')){
-                    $resource = trim(substr($action, 9));
+                } else if (strpos($action, ':') !== false ){
 
-                    if ($resource[0] != '.')
-                        $resource = '.controllers.' . $resource;
+                    $tmp = explode(':', $action, 2);
+                    $pattern = $tmp[0];
+                    $base    = trim($tmp[1]);
 
-                    $this->data[] = array(
-                        'method' => 'GET',
-                        'headers' => $headers,
-                        'path' => $path,
-                        'action' => $resource . '.index',
-                        'params' => $params
-                    );
+                    $patternRoutes = $this->patterns[$pattern];
+                    if (!$patternRoutes){
+                        $patternConfig = new RouterConfiguration();
 
-                    $this->data[] = array(
-                        'method' => 'POST',
-                        'headers' => $headers,
-                        'path' => $path,
-                        'action' => $resource . '.create',
-                        'params' => $params
-                    );
+                        $patternConfig->setFile(new File(str_replace('.', '/', $pattern) . '.route', $this->patternDir));
+                        $patternConfig->setPatternDir($this->patternDir);
+                        $patternConfig->load();
 
-                    $this->data[] = array(
-                        'method' => 'GET',
-                        'headers' => $headers,
-                        'path' => $path . '/{id}',
-                        'action' => $resource . '.show',
-                        'params' => $params
-                    );
+                        $patternRoutes = ($this->patterns[$pattern] = $patternConfig->getRouters());
+                    }
 
-                    $this->data[] = array(
-                        'method' => 'PUT',
-                        'headers' => $headers,
-                        'path' => $path . '/{id}',
-                        'action' => $resource . '.update',
-                        'params' => $params
-                    );
+                    if ($patternRoutes){
+                        if ($base[0] != '.')
+                            $base = '.controllers.' . $base;
 
-                    $this->data[] = array(
-                        'method' => 'DELETE',
-                        'headers' => $headers,
-                        'path' => $path . '/{id}',
-                        'action' => $resource . '.destroy',
-                        'params' => $params
-                    );
+                        $_keys = array_map(function($value){
+                            return '[' . $value . ']';
+                        }, array_keys($params));
 
-                    continue;
+                        $_keys[] = '[parent]';
+
+                        foreach($patternRoutes as $el){
+                            $relative = $el['path'][0] === '/';
+
+                            if ($base !== '*' && $base !== '.controllers.*')
+                                $el['action'] = $base . $el['action'];
+                            else {
+                                if ($relative)
+                                    $el['path'] = substr($el['path'],1);
+                            }
+
+                            if ($relative){
+                                $el['path'] = $path . $el['path'];
+                            } else {
+                                $el['path'] = '/' . str_replace(
+                                    $_keys, array_merge($params, array('parent' => $path)), $el['path']
+                                );
+                            }
+
+                            $this->data[] = $el;
+                        }
+
+                        continue;
+                    } else
+                        throw new CoreException('Cannot find `%s` route pattern', $pattern);
                 }
                 
                 if (is_numeric($prefix)){
@@ -142,5 +198,11 @@ class RouterConfiguration extends Configuration {
     
     public function getRouters(){
         return $this->data;
+    }
+}
+
+class RouteActionNotFound extends CoreException {
+    public function __construct($action){
+        parent::__construct('In routes action "%s" not found', $action);
     }
 }

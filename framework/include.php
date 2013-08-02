@@ -1105,21 +1105,28 @@ abstract class Regenix {
             // routes
             $routeFile = $this->getPath() . 'conf/route';
             $this->router = SystemCache::getWithCheckFile('route', $routeFile);
+            $routePatternDir = new File($this->getPath() . 'conf/routes/');
 
-            if ( $this->router === null ){
+            if ( $this->router === null
+                || $routePatternDir->isModified(SystemCache::get('routes.$upd'), REGENIX_IS_DEV) ){
+
                 $this->router = new Router();
-
                 $routeConfig  = new RouterConfiguration();
 
                 foreach (modules\Module::$modules as $name => $module){
                     $routeConfig->addModule($name, '.modules.' . $name . '.controllers.', $module->getRouteFile());
                 }
 
+                $routeConfig->setPatternDir($routePatternDir);
                 $routeConfig->setFile(new File($routeFile));
+
                 $routeConfig->load();
+                $routeConfig->validate();
 
                 $this->router->applyConfig($routeConfig);
+
                 SystemCache::setWithCheckFile('route', $this->router, $routeFile, 60 * 2);
+                SystemCache::set('routes.$upd', $routePatternDir->lastModified(REGENIX_IS_DEV));
             }
         }
 
