@@ -50,9 +50,6 @@ several projects. You do not need something like symlinks in Linux to support a 
 
 The next step, you need to know the typical sturtcure of an application.
 
-
-### Simple structure of an application
-
 * `conf/` - configurations
  * `conf/application.conf` - the general config
  * `conf/deps.json` - the configuration of asset and module dependencies
@@ -69,7 +66,7 @@ The next step, you need to know the typical sturtcure of an application.
 
 ---
 
-### Hello World
+#### Hello World
 
 Create a new controller inhereted by `regenix\mvc\Controller` class in `controllers` namespace
 and define a public non-static method inside like this:
@@ -93,3 +90,39 @@ Next, define a new pattern in the routing of your project `conf/route`. Add a ne
 That is it. Now, you can open your browser, go to the url `http://localhost/helloworld` and you 
 can see the output of "Hello World".
 
+
+#### Using templates
+
+If you want to output some formatted text, you need to write views (or templates, this is the same).
+In Regenix templates has own its syntax. Create a new template in the path `/src/views/index.html`
+
+> *Notice*: All the views has the html extension.
+
+For example:
+
+    <html>
+        <head>
+            <title>{get 'title'}</title>
+            {html.asset 'mystyle.css'}
+            {html.asset 'myscript.js'}
+            {deps.asset 'jquery'}
+        </head>
+    <body>
+        Hello, {$user}!
+    </body>
+    </html>
+    
+Use the "hello world" example to create the controller and route pattern.
+Write the next code in the controller method `index`:
+
+    public function index(){
+        $this->put("user", "Mike");
+        $this->render("index.html");
+    }
+    
+At this example, we used the `render` method to output template. We also put the user variable and
+we can use this variable in the template. You can also notice that we use some expressions:
+`{html.asset ...}, {get ....}` etc. These expressions are tags. `{html.asset ...}` includes 
+a asset from the app directory. 
+
+In general, Regenix templates have many kinds of tags. 
