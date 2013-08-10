@@ -66,3 +66,30 @@ The next step, you need to know the typical sturtcure of an application.
  * `src/*` - other packages of sources
 * `tests/` - sources of unit and functional tests
 * `assets/` - local asset directory of your app
+
+---
+
+### Hello World
+
+Create a new controller inhereted by `regenix\mvc\Controller` class in `controllers` namespace
+and define a public non-static method inside like this:
+
+    namespace controllers;
+
+    use regenix\mvc\Controller;
+
+    class MainCtrl extends Controller {
+    
+      public function index(){
+        // and here output "hello world"
+        $this->renderText("Hello World!");
+      }
+    }
+    
+Next, define a new pattern in the routing of your project `conf/route`. Add a new line there:
+
+    GET   /helloworld     MainCtrl.index
+    
+That is it. Now, you can open your browser, go to the url `http://localhost/helloworld` and you 
+can see the output of "Hello World".
+
