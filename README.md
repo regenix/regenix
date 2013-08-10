@@ -96,7 +96,7 @@ can see the output of "Hello World".
 If you want to output some formatted text, you need to write views (or templates, this is the same).
 In Regenix templates has own its syntax. Create a new template in the path `/src/views/index.html`
 
-> *Notice*: All the views has the html extension.
+> *Notice*: All the views have the html extension.
 
 For example:
 
