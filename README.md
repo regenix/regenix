@@ -10,20 +10,20 @@ Ruby on Rails and Django frameworks, but has a lot of unique ideas.
 
 Features
 --------
-* The clear MVC.
-* The easy and powerful routing (sub-routing, inserts, etc).
+* Clear MVC architecture.
+* Easy and powerful routing (sub-routing, inserts, etc).
 * Easy debugging, displaying errors in the detailed form.
-* The Dependency Manager for assets and modules (git, local repos).
+* Dependency Manager for assets and modules (git, local repos).
 * Multiple applications within one core.
 * REST and other special types of controllers.
 * Dependency Injection Container.
 * Convenient validators like tests.
-* The fast template engine with a simple syntax.
+* Fast template engine with simple syntax.
 * Lazy loading of classes.
-* The smart scanner for searching classes.
+* Smart scanner for searching classes.
 * HTTP util classes: Session, Flash, Headers, Query, Body, etc.
-* The smart logger, logging of any errors (even fatal and parse).
-* The CLI for managing of applications.
+* Smart logger, logging any errors (even fatal and parse).
+* CLI for managing applications.
 * I18n features.
 * Unit and Functional Tests (own implementation)
 
