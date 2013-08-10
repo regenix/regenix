@@ -120,7 +120,7 @@ Write the next code in the controller method `index`:
         $this->render("index.html");
     }
     
-At this example, we used the `render` method to output template. We also put the user variable and
+At this example, we use the `render` method to output template. We also put the user variable and
 we can use this variable in the template. You can also notice that we use some expressions:
 `{html.asset ...}, {get ....}` etc. These expressions are tags. `{html.asset ...}` includes 
 a asset from the app directory. 
