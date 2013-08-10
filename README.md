@@ -1,9 +1,8 @@
 Welcome to Regenix framework
 ============================
 
-Regenix easy to use and learn MVC framework.
-Regenix framework impacted on such projects as the [Play! Framework](http://playframework.com/),
-Ruby on Rails and Django.
+Regenix is easy-to-learn and powerful MVC framework. Our framework is similar to the [Play! Framework](http://playframework.com/),
+Ruby on Rails and Django frameworks, but has a lot of unique ideas.
 
 [![Build Status](https://travis-ci.org/dim-s/regenix.png?branch=dev)](https://travis-ci.org/dim-s/regenix)
 
@@ -11,29 +10,30 @@ Ruby on Rails and Django.
 
 Features
 --------
-* MVC Architecture
-* Route for url
-* Multiple projects on a single core 
-* RESTfull services
-* Easy form binding
-* Dependency injection
-* Validation based on tests
-* Quick and concise syntax template engine
-* Lazy class loading
-* Session, Flash, etc.
-* More utils classes
-* Powerful modules, easy to write modules
+* The clear MVC.
+* The easy and powerful routing (sub-routing, inserts, etc).
+* Easy debugging, displaying errors in the detailed form.
+* The Dependency Manager for assets and modules (git, local repos).
+* Multiple applications within one core.
+* REST and other special types of controllers.
+* Dependency Injection Container.
+* Convenient validators like tests.
+* The fast template engine with a simple syntax.
+* Lazy loading of classes.
+* The smart scanner for searching classes.
+* HTTP util classes: Session, Flash, Headers, Query, Body, etc.
+* The smart logger, logging of any errors (even fatal and parse).
+* The CLI for managing of applications.
+* I18n features.
+* Unit and Functional Tests (own implementation)
 
-Current Versions
-----------------
-* version 0.1 - start regenix project
 
 Requires
 --------
 
 * PHP 5.3 or greater
 * Apache, Nginx or another server
-* Mod_rewrite enable
+* Mod_rewrite enabled (for apache)
 
 
 Getting started
@@ -41,69 +41,28 @@ Getting started
 
 ### Installation
 
-Copy all source from git, create the directory project in `apps/<project_name>/`.
-Project `project1` already exists in regenix source. 
+Clone all the sources from our git repo. Next, create a directory in the location `/apps/` of your copy of the framework.
+This directory will be the directory of a project. For example, you can name it like `myApp`. Then the full path of your 
+app will be `<framework_path>/apps/myApp/`. 
 
-### Project structure
+The directory `/apps/` contains all applications and that allows to use one copy of the framework for
+several projects. You do not need something like symlinks in Linux to support a few applications. 
 
-* conf/ - configuration directory
- * `conf/application.conf` - general config
- * `conf/route` - url routing config
-* app/controllers/ - controller directory
-* app/models/ - models directory, ORM
-* app/views/ - directory for search templates
-* app/tests/ - unit and other tests
-* assets - assets static directory for images, js, css, etc.
-
-### First controller
-
-1. Create `Application.php` in `app/controllers/`
-2. Write `Application` class in `controllers` namespace, inherited from `framework\mvc\Controller` class
-3. Define controller public method `index`
+The next step, you need to know the typical sturtcure of an application.
 
 
-```
-<? 
-/* /apps/project1/controllers/Application.php */
+### Simple structure of an application
 
-namespace controllers
-
-use framework\mvc\Controller;
-
-class Application extends Controller {
-
-    public function index(){
-         /* add named variable to template */
-         $this->put('var', 'Hello world');
-
-         /* Render template views/Application/index.html and exit */
-         $this->render();
-
-         /* after, the code will not work ...
-          ... */
-    }
-
-    public function json(){
-        /* render json answer */
-        $result = array('status' => 'ok', 'error' => null);
-        $this->renderJSON($result);
-    }
-
-    public function page($id){
-        /* using models & service */
-        $service = Page::getService();
-        $page    = $service->findById($id);
-
-        $this->put('page', $page);
-        $this->render();
-    }
-}
-```
-
-and in route config:
-
-```
-GET     /                   Application.index
-POST    /json               Application.json
-*       /page/{id:int}/     Application.page
-```
+* `conf/` - configurations
+ * `conf/application.conf` - the general config
+ * `conf/deps.json` - the configuration of asset and module dependencies
+ * `conf/route` - the url routing config
+ * `conf/routes/` - directory of sub-routes
+* `src/` - php sources of your application
+ * `src/controllers/`
+ * `src/models/`
+ * `src/views/`
+ * `src/notifiers/` - notifiers for mail sending messages
+ * `src/*` - other packages of sources
+* `tests/` - sources of unit and functional tests
+* `assets/` - local asset directory of your app
