@@ -1,9 +1,9 @@
 <?php
-namespace regenix\libs\RegenixTPL {
+namespace regenix\libs;
 
 /**
  * Class RegenixTemplate
- * @package regenix\libs\RegenixTPL
+ * @package regenix\libs
  */
     use regenix\Regenix;
     use regenix\lang\ClassScanner;
@@ -15,6 +15,8 @@ namespace regenix\libs\RegenixTPL {
     use regenix\mvc\RequestQuery;
     use regenix\mvc\template\TemplateLoader;
     use regenix\mvc\template\TemplateNotFoundException;
+
+class TemplateException extends CoreException {}
 
     /**
  *  ${var} - var
@@ -59,6 +61,9 @@ class RegenixTemplate {
     /** @var RegenixTemplateTag[string] */
     protected $tags;
 
+    /** @var RegenixTemplateFilter[] */
+    protected $filters;
+
     /** @var string */
     protected $file;
 
@@ -76,6 +81,11 @@ class RegenixTemplate {
         foreach($meta->getChildrensAll() as $class){
             if (!$class->isAbstract())
                 $this->registerTag($class->newInstance());
+        }
+        $meta = ClassScanner::find(RegenixTemplateFilter::type);
+        foreach($meta->getChildrensAll() as $class){
+            if (!$class->isAbstract())
+                $this->registerFilter($class->newInstance());
         }
     }
 
@@ -106,6 +116,13 @@ class RegenixTemplate {
         $name = strtolower($tag->getName());
         if (!isset($this->tags[$name]))
             $this->tags[$name] = $tag;
+    }
+
+    public function registerFilter(RegenixTemplateFilter $filter){
+        $name = strtolower($filter->getName());
+        if (!isset($this->filters[$name])){
+            $this->filters[$name] = $filter;
+        }
     }
 
     public function duplicate(){
@@ -313,7 +330,25 @@ class RegenixTemplate {
                                 } elseif ($cmd === 'content'){
                                     $str .= '%__BLOCK_content__%';
                                 } elseif (self::$control[$cmd]){
-                                    $str .= '<?php ' . $cmd . '(' . $tmp[1] . '):?>';
+                                    if ($cmd === 'foreach'){
+                                        $varName = substr($tmp[1], strrpos($tmp[1], ' ') + 1);
+                                        $arrayName = substr($tmp[1], 0, strrpos($tmp[1], 'as'));
+
+                                        $str .= '<?php ' . $varName . '_id = -1; '
+                                               . $varName . '_count = count(' . $arrayName . ');';
+
+                                        $str .= $cmd . '(' . $tmp[1] . '): ';
+                                        $str .= 'if (' . $varName . '_count) {';
+                                        $str .= $varName . '_id++; ';
+                                        $str .= $varName . '_isFirst = ' . $varName . '_id === 0; ';
+                                        $str .= $varName . '_isLast = ' . $varName . '_id === ' . $varName . '_count - 1; ';
+                                        $str .= '}';
+
+                                        $str .= ' ?>';
+
+                                    } else {
+                                        $str .= '<?php ' . $cmd . '(' . $tmp[1] . '):?>';
+                                    }
                                 } elseif (String::startsWith($cmd, 'tag.')){
                                     $str .= '<?php $_TPL->_renderHtmlTag("' . substr($cmd, 4) . '", ' . $this->_makeArgs($tmp[1]) . ');?>';
                                 } elseif ($this->tags[$cmd]){
@@ -405,11 +440,18 @@ class RegenixTemplate {
         if ( is_object($var) )
             return $var;
         else
-            return RegenixVariable::current($var);
+            return RegenixVariable::current($var, $this);
     }
 
     public function _renderTag($tag, array $args = array()){
         echo $this->tags[$tag]->call($args, $this);
+    }
+
+    public function _callFilter($name, $value, array $args = array()){
+        if($filter = $this->filters[strtolower($name)]){
+            return $filter->call($value, $args, $this);
+        } else
+            throw new TemplateException('Template filter `%s()` is not found', $name);
     }
 
     public function _renderHtmlTag($tag, array $args = array()){
@@ -501,7 +543,7 @@ class RegenixSetTag extends RegenixTemplateTag {
         foreach($args as $key => $value){
             $key = strtolower($key);
             if ($key === 'content')
-                throw new CoreException('Block `content` can not be used');
+                throw new TemplateException('Block `content` cannot be used');
 
             $ctx->blocks[$key] = $value;
         }
@@ -552,14 +594,26 @@ class RegenixIncludeTag extends RegenixRenderTag {
     }
 }
 
+abstract class RegenixTemplateFilter {
+    const type = __CLASS__;
+
+    abstract public function getName();
+    abstract public function call($value, array $args, RegenixTemplate $ctx);
+}
+
 class RegenixVariable {
 
     protected $var;
+    /** @var RegenixTemplate */
+    protected $ctx;
+
+    /** @var RegenixVariable */
     protected static $instance;
     protected static $modifiers = array();
 
-    protected function __construct($var){
+    protected function __construct($var, RegenixTemplate $ctx){
         $this->var = $var;
+        $this->ctx = $ctx;
     }
 
     public function raw(){
@@ -601,12 +655,13 @@ class RegenixVariable {
         return $this;
     }
 
-    public static function current($var){
+    public static function current($var, RegenixTemplate $ctx){
         if (self::$instance){
+            self::$instance->ctx = $ctx;
             self::$instance->var = $var;
             return self::$instance;
         }
-        return self::$instance = new RegenixVariable($var);
+        return self::$instance = new RegenixVariable($var, $ctx);
     }
 
     public function __toString(){
@@ -614,13 +669,6 @@ class RegenixVariable {
     }
 
     public function __call($name, $args){
-        $name = strtolower($name);
-        if ($callback = self::$modifiers[$name]){
-            array_unshift($args, $this->var);
-            $this->var = call_user_func_array($callback, $args);
-            return $this->var;
-        } else
-            throw new CoreException('Template `%s()` modifier not found', $name);
+        return $this->var = $this->ctx->_callFilter($name, $this->var, $args);
     }
-}
 }

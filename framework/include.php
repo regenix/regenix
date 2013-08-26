@@ -30,7 +30,7 @@ namespace regenix {
     use regenix\mvc\template\BaseTemplate;
     use regenix\mvc\template\TemplateLoader;
 
-abstract class Regenix {
+final class Regenix {
 
     const type = __CLASS__;
 
@@ -61,12 +61,15 @@ abstract class Regenix {
     /** @var AbstractGlobalBootstrap */
     private static $bootstrap = null;
 
+    // Util class
+    private function __construct(){}
+
     /**
      * Get current version of regenix framework
      * @return string
      */
     public static function getVersion(){
-        return '0.6';
+        return '0.7';
     }
 
     /**
@@ -125,12 +128,11 @@ abstract class Regenix {
         self::trace('Finish init core');
 
         if ($inWeb){
-
             if (file_exists($globalFile = Application::getApplicationsPath() . '/GlobalBootstrap.php')){
                 require $globalFile;
                 self::$bootstrap = new \GlobalBootstrap();
                 if (!(self::$bootstrap instanceof AbstractGlobalBootstrap))
-                    throw new CoreException("GlobalBootstrap class must be extends AbstractGlobalBootstrap");
+                    throw new CoreException("Your GlobalBootstrap class should be inherited by AbstractGlobalBootstrap");
             }
 
             self::_registerTriggers();
@@ -167,7 +169,7 @@ abstract class Regenix {
     }
 
     /**
-     * Init for console app
+     * Init for console src
      * @param $rootDir
      */
     public static function initConsole($rootDir){
@@ -191,7 +193,7 @@ abstract class Regenix {
     }
 
     /**
-     * Init for web app
+     * Init for web src
      * @param $rootDir
      */
     public static function initWeb($rootDir){
@@ -213,14 +215,14 @@ abstract class Regenix {
      */
     public static function addExternalApp($path){
         if (self::$startTime){
-            throw new CoreException('Method addExternalApp() must be called to initialize the framework');
+            throw new CoreException('Method addExternalApp() should be called before initialization of the framework');
         }
         $path = str_replace('\\', '/', $path);
         if (substr($path, -1) !== '/')
             $path .= '/';
 
         if (!is_dir($path))
-            die('Fatal error: Can\'t add external application from non-exists directory - "' . $path . '"');
+            die('Fatal error: The external application cannot be added from non-exists directory - "' . $path . '"');
 
         self::$externalApps[$path] = $path;
     }
@@ -276,7 +278,7 @@ abstract class Regenix {
         if ($zip->open($zipFile)){
             $result = $zip->extractTo($appDir);
             if (!$result)
-                throw new CoreException('Can`t extract zip archive "%s" in apps directory', basename($zipFile));
+                throw new CoreException('The zip archive "%s" cannot be extracted to apps directory', basename($zipFile));
 
             $zip->close();
         }
@@ -344,7 +346,7 @@ abstract class Regenix {
             }
         }
         
-        throw new HttpException(HttpException::E_NOT_FOUND, "Can't find app for current request");
+        throw new HttpException(HttpException::E_NOT_FOUND, "It cannot find an application for the current request");
     }
     
     public static function processRoute(){
@@ -382,7 +384,7 @@ abstract class Regenix {
             $declClass = $reflection->getDeclaringClass();
             
             if ( $declClass->isAbstract() ){
-                throw new CoreException('Can\'t use "%s.%s()" as action method', $controllerClass, $actionMethod);
+                throw new CoreException('It cannot use the "%s.%s()" as action method', $controllerClass, $actionMethod);
             }
 
             if (self::$bootstrap)
@@ -457,7 +459,7 @@ abstract class Regenix {
         }
 
         $file = str_replace('\\', '/', $error['file']);
-        $error['line'] += CoreException::getErrorOffsetLine($file);
+        $error['line'] = CoreException::getErrorLine($file, $error['line']);
         $file = $error['file'] = CoreException::getErrorFile($file);
         $file = str_replace(str_replace('\\', '/', ROOT), '', $file);
 
@@ -507,7 +509,7 @@ abstract class Regenix {
 
         if ($stack){
             $file = str_replace('\\', '/', $stack['file']);
-            $stack['line']        += CoreException::getErrorOffsetLine($file);
+            $stack['line']         = CoreException::getErrorLine($file, $stack['line']);
             $file = $stack['file'] = CoreException::getErrorFile($file);
 
             $file = str_replace(str_replace('\\', '/', ROOT), '', $file);
@@ -534,7 +536,7 @@ abstract class Regenix {
         $template->putArgs(array('exception' => $e,
             'stack' => $stack, 'info' => $info, 'hash' => $hash,
             'desc' => $e->getMessage(), 'file' => $file, 'source' => $source,
-            'app' => Regenix::app(),
+            'src' => Regenix::app(),
             'debug_info' => Regenix::getDebugInfo(),
             'controller' => Controller::current()
         ));
@@ -580,7 +582,7 @@ abstract class Regenix {
             $app =  Regenix::app();
             $errfile = str_replace('\\', '/', $errfile);
 
-            // only for app sources
+            // only for src sources
             if (!$app || String::startsWith($errfile, $app->getPath())){
                 if ( $errno === E_DEPRECATED
                     || $errno === E_USER_DEPRECATED
@@ -663,7 +665,7 @@ abstract class Regenix {
             }
             chmod($dir, 0777);
         }
-        self::$tempPath = $dir;
+        self::$tempPath = str_replace('\\', '/', $dir);
     }
 }
 
@@ -749,7 +751,7 @@ abstract class Regenix {
         /**
          * @param lang\File $appPath
          * @param bool $inWeb
-         * @internal param string $appName root directory name of app
+         * @internal param string $appName root directory name of src
          */
         public function __construct(File $appPath, $inWeb = true){
             $this->path = $appPath;
@@ -767,11 +769,11 @@ abstract class Regenix {
             }
 
             $this->applyConfig( $this->config );
-            Regenix::trace('New app - ' . $appName);
+            Regenix::trace('New src - ' . $appName);
         }
 
         /**
-         * get app name (root directory name)
+         * get src name (root directory name)
          * @return string
          */
         public function getName(){
@@ -779,7 +781,7 @@ abstract class Regenix {
         }
 
         /**
-         * get app root path
+         * get src root path
          * @return string
          */
         public function getPath(){
@@ -889,7 +891,7 @@ abstract class Regenix {
             if ($version){
                 $info = $versions[$version];
                 if (!is_array($info)){
-                    throw new CoreException('Asset `%s/%s` not found', $group, $version);
+                    throw new CoreException('Asset `%s/%s` is not found', $group, $version);
                 }
             } else {
                 list($version, $info) = each($versions);
@@ -897,7 +899,7 @@ abstract class Regenix {
 
             $meta = $this->repository->getLocalMeta($group, $version);
             if (!$meta)
-                throw new CoreException('Meta information not found for `%s` asset, please run `deps update` for fix it', $group);
+                throw new CoreException('Meta information is not found for `%s` asset, run `deps update` to fix it', $group);
 
             $info['version'] = $version;
             return $info + $meta;
@@ -971,7 +973,7 @@ abstract class Regenix {
                 $this->bootstrap->onEnvironment($this->mode);
 
             if (!$this->mode)
-                throw new CoreException('App mode must be set in `Bootstrap::onEnvironment()` or `conf/application.conf`');
+                throw new CoreException('Application mode should be set in `Bootstrap::onEnvironment()` method or `conf/application.conf` file');
 
             define('IS_PROD', $this->isProd());
             define('IS_DEV', $this->isDev());
@@ -987,7 +989,7 @@ abstract class Regenix {
             define('APP_PUBLIC_PATH', $this->config->get('app.public', '/public/' . $this->name . '/'));
             $this->secret = $this->config->getString('app.secret');
             if ( !$this->secret ){
-                throw new ConfigurationReadException($this->config, '`app.secret` must be set as random string');
+                throw new ConfigurationReadException($this->config, '`app.secret` should be set as a random string');
             }
 
             Regenix::trace('.register() application start');
@@ -1016,7 +1018,7 @@ abstract class Regenix {
                 $this->bootstrap->onStart();
             }
 
-            Regenix::trace('.registerBootstrap() application, finish register app');
+            Regenix::trace('.registerBootstrap() application, finish register src');
         }
 
         public function loadDeps(){
@@ -1043,7 +1045,7 @@ abstract class Regenix {
         }
 
         /**
-         * Get all assets of app
+         * Get all assets of src
          * @throws static
          * @return array
          */
@@ -1057,7 +1059,7 @@ abstract class Regenix {
                 foreach($this->assets as $group => $versions){
                     foreach($versions as $version => $el){
                         if (!$this->repository->isValid($group, $version)){
-                            throw new CoreException('Asset `%s/%s` not valid or not exists, please run in console `regenix deps update`', $group, $version);
+                            throw new CoreException('Asset `%s/%s` is not valid or non-exist, please run `regenix deps update` in console', $group, $version);
                         }
                     }
                 }
@@ -1074,9 +1076,9 @@ abstract class Regenix {
             foreach((array)$this->deps['modules'] as $name => $conf){
                 $dep = $this->repository->findLocalVersion($name, $conf['version']);
                 if (!$dep){
-                    throw new CoreException('Can`t find `%s/%s` module, please run in console `regenix deps update`', $name, $conf['version']);
+                    throw new CoreException('It cannot find the `%s/%s` module, run `regenix deps update` in console to fix it', $name, $conf['version']);
                 } elseif (REGENIX_IS_DEV && !$this->repository->isValid($name, $dep['version'])){
-                    throw new CoreException('Module `%s` not valid or not exists, please run in console `regenix deps update`', $name);
+                    throw new CoreException('Module `%s` is not valid or non-exist, run `regenix deps update` in console to fix it', $name);
                 }
                 Module::register($name, $dep['version']);
             }

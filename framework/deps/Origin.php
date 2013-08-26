@@ -72,7 +72,7 @@ abstract class Origin {
     public static function register($originClass){
         $reflect = new \ReflectionClass($originClass);
         if (!$reflect->isSubclassOf(Origin::type)){
-            throw new CoreException('Repository origin must be extends `%s` class', Origin::type);
+            throw new CoreException('Repository origin should be inherited by the `%s` class', Origin::type);
         }
 
         self::$originTypes[] = $originClass;

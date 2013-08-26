@@ -138,7 +138,7 @@ class Repository implements IClassInitialization{
                     $result[$group][$version]['deps'][$gr] = $dep['version'];
                     $this->_getAllDependencies($env, $gr, $dep['version'], $result);
                 } elseif ($check){
-                    throw new CoreException('Can`t find `%s/%s/%s` dependency, please run in console `regenix deps update`',
+                    throw new CoreException('Can`t find `%s/%s/%s` dependency, run `regenix deps update` in console to fix it',
                         $env, $gr, $pattern['version']);
                 } else {
                     $result[$gr][$pattern['version']] = array();

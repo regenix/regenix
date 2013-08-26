@@ -68,11 +68,11 @@ final class DI {
             throw new ClassNotFoundException($implement);
 
         if (!$meta->isParentOf($implement)){
-            throw new DependencyInjectionException('"%s" class must be implements or extends by "%s"', $implement, $interface);
+            throw new DependencyInjectionException('"%s" class should be implemented or inherited by "%s"', $implement, $interface);
         }
 
         if ($info->isAbstract() || $info->isInterface()){
-            throw new DependencyInjectionException('"%s" cannot be abstract class or interface');
+            throw new DependencyInjectionException('"%s" cannot be an abstract class or interface');
         }
     }
 

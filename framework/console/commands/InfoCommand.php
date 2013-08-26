@@ -13,11 +13,11 @@ class InfoCommand extends ConsoleCommand {
         $this
             ->writeln('Current: %s', $this->app->getName())
             ->writeln()
-            ->writeln('     mode = %s', $config->get('app.mode'))
-            ->writeln('     mode.strict = %s', $config->getBoolean('app.mode.strict', true) ? 'on' : 'off');
+            ->writeln('     mode = %s', $config->get('src.mode'))
+            ->writeln('     mode.strict = %s', $config->getBoolean('src.mode.strict', true) ? 'on' : 'off');
     }
 
     public function getInlineHelp(){
-        return 'show information of current app';
+        return 'shows information of current src';
     }
 }

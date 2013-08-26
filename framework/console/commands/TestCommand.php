@@ -50,6 +50,6 @@ class TestCommand extends ConsoleCommand {
     }
 
     public function getInlineHelp(){
-        return 'run tests of app or module, for module: test -module=name~0.5';
+        return 'runs tests of an src or module, for module: test -module=name~0.5';
     }
 }

@@ -38,7 +38,7 @@ class TemplateLoader {
             self::registerPath(ROOT . 'modules/', false);
             self::registerPath(Regenix::getFrameworkPath() . 'views/', false);
             
-            // current app
+            // current src
             $app =  Regenix::app();
             if ($app){
                 self::setAssetPath('/apps/' . $app->getName() . '/assets/');

@@ -23,6 +23,7 @@ class Tester extends Controller {
             $module = explode('~', $moduleWithVersion, 2);
             $namespace = 'modules\\' . $module[0] . '\\';
         } else {
+            ClassScanner::addClassPath(Regenix::app()->getTestPath());
             $namespace = 'tests\\';
         }
 

@@ -10,11 +10,11 @@ use regenix\lang\File;
 use regenix\lang\FileNotFoundException;
 use regenix\lang\String;
 use regenix\libs\Captcha;
-use regenix\libs\RegenixTPL\RegenixTemplate as RegenixTPL;
-use regenix\libs\RegenixTPL\RegenixTemplateTag;
+use regenix\libs\RegenixTemplate as RegenixTPL;
+use regenix\libs\RegenixTemplateTag;
 use regenix\libs\ImageUtils;
-use regenix\mvc\route\Router;
-use regenix\widgets\Widget;
+    use regenix\libs\TemplateException;
+    use regenix\mvc\route\Router;
 
 class RegenixTemplate extends BaseTemplate {
 
@@ -89,7 +89,7 @@ class RegenixTemplate extends BaseTemplate {
             $url = Router::path($action, $args);
 
             if ($url === null)
-                throw new CoreException('Can`t reverse url for action "%s(%s)"',
+                throw new TemplateException('Can`t reverse url for action "%s(%s)"',
                     $action, implode(', ', array_keys($args)));
 
             return $url;
@@ -111,21 +111,6 @@ class RegenixTemplate extends BaseTemplate {
             }
 
             return $file;
-        }
-    }
-
-    class RegenixWidgetTag extends RegenixTemplateTag {
-
-        function getName(){
-            return 'widget';
-        }
-
-        public function call($args, RegenixTPL $ctx){
-            $name = $args['_arg'];
-            unset($args['_arg']);
-
-            $widget = Widget::createByUID($name, $args);
-            return $widget->render();
         }
     }
 
@@ -170,7 +155,7 @@ class RegenixTemplate extends BaseTemplate {
         public function call($args, RegenixTPL $ctx){
             $app =  Regenix::app();
             if (!$app->config->getBoolean('captcha.enable'))
-                throw new CoreException('Captcha is not enable in configuration, needs `captcha.enable = on`');
+                throw new TemplateException('Captcha is not enabled in configuration, should be `captcha.enable = on`');
 
             return Captcha::URL;
         }
@@ -233,7 +218,7 @@ class RegenixTemplate extends BaseTemplate {
             if ($tpl)
                 return $tpl;
 
-            throw new CoreException('Unknown html asset for `%s`', $file);
+            throw new TemplateException('Unknown html asset for `%s`', $file);
         }
     }
 
@@ -259,6 +244,7 @@ namespace {
 
     use regenix\lang\StrictObject;
     use regenix\lang\CoreException;
+    use regenix\libs\TemplateException;
     use regenix\mvc\template\RegenixTemplate;
 
     class TPL extends StrictObject {
@@ -285,7 +271,7 @@ namespace {
 
                 return $result;
             } else
-                throw new CoreException('TPL class may only be used in templates');
+                throw new TemplateException('TPL class can be used in templates only');
         }
     }
 

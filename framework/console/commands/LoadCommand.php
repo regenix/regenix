@@ -11,7 +11,7 @@ class LoadCommand extends ConsoleCommand {
 
     public function __default(){
         $name = $this->args->get(0);
-        $this->write('Load app: `%s`', $name);
+        $this->write('Load src: `%s`', $name);
 
         $cmd = Commander::current();
         if (!$cmd->apps[$name]){
@@ -27,6 +27,6 @@ class LoadCommand extends ConsoleCommand {
     }
 
     public function getInlineHelp(){
-        return 'load and set current app by name, example: `load <name>`';
+        return 'loads and sets a current src by the name, example: `load <name>`';
     }
 }

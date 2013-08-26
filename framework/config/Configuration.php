@@ -25,7 +25,7 @@ class Configuration extends StrictObject {
 
     protected function loadData(){
         //
-        throw new \Exception(String::format('Can`t loadData() in abstract configuration'));
+        throw new \Exception(String::format('It cannot invoke loadData() in abstract configuration'));
     }
 
     /**
@@ -192,7 +192,7 @@ class PropertiesConfiguration extends Configuration {
             $result = array_map('trim', $result);
         } else
             throw new ConfigurationReadException($this,
-                String::format('Can\'t transform default to array type for "%s"', $key));
+                String::format('It cannot transform default value to array type for "%s"', $key));
 
         return $result;
     }

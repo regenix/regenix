@@ -240,7 +240,7 @@ class DepsCommand extends ConsoleCommand {
         if ($this->args->has(1)){
             $variant = $this->args->get(1);
             if (!in_array($variant, $variants, true)){
-                $this->writeln('Can`t find `%s` group dependencies', $variant);
+                $this->writeln('It cannot find `%s` group dependencies', $variant);
                 return;
             }
         }
@@ -276,6 +276,6 @@ class DepsCommand extends ConsoleCommand {
     }
 
     public function getInlineHelp(){
-        return 'show and update dependencies of current app, example: deps update';
+        return 'shows and updates dependencies of a current src, example: deps update';
     }
 }

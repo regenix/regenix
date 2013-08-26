@@ -5,7 +5,6 @@ use regenix\Application;
 use regenix\Regenix;
 use regenix\cache\SystemCache;
 use regenix\SDK;
-use regenix\lang\File;
 
 require REGENIX_ROOT . 'cache/SystemCache.php';
 
@@ -113,12 +112,18 @@ class CoreException extends \Exception {
         $app = Regenix::app();
         if ($app){
             $appDir = str_replace('\\', '/', Application::getApplicationsPath());
+            $tmpDir = Regenix::getTempPath();
             $moduleDir  = ROOT . 'modules/';
             foreach($e->getTrace() as $stack){
                 $dir = str_replace('\\', '/', dirname($stack['file']));
                 if (strpos($dir, $appDir) === 0){
                     return $stack;
                 }
+
+                if (strpos($dir, $tmpDir) === 0){
+                    return $stack;
+                }
+
                 if (self::$onlyPublic) continue;
 
                 if (strpos($dir, $moduleDir) === 0){
@@ -131,6 +136,9 @@ class CoreException extends \Exception {
 
     private static $files = array();
     private static $offsets = array();
+
+    private static $externalFile = null;
+    private static $externalLine = 0;
 
     /**
      * create error mirror file
@@ -154,13 +162,29 @@ class CoreException extends \Exception {
     /**
      * @param $original file path
      * @return string
+     * @return mixed|null
      */
     public static function getErrorFile($original){
+        if (self::$externalFile)
+            return self::$externalFile;
+
         $original = str_replace('\\', '/', $original);
         if ($file = self::$files[$original])
             return $file;
 
         return $original;
+    }
+
+    /**
+     * @param $origin
+     * @param $line
+     * @return int
+     */
+    public static function getErrorLine($origin, $line){
+        if (self::$externalLine)
+            return self::$externalLine;
+
+        return self::getErrorOffsetLine($origin) + $line;
     }
 
     /**
@@ -173,6 +197,15 @@ class CoreException extends \Exception {
             return (int)$offset;
 
         return 0;
+    }
+
+    /**
+     * @param $file
+     * @param $line
+     */
+    public static function setExternal($file, $line = null){
+        self::$externalFile = $file;
+        self::$externalLine = $line;
     }
 
     private static $onlyPublic = true;
@@ -196,6 +229,8 @@ class CoreException extends \Exception {
         return self::$onlyPublic;
     }
 }
+
+
 
 interface IClassInitialization {
 
@@ -283,8 +318,13 @@ final class ClassMetaInfo {
      * @return object
      */
     public function newInstance($args = array()){
-        $reflect = new \ReflectionClass($this->name);
-        return $reflect->newInstanceArgs($args);
+        if ($args){
+            $reflect = new \ReflectionClass($this->name);
+            return $reflect->newInstanceArgs($args);
+        } else {
+            $name = $this->name;
+            return new $name();
+        }
     }
 
     /**
@@ -686,7 +726,7 @@ class ClassScanner {
      */
     public static function getDebugUseClasses(){
         if (!self::$debug)
-            throw new CoreException('Unable to get a list of classes is not used in debug mode');
+            throw new CoreException('Unable to get a list of classes, it cannot be used in debug mode');
 
         return self::$debugUseClasses;
     }
@@ -1109,13 +1149,14 @@ class ArrayTyped implements \Iterator {
 abstract class StrictObject {
 
     public function __set($name, $value){
-        throw new CoreException('Property `%s` not defined in `%s` class', $name, get_class($this));
+        throw new CoreException('Property `%s` is not defined in `%s` class', $name, get_class($this));
     }
 
     public function __get($name){
-        throw new CoreException('Property `%s` not defined in `%s` class', $name, get_class($this));
+        throw new CoreException('Property `%s` is not defined in `%s` class', $name, get_class($this));
     }
 }
+
 
 
 /**
@@ -1381,7 +1422,7 @@ class File extends StrictObject {
      */
     public function open($mode){
         if ($this->handle)
-            throw new CoreException('File "%s" already open, close the file before opening', $this->getPath());
+            throw new CoreException('File "%s" is already opened, close the file before opening', $this->getPath());
 
         $handle = fopen($this->path, $mode);
         if (!$handle)

@@ -35,11 +35,11 @@ class AboutCommand extends ConsoleCommand {
         $this->writeln('apps:');
         $this->writeln();
         foreach($cmd->apps as $app){
-            $this->writeln('    - %s (%s)', $app->getName(), $app->config->get('app.mode'));
+            $this->writeln('    - %s (%s)', $app->getName(), $app->config->get('src.mode'));
         }
     }
 
     public function getInlineHelp(){
-        return 'show information about versions, apps, modules';
+        return 'shows information about versions, apps, modules';
     }
 }

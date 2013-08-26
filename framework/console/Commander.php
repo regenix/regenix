@@ -93,7 +93,7 @@ class Commander implements IClassInitialization {
 
         $command = $this->args[0];
         if (!$command || !self::$commands[$command]){
-            throw new CoreException('Command `%s` not found', $command);
+            throw new CoreException('The command `%s` is not found', $command);
         }
 
         /*$method = $this->args[1];
@@ -103,7 +103,7 @@ class Commander implements IClassInitialization {
         /** @var $cmd ConsoleCommand */
         $cmd = self::$commands[$command];
         if (!method_exists($cmd, $method)){
-            throw new CoreException('Command method `%s %s` not found', $command, $method);
+            throw new CoreException('The command method `%s %s` is not found', $command, $method);
         }
 
         $cmd->__loadInfo($method, $this->app, (array)array_slice($this->args, 1), (array)$this->options);
@@ -116,7 +116,7 @@ class Commander implements IClassInitialization {
         $reflection = new \ReflectionClass($commands);
         $group = $reflection->getConstant('GROUP');
         if (!$group)
-            throw new CoreException('Console commands GROUP can not empty');
+            throw new CoreException('Console commands: GROUP constant cannot be empty');
 
         self::$commands[$group] = $commands;
     }
