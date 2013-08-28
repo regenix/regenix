@@ -14,18 +14,17 @@ abstract class ModuleController extends Controller {
     /** @var Module */
     protected $module;
 
-
     public function __construct() {
         parent::__construct();
         
         $class  = explode('\\', get_class($this), 3);
         $this->module = Module::$modules[$class[1]];
         if (!$this->module)
-            throw new CoreException('Can`t find module for %s ModuleController', $class);
+            throw new CoreException('Can`t find a module for the "%s" ModuleController', $class);
         
         TemplateLoader::setAssetPath('/modules/' . $this->module->uid . '~' . $this->module->version . '/assets/');
         TemplateLoader::setControllerNamespace('.modules.' . $this->module->uid . '.controllers.');
-        TemplateLoader::registerPath(ROOT . 'modules/' . $this->module->uid . '~' . $this->module->version . '/views/');
+        TemplateLoader::registerPath(ROOT . 'modules/' . $this->module->uid . '~' . $this->module->version . '/src/views/');
     }
 
     public function template($template = false){

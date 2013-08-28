@@ -47,7 +47,7 @@ class Module {
      * @return null|string
      */
     final public function getModelPath(){
-        $path = $this->getPath() . 'models/';
+        $path = $this->getPath() . 'src/models/';
         return is_dir($path) ? $path : null;
     }
 
@@ -55,7 +55,7 @@ class Module {
      * @return null|string
      */
     final public function getControllerPath(){
-        $path = $this->getPath() . 'controllers/';
+        $path = $this->getPath() . 'src/controllers/';
         return is_dir($path) ? $path : null;
     }
 
@@ -73,7 +73,7 @@ class Module {
         if ( self::$modules[ $moduleName ] )
             return false;
 
-        ClassScanner::addClassRelativePath('modules/' . $moduleName . '~' . $version);
+        ClassScanner::addClassRelativePath('modules/' . $moduleName . '~' . $version . '/src');
 
         $module = new Module();
         $module->uid     = $moduleName;

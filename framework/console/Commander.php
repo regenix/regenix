@@ -73,6 +73,9 @@ class Commander implements IClassInitialization {
             $tmpFile->getParentFile()->mkdirs();
             file_put_contents($tmpFile->getPath(), $this->app->getName());
         }
+
+        if ($this->app)
+            ClassScanner::addClassPath($this->app->getSrcPath());
     }
 
     public function run(){

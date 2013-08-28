@@ -346,7 +346,7 @@ final class Regenix {
             }
         }
         
-        throw new HttpException(HttpException::E_NOT_FOUND, "It cannot find an application for the current request");
+        throw new HttpException(HttpException::E_NOT_FOUND, "Can`t find an application for the current request");
     }
     
     public static function processRoute(){
@@ -384,7 +384,7 @@ final class Regenix {
             $declClass = $reflection->getDeclaringClass();
             
             if ( $declClass->isAbstract() ){
-                throw new CoreException('It cannot use the "%s.%s()" as action method', $controllerClass, $actionMethod);
+                throw new CoreException('Can`t use the "%s.%s()" as action method', $controllerClass, $actionMethod);
             }
 
             if (self::$bootstrap)
@@ -548,15 +548,6 @@ final class Regenix {
         $response->setEntity($template);
         $response->send();
     }
-
-    /**
-    public static function catchCoreException(CoreException $e){
-        self::catchAny($e);
-    }
-
-    public static function catchErrorException(\ErrorException $e){
-        self::catchAny($e);
-    }*/
 
     public static function catchException(\Exception $e){
         self::catchAny($e);
@@ -786,7 +777,6 @@ final class Regenix {
          */
         public function getPath(){
             return $this->path->getPath() . '/';
-            //return self::getSrcDir() . $this->name . '/';
         }
 
         public function getSrcPath(){
@@ -1076,7 +1066,7 @@ final class Regenix {
             foreach((array)$this->deps['modules'] as $name => $conf){
                 $dep = $this->repository->findLocalVersion($name, $conf['version']);
                 if (!$dep){
-                    throw new CoreException('It cannot find the `%s/%s` module, run `regenix deps update` in console to fix it', $name, $conf['version']);
+                    throw new CoreException('Can`t find the `%s/%s` module, run `regenix deps update` in console to fix it', $name, $conf['version']);
                 } elseif (REGENIX_IS_DEV && !$this->repository->isValid($name, $dep['version'])){
                     throw new CoreException('Module `%s` is not valid or non-exist, run `regenix deps update` in console to fix it', $name);
                 }

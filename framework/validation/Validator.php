@@ -4,6 +4,7 @@ namespace regenix\validation;
 use regenix\exceptions\TypeException;
 use regenix\lang\CoreException;
 use regenix\lang\File;
+use regenix\lang\StrictObject;
 use regenix\lang\String;
 use regenix\libs\I18n;
 use regenix\mvc\UploadFile;
@@ -12,133 +13,62 @@ class ValidationException extends CoreException {}
 
 abstract class Validator {
 
-    /** @var mixed */
-    protected $entity;
-
     /** @var array */
     protected $errors;
 
-    /** @var array */
-    protected $map = array();
+    /** @var boolean */
+    protected $__ok = true;
 
-    public function __construct($entity){
-        $this->entity = $entity;
-    }
+    /** @var bool */
+    protected $__lastOk = true;
 
     /**
-     * get value by name of attribute
-     * example: getValue('name'), getValue('address.name')
-     * @param $attribute
-     * @throws ValidationException
-     * @return mixed|null
+     * @param $value
+     * @param $message
+     * @param ValidationResult $validation
+     * @return ValidationResult
      */
-    protected function getAttribute($attribute){
-        if (!$attribute)
-            return $this->entity;
-
-        $attribute = str_replace('->', '.', $attribute);
-        $attrs     = explode('.', $attribute);
-
-        $obj   = $this->entity;
-        $value = null;
-        while(list($i, $attribute) = each($attrs)){
-            if (is_object($obj)){
-                if (property_exists($obj, $attribute))
-                    $value = $obj = $obj->{$attribute};
-                else
-                    throw new ValidationException('`%s` attribute not exists in class %s', $attribute, get_class($this->entity));
-            } else if (is_array($obj)){
-                $value = $obj = $obj[$attribute];
-            } else
-                throw new ValidationException('`%s` attribute must be object or array', $attribute);
-        }
-
-        foreach($this->map as $callback){
-            $value = call_user_func($callback, $value);
-        }
-        $this->map = array();
-
-        return $value;
-    }
-
-    protected function validateAttribute($attribute, $message, ValidationResult $validation){
+    protected function validateValue($value, $message, ValidationResult $validation){
         $validation->message($message);
 
-        if (!$validation->validate($this->getAttribute($attribute))){
-            $this->errors[] = array(
-                'attr' => $attribute,
-                'validator' => $validation
-            );
-        }
-        return $validation;
-    }
-
-    protected function validateEntity($message, ValidationResult $validation){
-        $validation->message($message);
-
-        if (!$validation->validate($this->entity)){
+        if (!$validation->validate($value)){
             $this->errors[] = array(
                 'attr' => null,
+                'value' => $value,
                 'validator' => $validation
             );
+            $this->__ok = false;
+            $this->__lastOk = false;
+        } else {
+            $this->__lastOk = true;
         }
         return $validation;
-    }
-
-    protected function validateAny($value, $message){
-        $validator = new ValidationRequiresResult();
-        $validator->message($message);
-
-        if (!$validator->validate($value)){
-            $this->errors[] = array(
-                'attr' => null,
-                'validator' => $validator
-            );
-        }
-    }
-
-    protected function map($callback){
-        if (!is_callable($callback))
-            throw new TypeException('$callback', 'Callable');
-
-        $this->map[] = $callback;
-        return $this;
-    }
-
-    protected function isEmpty($attribute){
-        return $this->validateAttribute($attribute, 'validation.result.isEmpty', new ValidationIsEmptyResult());
-    }
-
-    protected function requires($attribute){
-        return $this->validateAttribute($attribute, 'validation.result.requires', new ValidationRequiresResult());
-    }
-
-    protected function minLength($attribute, $min){
-        return $this->validateAttribute($attribute, 'validation.result.minLength', new ValidationMinLengthResult($min));
-    }
-
-    protected function maxLength($attribute, $max){
-        return $this->validateAttribute($attribute, 'validation.result.maxLength', new ValidationMaxLengthResult($max));
-    }
-
-    protected function maxFileSize($attribute, $size){
-        return $this->validateAttribute($attribute, 'validation.result.maxFileSize', new ValidationFileMaxSizeResult($size));
-    }
-
-    protected function isFileType($attribute, array $exts){
-        return $this->validateAttribute($attribute, 'validation.result.isFileType', new ValidationFileTypeResult($exts));
-    }
-
-    protected function matches($attribute, $pattern){
-        return $this->validateAttribute($attribute, 'validation.result.matches', new ValidationMatchesResult($pattern));
-    }
-
-    protected function checkFilter($attribute, $filter){
-        return $this->validateAttribute($attribute, 'validation.result.filter', new ValidationFilterResult($filter));
     }
 
     public function clear(){
         $this->errors = array();
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasErrors(){
+        return sizeof($this->errors) > 0;
+    }
+
+    /**
+     * @return array
+     */
+    public function getErrors(){
+        $result = array();
+        foreach($this->errors as $error){
+            $result[] = array(
+                'attr' => $error['attr'],
+                'value' => $error['value'],
+                'message' => $error['validator']->getMessage($error['attr'])
+            );
+        }
+        return $result;
     }
 
     /**
@@ -173,30 +103,154 @@ abstract class Validator {
         return $this;
     }
 
-    /**
-     * @return bool
-     */
-    public function hasErrors(){
-        return sizeof($this->errors) > 0;
+    protected function isOk(){
+        return $this->__ok;
+    }
+
+    protected function isLastOk(){
+        return $this->__lastOk;
+    }
+
+    protected function isEmpty($value){
+        return $this->validateValue($value, 'validation.result.isEmpty', new ValidationIsEmptyResult());
+    }
+
+    protected function requires($value){
+        return $this->validateValue($value, 'validation.result.requires', new ValidationRequiresResult());
+    }
+
+    protected function minLength($value, $min){
+        return $this->validateValue($value, 'validation.result.minLength', new ValidationMinLengthResult($min));
+    }
+
+    protected function maxLength($value, $max){
+        return $this->validateValue($value, 'validation.result.maxLength', new ValidationMaxLengthResult($max));
+    }
+
+    protected function maxFileSize($value, $size){
+        return $this->validateValue($value, 'validation.result.maxFileSize', new ValidationFileMaxSizeResult($size));
+    }
+
+    protected function isFileType($value, array $extensions){
+        return $this->validateValue($value, 'validation.result.isFileType', new ValidationFileTypeResult($extensions));
+    }
+
+    protected function matches($value, $pattern){
+        return $this->validateValue($value, 'validation.result.matches', new ValidationMatchesResult($pattern));
+    }
+
+    protected function checkFilter($value, $filter){
+        return $this->validateValue($value, 'validation.result.filter', new ValidationFilterResult($filter));
+    }
+}
+
+abstract class EntityValidator extends Validator {
+
+    /** @var mixed */
+    protected $entity;
+
+    /** @var array */
+    protected $map = array();
+
+    public function __construct($entity){
+        $this->entity = $entity;
+    }
+
+    protected function map($callback){
+        if (!is_callable($callback))
+            throw new TypeException('$callback', 'Callable');
+
+        $this->map[] = $callback;
+        return $this;
     }
 
     /**
-     * @return array
+     * get value by name of attribute
+     * example: getValue('name'), getValue('address.name')
+     * @param $attribute
+     * @throws ValidationException
+     * @return mixed|null
      */
-    public function getErrors(){
-        $result = array();
-        foreach($this->errors as $error){
-            $result[] = array(
-                'attr' => $error['attr'],
-                'message' => $error['validator']->getMessage($error['attr'])
-            );
+    protected function getAttribute($attribute){
+        if (!$attribute)
+            return $this->entity;
+
+        $attribute = str_replace('->', '.', $attribute);
+        $attrs     = explode('.', $attribute);
+
+        $obj   = $this->entity;
+        $value = null;
+        while(list($i, $attribute) = each($attrs)){
+            if (is_object($obj)){
+                if (property_exists($obj, $attribute))
+                    $value = $obj = $obj->{$attribute};
+                else
+                    throw new ValidationException('`%s` attribute does not exist in the %s class', $attribute, get_class($this->entity));
+            } else if (is_array($obj)){
+                $value = $obj = $obj[$attribute];
+            } else
+                throw new ValidationException('`%s` attribute must be an object or array', $attribute);
         }
-        return $result;
+
+        foreach($this->map as $callback){
+            $value = call_user_func($callback, $value);
+        }
+        $this->map = array();
+
+        return $value;
+    }
+
+    protected function validateAttribute($attribute, $message, ValidationResult $validation){
+        $validation->message($message);
+
+        if (!$validation->validate($this->getAttribute($attribute))){
+            $this->errors[] = array(
+                'attr' => $attribute,
+                'validator' => $validation
+            );
+            $this->__ok = false;
+            $this->__lastOk = false;
+        } else {
+            $this->__lastOk = true;
+        }
+        return $validation;
+    }
+
+    protected function isEmptyAttr($attribute){
+        return $this->validateAttribute($attribute, 'validation.result.isEmpty', new ValidationIsEmptyResult());
+    }
+
+    protected function requiresAttr($attribute){
+        return $this->validateAttribute($attribute, 'validation.result.requires', new ValidationRequiresResult());
+    }
+
+    protected function minLengthAttr($attribute, $min){
+        return $this->validateAttribute($attribute, 'validation.result.minLength', new ValidationMinLengthResult($min));
+    }
+
+    protected function maxLengthAttr($attribute, $max){
+        return $this->validateAttribute($attribute, 'validation.result.maxLength', new ValidationMaxLengthResult($max));
+    }
+
+    protected function maxFileSizeAttr($attribute, $size){
+        return $this->validateAttribute($attribute, 'validation.result.maxFileSize', new ValidationFileMaxSizeResult($size));
+    }
+
+    protected function isFileTypeAttr($attribute, array $extensions){
+        return $this->validateAttribute($attribute, 'validation.result.isFileType', new ValidationFileTypeResult($extensions));
+    }
+
+    protected function matchesAttr($attribute, $pattern){
+        return $this->validateAttribute($attribute, 'validation.result.matches', new ValidationMatchesResult($pattern));
+    }
+
+    protected function checkFilterAttr($attribute, $filter){
+        return $this->validateAttribute($attribute, 'validation.result.filter', new ValidationFilterResult($filter));
     }
 }
 
 
-abstract class ValidationResult {
+abstract class ValidationResult extends StrictObject {
 
     /** @var bool */
     private $ok = false;
@@ -204,8 +258,25 @@ abstract class ValidationResult {
     /** @var string */
     private $message = '';
 
-    public function message($message){
+    /** @var array */
+    private $messageArgs;
+
+    /** @var string */
+    private $attr = '';
+
+    public function message($message, array $args = array()){
         $this->message = $message;
+        $this->messageArgs = $args;
+        return $this;
+    }
+
+    /**
+     * redefines the name of an attribute
+     * @param $name
+     * @return $this
+     */
+    public function attr($name){
+        $this->attr = $name;
         return $this;
     }
 
@@ -218,17 +289,60 @@ abstract class ValidationResult {
         return $this->ok = !!$result;
     }
 
+    /**
+     * returns true if validation is ok
+     * @return bool
+     */
     public function isOk(){
         return $this->ok;
     }
 
+    /**
+     * returns additional message args
+     * @return array
+     */
     protected function getMessageAttr(){
         return array();
     }
 
+    /**
+     * main method for checking value
+     * @param $value
+     * @return mixed
+     */
     abstract public function check($value);
+
+    /**
+     * return an end formatted message of validation
+     * @param $attr
+     * @return string
+     */
     public function getMessage($attr){
-        return I18n::get($this->message, array_merge(array('attr' => $attr), $this->getMessageAttr()));
+        return I18n::get(
+            $this->message,
+            array_merge(
+                array('attr' => $this->attr ? $this->attr : $attr),
+                $this->getMessageAttr(),
+                $this->messageArgs
+            )
+        );
+    }
+}
+
+class ValidationCallbackResult extends ValidationResult {
+
+    /** @var callable */
+    private $callback;
+
+    public function __construct($callback){
+        if (REGENIX_IS_DEV && !is_callable($callback))
+            throw new TypeException('$callback', 'callable');
+
+        $this->callback = $callback;
+    }
+
+    public function check($value){
+        return call_user_func($this->callback, $value);
     }
 }
 

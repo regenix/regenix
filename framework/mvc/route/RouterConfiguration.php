@@ -34,7 +34,7 @@ class RouterConfiguration extends Configuration {
 
     public function addPattern($code, $routes){
         if ($code === 'module')
-            throw new CoreException('Code of route pattern cannot equals `%s`', $code);
+            throw new CoreException('The code of a route pattern cannot be equal to `%s`', $code);
 
         $this->patterns[ $code ] = $routes;
     }
@@ -203,6 +203,6 @@ class RouterConfiguration extends Configuration {
 
 class RouteActionNotFound extends CoreException {
     public function __construct($action){
-        parent::__construct('In routes action "%s" not found', $action);
+        parent::__construct('In routes: the action "%s" does not exist', $action);
     }
 }

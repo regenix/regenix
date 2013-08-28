@@ -1,6 +1,6 @@
 <?php
 
-namespace regenix\libs {
+namespace regenix\libs;
 
 use regenix\lang\CoreException;
 use regenix\lang\IClassInitialization;
@@ -12,6 +12,8 @@ use regenix\mvc\Response;
 use regenix\mvc\Session;
 use regenix\mvc\providers\ResponseProvider;
 use kcaptcha\KCaptcha;
+    use regenix\validation\EntityValidator;
+use regenix\validation\ValidationCallbackResult;
 use regenix\validation\ValidationRequiresResult;
 use regenix\validation\ValidationResult;
 use regenix\validation\Validator;
@@ -122,32 +124,31 @@ class ResponseCaptchaProvider extends ResponseProvider {
 
 class CaptchaValidator extends Validator {
 
-    public function __construct($entity = null){
-        $request = Request::current();
-        if ($request->isMethod('GET'))
-            $word = RequestQuery::current()->get('captcha_word');
-        else {
-            $body = new RequestBody();
-            $word = $body->asQuery()->get('captcha_word');
+    private $checkWord;
+
+    public function __construct($checkWord = null){
+        if ($checkWord === null){
+            $request = Request::current();
+            if ($request->isMethod('GET'))
+                $word = RequestQuery::current()->get('captcha_word');
+            else {
+                $body = new RequestBody();
+                $word = $body->asQuery()->get('captcha_word');
+            }
+            $this->checkWord = $word;
+        } else {
+            $this->checkWord = $checkWord;
         }
-
-        if ($entity == null)
-            $entity = $word;
-
-        parent::__construct($entity);
     }
 
     protected function main(){
-        $this->validateEntity('validation.result.captcha', new ValidationCaptchaResult());
+        $this->validateValue(
+            $this->checkWord,
+            'validation.result.captcha',
+            new ValidationCallbackResult(function($value){
+                $captcha = Captcha::current();
+                return $captcha->isValid($value);
+            })
+        );
     }
-}
-
-class ValidationCaptchaResult extends ValidationResult {
-
-    public function check($value){
-        $captcha = Captcha::current();
-        return $captcha->isValid($value);
-    }
-}
-
 }
