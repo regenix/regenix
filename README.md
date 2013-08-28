@@ -112,7 +112,7 @@ For example:
     </body>
     </html>
     
-Use the "hello world" example to create the controller and route pattern.
+Use the "hello world" example to create a controller and route pattern.
 Write the next code in the controller method `index`:
 
     public function index(){
@@ -120,9 +120,9 @@ Write the next code in the controller method `index`:
         $this->render("index.html");
     }
     
-At this example, we use the `render` method to output template. We also put the user variable and
-we can use this variable in the template. You can also notice that we use some expressions:
+At this example, we use the `render` method to output a template. We also put a user variable and
+we can use this variable in the template. You can also notice that we have used some expressions:
 `{html.asset ...}, {get ....}` etc. These expressions are tags. `{html.asset ...}` includes 
-a asset from the app directory. 
+an asset from the app directory. 
 
 In general, Regenix templates have many kinds of tags. 
