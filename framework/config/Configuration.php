@@ -25,7 +25,7 @@ class Configuration extends StrictObject {
 
     protected function loadData(){
         //
-        throw new \Exception(String::format('It cannot invoke loadData() in abstract configuration'));
+        throw new \Exception(String::format('Can`t invoke loadData() in abstract configuration'));
     }
 
     /**

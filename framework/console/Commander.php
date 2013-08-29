@@ -13,6 +13,7 @@ use regenix\lang\ClassScanner;
 use regenix\lang\CoreException;
 use regenix\lang\File;
 use regenix\lang\IClassInitialization;
+use regenix\lang\String;
 
 class Commander implements IClassInitialization {
 
@@ -149,5 +150,22 @@ class Commander implements IClassInitialization {
             return self::$instance;
 
         return self::$instance = new Commander();
+    }
+}
+
+final class Console {
+
+    private function __construct(){}
+
+    public static function write($message){
+        fwrite(CONSOLE_STDOUT, '    ' . String::formatArgs($message, array_slice(func_get_args(), 1)));
+    }
+
+    public static function writeln($message = ''){
+        self::write(String::formatArgs($message, array_slice(func_get_args(), 1)) . "\n");
+    }
+
+    public static function read(){
+        return fgets(STDIN);
     }
 }

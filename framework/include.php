@@ -229,7 +229,7 @@ final class Regenix {
 
     /**
      * Get current application
-     * @return Application
+     * @return \regenix\Application
      */
     public static function app(){
         return Application::current();

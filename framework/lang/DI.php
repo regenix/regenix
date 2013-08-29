@@ -60,6 +60,9 @@ final class DI {
     }
 
     private static function validateDI($interface, $implement){
+        if (is_object($implement))
+            $implement = get_class($implement);
+
         $meta = ClassScanner::find($interface);
         if (!$meta)
             throw new ClassNotFoundException($interface);
@@ -99,6 +102,9 @@ final class DI {
                 }
             }
         }
+
+        if (is_object($class))
+            return $class;
 
         $reflection  = self::getReflection($class);
         $constructor = $reflection->getConstructor();
@@ -175,12 +181,17 @@ final class DI {
      */
     public static function bindTo($interface, $class){
         $interface = str_replace('.', '\\', $interface);
-        $class     = str_replace('.', '\\', $class);
+        if (!is_object($class))
+            $class = str_replace('.', '\\', $class);
 
         if (REGENIX_IS_DEV)
             self::validateDI($interface, $class);
 
         self::$binds[ $interface ] = $class;
+    }
+
+    public static function bind($object){
+        self::bindTo(get_class($object), $object);
     }
 }
 
