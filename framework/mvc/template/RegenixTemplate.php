@@ -180,6 +180,21 @@ class RegenixTemplate extends BaseTemplate {
         }
     }
 
+    class RegenixDepsAssetPathTag extends RegenixTemplateTag {
+
+        function getName(){
+            return 'deps.asset.path';
+        }
+
+        public function call($args, RegenixTPL $ctx){
+            $group = $args['_arg'];
+            $version = $args['version'];
+            $info  =  Regenix::app()->getAsset($group, $version);
+
+            return $path   = '/assets/' . $group . '~' . $info['version'] . '/';
+        }
+    }
+
     class RegenixDepsAssetTag extends RegenixTemplateTag {
 
         function getName(){
@@ -188,6 +203,9 @@ class RegenixTemplate extends BaseTemplate {
 
         public static function getOne($group, $version = false, &$included = array()){
             $app  = Regenix::app();
+
+            $info = $app->getAsset($group, $version);
+
             $assets   = $app->getAssetFiles($group, $version, $included);
 
             $result = '';

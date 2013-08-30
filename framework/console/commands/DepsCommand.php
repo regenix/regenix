@@ -198,7 +198,7 @@ class DepsCommand extends ConsoleCommand {
     protected function sub_find(){
         $group = $this->args->get(1);
         if (!$group || sizeof(explode('/', $group)) !== 2){
-            $this->writeln('[error] Group invalid name, try example: `regenix deps show assets/jquery`');
+            $this->writeln('[error] Group invalid name, try example: `regenix deps find assets/jquery`');
             return;
         }
 

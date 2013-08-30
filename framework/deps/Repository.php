@@ -220,7 +220,6 @@ class Repository implements IClassInitialization{
                     $zip->extractTo($toDir);
                     $zip->close();
                 }
-                @unlink($toDir . $file);
             }
         }
         $tmp = new File($toDir);
