@@ -2,6 +2,7 @@
 
 namespace regenix\mvc\providers;
 
+use regenix\mvc\Response;
 use regenix\mvc\template\BaseTemplate;
 
 class ResponseBaseTemplateProvider extends ResponseProvider {
@@ -13,7 +14,7 @@ class ResponseBaseTemplateProvider extends ResponseProvider {
     /** @var \regenix\mvc\template\BaseTemplate */
     private $template;
     
-    public function __construct(\regenix\mvc\Response $response) {
+    public function __construct(Response $response) {
         parent::__construct($response);
         $this->template = $response->getEntity();
         $response->setContentType( 'text/html' );

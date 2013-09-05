@@ -73,6 +73,14 @@ final class Regenix {
     }
 
     /**
+     * Get ip of current server
+     * @return mixed
+     */
+    public static function getServerAddr(){
+        return $_SERVER['SERVER_ADDR'];
+    }
+
+    /**
      * Get information about execute time, memory usage, etc.
      * @param bool $traceLog
      * @return array
@@ -437,7 +445,7 @@ final class Regenix {
         if ( !$response ){
             throw new CoreException('Unknown type of action `%s.%s()` result for response', $controllerClass, $actionMethod);
         }
-        
+
         $response->send();
         $controller->callFinally();
         SDK::trigger('finallyRequest', array($controller));
@@ -932,7 +940,7 @@ final class Regenix {
         }
 
         public function isDev(){
-            return $this->mode != 'prod';
+            return $this->mode !== 'prod';
         }
 
         public function isProd(){

@@ -1449,6 +1449,7 @@ class Response extends StrictObject {
 
     public function setEntity($object) {
         $this->entity = $object;
+        $this->rawContent = null;
         return $this;
     }
 
@@ -1518,29 +1519,54 @@ class Response extends StrictObject {
         header('Powered-By: Regenix Framework v' . Regenix::getVersion(), true);
     }
 
-    public function send($headers = true){
-        if ( is_object($this->entity) ){
+    private $rawContent = null;
+
+    /**
+     * Get content that will output
+     * @return null|string
+     */
+    public function getRawContent(){
+        if ($this->rawContent !== null)
+            return $this->rawContent;
+
+        if (is_object($this->entity)){
             $providerClass = ResponseProvider::get(get_class($this->entity));
             $provider = new $providerClass($this);
-            if ( $headers )
-                $this->sendHeaders();
 
             $provider->onBeforeRender();
             $content  = $provider->getContent();
 
             if ( $content === null ){
-                $provider->render();
+                ob_start();
+                    $provider->render();
+                $content = ob_get_contents();
+                ob_end_clean();
             }
-
         } else {
-            if ( $headers )
-                $this->sendHeaders();
             $content = (string)$this->entity;
         }
 
-        if ( $content != null ){
-            echo $content;
-        }
+        return $this->rawContent = $content;
+    }
+
+    /**
+     * Set custom content as raw, do not use before outputting
+     * @param $content
+     * @throws \regenix\lang\CoreException
+     */
+    public function setRawContent($content){
+        if ($this->rawContent === null)
+            throw new CoreException("You cannot set a raw content before outputting");
+
+        $this->rawContent = $content;
+    }
+
+    public function send($headers = true){
+        $content = $this->getRawContent();
+        if ( $headers )
+            $this->sendHeaders();
+
+        echo $content;
     }
 }
 
