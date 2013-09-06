@@ -181,10 +181,10 @@ class Router extends StrictObject {
                         }
                     }
 
-                    //$src  = Regenix::src();
-                    //$path = $src ? $src->getUriPath() : '';
+                    $app  = Regenix::app();
+                    $path = $app ? $app->getUriPath() : '';
 
-                    return /*($path === '/' ? '' : $path) . */$url;
+                    return ($path === '/' ? '' : $path) . $url;
                 }
             }
         }
