@@ -64,6 +64,11 @@ abstract class Controller extends StrictObject {
     public $actionMethodReflection;
 
     /**
+     * @var Annotations
+     */
+    public $actionMethodAnnotations;
+
+    /**
      * template arguments
      * @var array[string, any]
      **/
@@ -99,6 +104,7 @@ abstract class Controller extends StrictObject {
         unset($this->session);
         unset($this->flash);
         unset($this->query);
+        unset($this->actionMethodAnnotations);
     }
 
     public function __get($name){
@@ -113,6 +119,7 @@ abstract class Controller extends StrictObject {
             case 'session': $value = Session::current(); break;
             case 'flash': $value = Flash::current(); break;
             case 'query': $value = new RequestQuery(); break;
+            case 'actionMethodAnnotations': $value = Annotations::getMethodAnnotation($this->actionMethodReflection); break;
             default: {
                 return parent::__get($name);
             }

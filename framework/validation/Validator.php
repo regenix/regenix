@@ -31,7 +31,7 @@ abstract class Validator {
     protected function validateValue($value, $message, ValidationResult $validation){
         $validation->message($message);
 
-        if (!$validation->validate($value)){
+        if ($validation == null || !$validation->validate($value)){
             $this->errors[] = array(
                 'attr' => null,
                 'value' => $value,
@@ -78,8 +78,6 @@ abstract class Validator {
      * @return Validator
      */
     public function validate($method = false){
-        $this->clear();
-
         $methods = array();
         if ($method){
             $method = new \ReflectionMethod($this, (string)$method);
@@ -89,7 +87,9 @@ abstract class Validator {
         } else {
             $reflection = new \ReflectionClass($this);
             foreach($reflection->getMethods() as $method){
-                if (!$method->isStatic() && $method->getDeclaringClass()->getName() === $reflection->getName()){
+                if (!$method->isStatic()
+                    && $method->isProtected()
+                    && $method->getDeclaringClass()->getName() === $reflection->getName()){
                     $methods[] = $method;
                     $method->setAccessible(true);
                 }
@@ -213,6 +213,21 @@ abstract class EntityValidator extends Validator {
         } else {
             $this->__lastOk = true;
         }
+        return $validation;
+    }
+
+    protected function addError($attribute, $message){
+        $validation = new ValidationCallbackResult(function(){
+            return false;
+        });
+
+        $validation->message($message);
+        $this->errors[] = array(
+            'attr' => $attribute,
+            'validator' => $validation
+        );
+        $this->__ok = false;
+        $this->__lastOk = false;
         return $validation;
     }
 

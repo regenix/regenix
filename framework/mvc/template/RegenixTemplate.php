@@ -157,7 +157,8 @@ class RegenixTemplate extends BaseTemplate {
             if (!$app->config->getBoolean('captcha.enable'))
                 throw new TemplateException('Captcha is not enabled in configuration, should be `captcha.enable = on`');
 
-            return Captcha::URL;
+            $path = $app->getUriPath();
+            return ($path === '/' ? '' : $path) . Captcha::URL;
         }
     }
 

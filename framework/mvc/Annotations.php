@@ -38,7 +38,7 @@ class Annotations {
     }
 
     private function checkAnnotation($annotation){
-        if ( self::$types[ $this->scope ][$annotation] === null )
+        if ( self::$types[ $this->scope ][strtolower($annotation)] === null )
             throw new AnnotationException($this, $annotation, ' is not defined');
     }
 
@@ -49,7 +49,7 @@ class Annotations {
     public function get($annotation){
         if ( REGENIX_IS_DEV ) $this->checkAnnotation($annotation);
 
-        $value = $this->data[$annotation];
+        $value = $this->data[strtolower($annotation)];
         if ( $value[0] !== null )
             throw new AnnotationException($this, $annotation, ' can\'t get array typed, use ->getAsArray() method');
 
@@ -65,7 +65,7 @@ class Annotations {
     public function has($annotation){
         if ( REGENIX_IS_DEV ) $this->checkAnnotation($annotation);
 
-        return isset($this->data[$annotation]);
+        return isset($this->data[strtolower($annotation)]);
     }
 
     /**
@@ -124,14 +124,17 @@ class Annotations {
             throw new CoreException('@%s annotation can\'t multiple', $name);
 
         if ( is_array($item) )
-            foreach($item as $one) self::validateItemOne($one, $name, $meta);
+            foreach($item as $one){
+                self::validateItemOne($one, $name, $meta);
+            }
         else
             self::validateItemOne($item, $name, $meta);
     }
 
     private function validateItemOne($item, $name, $meta){
-        if ( !is_array($item) )
+        if ( !is_array($item) ){
             $item = array('_arg' => $item);
+        }
 
         // check requires
         if ( $meta['require'] ){
@@ -331,12 +334,16 @@ class Annotations {
         if ( sizeof($tmp) < 2 ) return null;
 
         $result = array();
-
         foreach ($tmp as $i => $line) {
             $values = explode(' ', trim($line), 2);
 
             if ( $values[0] ){
                 $value = trim($values[1]);
+                if (!$value){
+                    $result[strtolower($values[0])] = array();
+                    continue;
+                }
+
                 $el = array();
                 if (strpos( $value, ',') !== false || strpos( $value, '=') !== false){
                     $value = array_map('trim', explode(',', $value, 30));
@@ -356,7 +363,7 @@ class Annotations {
             }
         }
 
-        return count($result) ? $result : null;
+        return $result;
     }
 
     private static function parseAnnotations($comment){
@@ -404,6 +411,7 @@ class Annotations {
      */
     public static function registerAnnotation($type, array $info = array(),
                                               $scopes = array('class', 'method', 'property')){
+        $type = strtolower($type);
         if ( is_string($scopes) )
             $scopes = array($scopes);
 

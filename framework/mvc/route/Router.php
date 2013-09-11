@@ -107,7 +107,7 @@ class Router extends StrictObject {
      * @return mixed|null|string
      */
     public function reverse($action, array $args = array(), $method = '*'){
-        $originalAction = $action;
+        $defAction = $action;
 
         if ($action !== null){
             $action = strtolower($action);
@@ -117,6 +117,7 @@ class Router extends StrictObject {
                 $action = '.controllers.' . $action;
         }
 
+        $originalAction = $action;
         $originArgs = $args;
         foreach($this->routes as $route){
             $args = $originArgs;
@@ -130,6 +131,7 @@ class Router extends StrictObject {
 
             if ($action){
                 $cur = $route['action'];
+
                 foreach($route['patterns'] as $param => $regex){
                     $cur = str_replace('{' . $param . '}', $regex, $cur);
                 }
@@ -151,7 +153,7 @@ class Router extends StrictObject {
                 $curAction = str_replace($replace, $to, $route['action']);
             }
 
-            if ( $action === null || $action === strtolower(str_replace('\\', '.', $curAction)) ){
+            if ( $defAction === null || $action === strtolower(str_replace('\\', '.', $curAction)) ){
                 $match = true;
 
                 if ($action)
@@ -180,6 +182,9 @@ class Router extends StrictObject {
                             $i++;
                         }
                     }
+
+                    if (!$action)
+                        return $url;
 
                     $app  = Regenix::app();
                     $path = $app ? $app->getUriPath() : '';
