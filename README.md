@@ -1,7 +1,7 @@
 Welcome to Regenix framework
 ============================
 
-Regenix is easy-to-learn and powerful MVC framework. Our framework is similar to the [Play! Framework](http://playframework.com/),
+Regenix is easy-to-learn and powerful MVC framework. Our framework is similar to [Play! Framework](http://playframework.com/),
 Ruby on Rails and Django frameworks, but has a lot of unique ideas.
 
 [![Build Status](https://travis-ci.org/dim-s/regenix.png?branch=dev)](https://travis-ci.org/dim-s/regenix)
