@@ -1,6 +1,0 @@
-# Routes
-
-*   /test/                              Application.test
-
-*       /{page}/                        Application.page
-*       /                               Application.page
