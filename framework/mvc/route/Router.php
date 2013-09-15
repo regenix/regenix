@@ -108,16 +108,18 @@ class Router extends StrictObject {
      */
     public function reverse($action, array $args = array(), $method = '*'){
         $defAction = $action;
+        $originalAction = $action;
 
         if ($action !== null){
-            $action = strtolower($action);
             $action = str_replace('\\', '.', $action);
 
             if ($action[0] != '.')
                 $action = '.controllers.' . $action;
+
+            $originalAction = $action;
+            $action = strtolower($action);
         }
 
-        $originalAction = $action;
         $originArgs = $args;
         foreach($this->routes as $route){
             $args = $originArgs;

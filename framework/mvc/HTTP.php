@@ -219,6 +219,20 @@ class Request extends StrictObject {
     }
 
     /**
+     * @return boolean
+     */
+    public function isPost(){
+        return $this->isMethod('POST');
+    }
+
+    /**
+     * @return bool
+     */
+    public function isGet(){
+        return $this->isMethod('GET');
+    }
+
+    /**
      * @param string $method - post, get, put, delete, etc.
      * @return boolean
      */

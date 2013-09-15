@@ -419,6 +419,7 @@ final class Regenix {
 
                     // if no result, do:
                     $controller->callException($e);
+                    $app->bootstrap->onException($e);
                 } catch (Result $result){
                     /** @var $responseErr Response */
                     $responseErr = $result->getResponse();
@@ -504,10 +505,21 @@ final class Regenix {
     }
 
     private static function catchAny(\Exception $e){
+        $app = Regenix::app();
+        if ($app && $app->bootstrap){
+            try {
+                $app->bootstrap->onException($e);
+            } catch (Result $e){
+                $e->getResponse()->send();
+                return;
+            }
+        }
+
         if ( $e instanceof HttpException ){
             $e->getTemplateResponse()->send();
             return;
         }
+
 
         $stack = CoreException::findAppStack($e);
         if ($stack === null && IS_CORE_DEBUG){
@@ -698,6 +710,9 @@ final class Regenix {
 
         public function onStart(){}
         public function onEnvironment(&$env){}
+
+        /** @return Response */
+        public function onException(\Exception $e){ return null; }
         public function onTest(array &$tests){}
         public function onUseTemplates(){}
         public function onTemplateRender(BaseTemplate $template){}

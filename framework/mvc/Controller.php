@@ -18,6 +18,8 @@ use regenix\lang\String;
 use regenix\mvc\MIMETypes;
 use regenix\validation\Validator;
 
+final class EmptyController extends Controller {}
+
 abstract class Controller extends StrictObject {
 
     const type = __CLASS__;
@@ -461,9 +463,13 @@ abstract class Controller extends StrictObject {
     }
 
     /**
-     * @return Controller
+     *
+     * @return Controller NotNull
      */
     public static function current(){
+        if (!self::$current)
+            self::$current = new EmptyController();
+
         return self::$current;
     }
 }
@@ -472,9 +478,10 @@ class Result extends \Exception {
 
     const type = __CLASS__;
 
+    /** @var Response */
     private $response;
 
-    public function __construct($response) {
+    public function __construct(Response $response) {
         $this->response = $response;
     }
 
