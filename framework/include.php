@@ -884,8 +884,14 @@ final class Regenix {
             $this->currentPath = $url->getPath();
         }
 
-        public function getUriPath(){
-            return $this->currentPath;
+        public function getUriPath($suffix = ''){
+            if ($suffix){
+                if ($suffix === '/')
+                    return $this->currentPath;
+                else
+                    return $this->currentPath . $suffix;
+            } else
+                return $this->currentPath;
         }
 
         /**

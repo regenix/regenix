@@ -232,15 +232,23 @@ abstract class Controller extends StrictObject {
         throw new Result($this->response);
     }
 
+    private function __redirectUrl($url, $permanent = false){
+        $this->response
+            ->setStatus($permanent ? 301 : 302)
+            ->setHeader('Location', $url);
+        $this->send();
+    }
+
     /**
      * @param $url
      * @param bool $permanent
      */
     public function redirectUrl($url, $permanent = false){
-        $this->response
-                ->setStatus($permanent ? 301 : 302)
-                ->setHeader('Location', $url);
-        $this->send();
+        if (String::startsWith($url, "/")){
+            $app = Regenix::app();
+            $url = $app->getUriPath($url);
+        }
+        $this->__redirectUrl($url, $permanent);
     }
 
     /**
@@ -258,7 +266,7 @@ abstract class Controller extends StrictObject {
             throw new CoreException('Can`t reverse url for action "%s(%s)"',
                 $action, implode(', ', array_keys($args)));
 
-        $this->redirectUrl($url, $permanent);
+        $this->__redirectUrl($url, $permanent);
     }
 
     /**
