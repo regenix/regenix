@@ -68,7 +68,7 @@ The next step, you need to know the typical sturtcure of an application.
 
 #### Hello World
 
-Create a new controller inhereted by `regenix\mvc\Controller` class in `controllers` namespace
+Create a new controller inherited by `regenix\mvc\Controller` class in `controllers` namespace
 and define a public non-static method inside like this:
 
     namespace controllers;
