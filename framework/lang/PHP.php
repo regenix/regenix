@@ -942,9 +942,11 @@ class ClassFileScanner {
 }
 
 
-abstract class String {
+final class String {
 
     const type = __CLASS__;
+
+    private function __construct(){}
 
     /**
      * @param string $string
