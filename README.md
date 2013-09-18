@@ -41,7 +41,11 @@ Getting started
 
 ### Installation
 
-Clone all the sources from our git repo. Next, create a directory in the location `/apps/` of your copy of the framework.
+Clone all the sources from our git repo. Our framework contains a few vendor libraries as git submodules 
+therefore you need to run `git submodule init` and `git submodule update` after cloning repo.
+
+
+Next, create a directory in the location `/apps/` of your copy of the framework.
 This directory will be the directory of a project. For example, you can name it like `myApp`. Then the full path of your 
 app will be `<framework_path>/apps/myApp/`. 
 
