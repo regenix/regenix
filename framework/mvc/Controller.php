@@ -380,6 +380,25 @@ abstract class Controller extends StrictObject {
         
         $this->send();
     }
+
+    public function renderJsonp($object){
+        $callback = $this->query->get('jsonp');
+        if (!$callback)
+            $callback = $this->query->get('callback');
+        if (!$callback)
+            $callback = 'callback' . rand(0, 99999);
+
+        $this->response
+            ->setContentType('application/javascript')
+            ->setEntity( $callback . '(' . json_encode($object) . ')' );
+
+        $error = json_last_error();
+        if ( $error > 0 ){
+            throw new CoreException('Error json encode, ' . $error);
+        }
+
+        $this->send();
+    }
     
     public function renderXml($xml){
         if ( $xml instanceof \SimpleXMLElement ){
