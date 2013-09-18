@@ -71,8 +71,10 @@ class Commander implements IClassInitialization {
             if (!$this->app)
                 $this->app = current($this->apps);
 
-            $tmpFile->getParentFile()->mkdirs();
-            file_put_contents($tmpFile->getPath(), $this->app->getName());
+            if ($this->app){
+                $tmpFile->getParentFile()->mkdirs();
+                file_put_contents($tmpFile->getPath(), $this->app->getName());
+            }
         }
 
         if ($this->app)
