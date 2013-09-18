@@ -25,7 +25,13 @@ abstract class ConsoleCommand {
 
     abstract public function __default();
 
-    public function __loadInfo($method, Application $app, array $args, array $options){
+    /**
+     * @param $method
+     * @param Application $app
+     * @param array $args
+     * @param array $options
+     */
+    public function __loadInfo($method, $app, array $args, array $options){
         $this->method = $method;
         $this->app = $app;
         $this->args = new ArrayTyped($args);

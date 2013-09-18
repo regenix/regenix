@@ -276,6 +276,6 @@ class DepsCommand extends ConsoleCommand {
     }
 
     public function getInlineHelp(){
-        return 'shows and updates dependencies of a current src, example: deps update';
+        return 'shows and updates dependencies of a current app, example: deps update';
     }
 }
