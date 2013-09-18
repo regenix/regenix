@@ -262,7 +262,7 @@ final class ClassMetaInfo {
      * @param string $interfaceOrClass
      * @return bool
      */
-    public function isParentOf($interfaceOrClass){
+    public function isChildOf($interfaceOrClass){
         if ($interfaceOrClass === $this->getName())
             return true;
 

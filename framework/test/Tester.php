@@ -23,27 +23,37 @@ class Tester extends Controller {
             $module = explode('~', $moduleWithVersion, 2);
             $namespace = 'modules\\' . $module[0] . '\\';
         } else {
+            $module = null;
             ClassScanner::addClassPath(Regenix::app()->getTestPath());
             $namespace = 'tests\\';
         }
 
         $tests = array();
+        if ($id){
+            $testClass = ClassScanner::find(str_replace('.', '\\', $id));
+            if (!$testClass->isChildOf( UnitTest::type ))
+                throw new CoreException('Class "%s" should be inherited by "%s"',
+                    $testClass->getName(), UnitTest::type);
 
-        $testClass = ClassScanner::find(UnitTest::type);
-        foreach($testClass->getChildrensAll($namespace) as $child){
-            $class = $child->getName();
-            $reflection = new \ReflectionClass($class);
-            if ($reflection->isAbstract())
-                continue;
+            $tests[] = new $testClass;
+        } else {
+            $testClass = ClassScanner::find(UnitTest::type);
+            foreach($testClass->getChildrensAll($namespace) as $child){
+                $class = $child->getName();
+                $reflection = new \ReflectionClass($class);
+                if ($reflection->isAbstract())
+                    continue;
 
-            $test    = new $class;
-            $tests[] = $test;
+                $test    = new $class;
+                $tests[] = $test;
+            }
+
+            if (!$module && $app && $app->bootstrap)
+                $app->bootstrap->onTest($tests);
         }
 
-        if (!$module && $app && $app->bootstrap)
-            $app->bootstrap->onTest($tests);
-
         foreach($tests as $test){
+            /** @var $test UnitTest */
             $test->startTesting();
         }
     }

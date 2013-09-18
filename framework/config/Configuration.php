@@ -87,7 +87,7 @@ class PropertiesConfiguration extends Configuration {
         foreach ($files as $file){
             if (!$file->exists()) continue;
 
-            $file->open("r+");
+            $file->open("r");
             while (($buffer = $file->gets()) !== false) {
 
                 $buffer = str_replace('\\=', '@@11@@', $buffer);
