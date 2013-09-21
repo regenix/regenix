@@ -5,6 +5,7 @@ use regenix\Regenix;
 use regenix\Application;
 use regenix\console\Commander;
 use regenix\console\ConsoleCommand;
+use regenix\lang\CoreException;
 use regenix\modules\Module;
 use regenix\test\Tester;
 
@@ -13,13 +14,15 @@ class TestCommand extends ConsoleCommand {
     const GROUP = 'test';
 
     public function __default(){
-
         if ($this->opts->has('module')){
             $module = $this->opts->get('module');
             Tester::startTesting(null, $module);
 
             $this->writeln('Start module "%s" testing ...', $module);
         } else {
+            if (!$this->app)
+                throw new CoreException("To work with the command, load some application via `regenix load <app_name>`");
+
             $this->app->register(false);
             $this->writeln('Start "%s" testing ...', $this->app->getName());
             Tester::startTesting();

@@ -13,6 +13,9 @@ class SchedulerCommand extends ConsoleCommand {
     const GROUP = 'scheduler';
 
     public function __default(){
+        if (!$this->app)
+            throw new CoreException("To work with the command, load some application via `regenix load <app_name>`");
+
         $interval = $this->opts->getInteger('interval', 2);
 
         $scheduler = new Scheduler($this->app->getName());

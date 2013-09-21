@@ -17,6 +17,7 @@ use regenix\deps\Origin;
 use regenix\deps\Repository;
 use regenix\exceptions\HttpException;
 use regenix\exceptions\NotFoundException;
+use regenix\lang\CoreException;
 
 class DepsCommand extends ConsoleCommand {
 
@@ -26,6 +27,9 @@ class DepsCommand extends ConsoleCommand {
     protected $repository;
 
     public function onBefore(){
+        if (!$this->app)
+            throw new CoreException("To work with the command, load some application via `regenix load <app_name>`");
+
         $this->app->loadDeps();
         $this->repository = new Repository($this->app->deps);
     }

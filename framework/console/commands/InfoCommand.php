@@ -2,12 +2,16 @@
 namespace regenix\console\commands;
 
 use regenix\console\ConsoleCommand;
+use regenix\lang\CoreException;
 
 class InfoCommand extends ConsoleCommand {
 
     const GROUP = 'info';
 
     public function __default(){
+        if (!$this->app)
+            throw new CoreException("To work with the command, load some application via `regenix load <app_name>`");
+
         $config = $this->app->config;
 
         $this

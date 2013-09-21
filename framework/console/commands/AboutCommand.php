@@ -26,6 +26,7 @@ class AboutCommand extends ConsoleCommand {
         $this->writeln();
         $this->writeln('    root path: `%s`', ROOT);
         $this->writeln('    apps path: `%s`', Application::getApplicationsPath());
+        $this->writeln('    temp path: `%s`', Regenix::getTempPath());
         $this->writeln();
 
         $this->printModules();
