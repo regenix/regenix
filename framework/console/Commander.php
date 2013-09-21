@@ -81,9 +81,11 @@ class Commander implements IClassInitialization {
             ClassScanner::addClassPath($this->app->getSrcPath());
     }
 
-    public function run(){
-        global $argv;
-        $argv = array_slice($argv, 1);
+    public function run(array $argv = array()){
+        if(!$argv){
+            $argv = $GLOBALS['argv'];
+            $argv = array_slice($argv, 1);
+        }
 
         foreach($argv as $arg){
             if ($arg[0] == '-'){
