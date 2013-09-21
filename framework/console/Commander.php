@@ -43,7 +43,8 @@ class Commander implements IClassInitialization {
         $this->_registerCurrentapp();
     }
 
-    private function _registerApps(){
+    public function _registerApps(){
+        $this->apps = array();
         $path = new File(Application::getApplicationsPath());
         foreach ($path->findFiles() as $path){
             if ($path->isDirectory()){
@@ -52,7 +53,7 @@ class Commander implements IClassInitialization {
         }
     }
 
-    private function _registerCurrentApp(){
+    public function _registerCurrentApp(){
         $tmpFile = new File(sys_get_temp_dir() . '/regenix/.current');
 
         if ($tmpFile->isFile()){
@@ -81,23 +82,32 @@ class Commander implements IClassInitialization {
             ClassScanner::addClassPath($this->app->getSrcPath());
     }
 
-    public function run(){
-        global $argv;
-        $argv = array_slice($argv, 1);
+    public function run($command = null, array $args = array()){
+        if (!$command){
+            $argv = array_slice($GLOBALS['argv'], 1);
+        } else {
+            $argv = array_merge(array($command), $args);
+        }
 
+        $args = array();
+        $options = array();
         foreach($argv as $arg){
             if ($arg[0] == '-'){
                 $arg = explode('=', $arg, 2);
                 if ($arg[1])
-                    $this->options[ substr($arg[0], 1) ] = trim($arg[1]);
+                    $options[ substr($arg[0], 1) ] = trim($arg[1]);
                 else
-                    $this->options[ substr($arg[0], 1) ] = true;
+                    $options[ substr($arg[0], 1) ] = true;
             } else {
-                $this->args[] = $arg;
+                $args[] = $arg;
             }
         }
+        if (!$command){
+            $this->args = $args;
+            $this->options = $options;
+        }
 
-        $command = $this->args[0];
+        $command = $args[0];
         if (!$command || !self::$commands[$command]){
             throw new CoreException('The command `%s` is not found', $command);
         }
@@ -112,7 +122,7 @@ class Commander implements IClassInitialization {
             throw new CoreException('The command method `%s %s` is not found', $command, $method);
         }
 
-        $cmd->__loadInfo($method, $this->app, (array)array_slice($this->args, 1), (array)$this->options);
+        $cmd->__loadInfo($method, $this->app, (array)array_slice($args, 1), $options);
         call_user_func(array($cmd, $method));
     }
 

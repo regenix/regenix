@@ -1,0 +1,11 @@
+{
+    "repository": "github:dim-s/regenix-repository/master",
+
+    "assets": {
+        "jquery": {"version": "1.9.*"}
+    },
+
+    "modules": {
+
+    }
+}

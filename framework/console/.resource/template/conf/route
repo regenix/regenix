@@ -1,3 +1,4 @@
 # The url routing config
 
-GET		/					Application.index
+GET             /{_lang}/           Application.index
+GET 		    /					Application.index

@@ -1,0 +1,20 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>{get 'title'}</title>
+        {deps.asset 'jquery'}
+        {html.asset 'css/main.css'}
+        {html.asset 'js/main.js'}
+    </head>
+<body>
+    <h1 class="title">{get 'subTitle'}</h1>
+    <div id="content">
+        {content}
+    </div>
+
+    <div class="language">
+        <a href="{path 'Application.index', _lang: 'ru'}">Russian Version</a>
+        <a href="{path 'Application.index'}">Default Version</a>
+    </div>
+</body>
+</html>
