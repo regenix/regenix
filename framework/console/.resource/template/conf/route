@@ -1,5 +1,3 @@
 # The url routing config
-#
-# See for more information http://www.playframework.com/documentation/1.0.3.2/routes 
 
 GET		/					Application.index
