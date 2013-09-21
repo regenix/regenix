@@ -1,0 +1,3 @@
+# The url routing config
+
+GET		/					Application.index
