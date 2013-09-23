@@ -20,6 +20,9 @@ class PropelCommand extends ConsoleCommand {
 
         $schemaFile = new File($path . 'schema.xml');
         $propertiesFile = new File($path . 'build.properties');
+        $runtimeConfig = new File($path . 'runtime-conf.xml');
+        $buildtimeConfig = new File($path . 'buildtime-conf.xml');
+
         if (!$schemaFile->isFile()){
             $this->writeln(
                 '[error] Cannot find a schema file `/apps/%s/conf/orm/schema.xml`',
@@ -36,10 +39,21 @@ class PropelCommand extends ConsoleCommand {
             return;
         }
 
+        if (!$runtimeConfig->exists()){
+            $this->writeln(
+                '[error] Cannot find a runtime-conf file `/apps/%s/conf/orm/runtime-conf.xml`'
+            );
+            return;
+        }
+
+        if (!$buildtimeConfig->exists()){
+            @copy($runtimeConfig->getPath(), $buildtimeConfig->getPath());
+        }
+
         $output = '';
         $command = $propelBin . ' "' . $path . '" ' . $this->args->get(0) .
             ' "-Dpropel.name=" "-Dpropel.php.dir=' . $this->app->getModelPath() . '"' .
-            ' "-Dpropel.schema.autoNamespace=true"';
+            ' "-Dpropel.schema.autoNamespace=true" 2>&1';
 
         $this->writeln('>> ' . $command);
         $this->writeln();
