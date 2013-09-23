@@ -555,11 +555,14 @@ final class Regenix {
 
         $template->putArgs(array('exception' => $e,
             'stack' => $stack, 'info' => $info, 'hash' => $hash,
-            'desc' => $e->getMessage(), 'file' => $file, 'source' => $source,
+            'desc' => $e->getMessage(),
+            'file' => $file,
+            'source' => $source,
             'src' => Regenix::app(),
             'debug_info' => Regenix::getDebugInfo(),
             'controller' => Controller::current()
         ));
+
 
         Logger::error('%s, in file `%s(%s)`, id: %s', $e->getMessage(), $file ? $file : "nofile", (int)$stack['line'], $hash);
 
@@ -1027,6 +1030,9 @@ final class Regenix {
             $this->_registerRoute();
             Regenix::trace('.registerRoute() application finish');
 
+            $this->_registerOrm();
+            Regenix::trace('.registerOrm() application finish');
+
             if (REGENIX_IS_DEV)
                 $this->_registerTests();
 
@@ -1120,6 +1126,23 @@ final class Regenix {
         private function _registerTests(){
             $this->router->addRoute('*', '/@test', 'regenix.test.Tester.run');
             $this->router->addRoute('GET', '/@test.json', 'regenix.test.Tester.runAsJson');
+        }
+
+        private function _registerOrm(){
+            if (file_exists($this->getPath() . 'conf/orm/')){
+                $file = $this->getPath() . 'conf/orm/build/conf/-conf.php';
+                if (file_exists($file)){
+                    if (!class_exists('\\Propel'))
+                        throw new CoreException('Propel ORM vendor library is not installed');
+
+                    \Propel::init($file);
+                } else {
+                    throw new CoreException('Cannot find `%s` runtime configuration of Propel ORM, '
+                        . "\n\n"
+                        . 'Create `conf/orm/runtime-conf.xml` and run in console `regenix propel convert-conf` to fix it',
+                        $file);
+                }
+            }
         }
 
         private function _registerRoute(){

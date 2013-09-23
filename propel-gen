@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
+ROOT_PATH=`pwd`
+VENDOR_PATH="${ROOT_PATH}/framework/vendor"
+PHING_COMMAND="${VENDOR_PATH}Phing/bin/phing"
 
 if [ -z "$PROPEL_GEN_HOME" ] ; then
     # try to find Propel
+    if [ -d "${VENDOR_PATH}Propel/generator" ] ; then
+        PROPEL_GEN_HOME="${VENDOR_PATH}Propel/generator"
+    fi
+
     if [ -d /opt/propel/generator ] ; then
         PROPEL_GEN_HOME=/opt/propel/generator
     fi

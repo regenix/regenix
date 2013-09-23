@@ -5,6 +5,7 @@ namespace regenix\console\commands;
 use regenix\Regenix;
 use regenix\console\ConsoleCommand;
 use regenix\lang\CoreException;
+use regenix\lang\File;
 
 class PropelCommand extends ConsoleCommand {
 
@@ -17,6 +18,24 @@ class PropelCommand extends ConsoleCommand {
         $propelBin = ROOT . 'propel-gen';
         $path = $this->app->getPath() . 'conf/orm/';
 
+        $schemaFile = new File($path . 'schema.xml');
+        $propertiesFile = new File($path . 'build.properties');
+        if (!$schemaFile->isFile()){
+            $this->writeln(
+                '[error] Cannot find a schema file `/apps/%s/conf/orm/schema.xml`',
+                $this->app->getName()
+            );
+            return;
+        }
+
+        if (!$propertiesFile->isFile()){
+            $this->writeln(
+                '[error] Cannot find a build file `/apps/%s/conf/orm/build.properties`',
+                $this->app->getName()
+            );
+            return;
+        }
+
         $output = '';
         $command = $propelBin . ' "' . $path . '" ' . $this->args->get(0) .
             ' "-Dpropel.name=" "-Dpropel.php.dir=' . $this->app->getModelPath() . '"' .
@@ -26,7 +45,6 @@ class PropelCommand extends ConsoleCommand {
         $this->writeln();
         exec($command, $output);
 
-        foreach((array)$output as $line)
         foreach((array)$output as $line)
             $this->writeln($line);
     }
