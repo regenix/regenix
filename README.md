@@ -68,7 +68,7 @@ app will be `<framework_path>/apps/myApp/`.
 The directory `/apps/` contains all applications and that allows to use one copy of the framework for
 several projects. You do not need something like symlinks in Linux to support a few applications. 
 
-The next step, you need to know the typical sturtcure of an application.
+The next step, you need to know the typical structure of an application.
 
 * `conf/` - configurations
  * `conf/application.conf` - the general config
