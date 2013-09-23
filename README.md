@@ -11,10 +11,11 @@ Ruby on Rails and Django frameworks, but has a lot of unique ideas.
 Features
 --------
 * Clear MVC architecture.
+* Multiple applications within one core.
 * Easy and powerful routing (sub-routing, inserts, etc).
 * Easy debugging, displaying errors in the detailed form.
+* [Propel ORM](http://propelorm.org/) integration for models
 * Dependency Manager for assets and modules (git, local repos).
-* Multiple applications within one core.
 * REST and other special types of controllers.
 * Dependency Injection Container.
 * Convenient validators like tests.
