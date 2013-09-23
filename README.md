@@ -75,16 +75,31 @@ The next step, you need to know the typical sturtcure of an application.
  * `conf/deps.json` - the configuration of asset and module dependencies
  * `conf/route` - the url routing config
  * `conf/routes/` - directory of sub-routes
+ * `conf/orm/` - configurations for Propel ORM (schema.xml, built.properties, etc.)
 * `src/` - php sources of your application
  * `src/controllers/`
  * `src/models/`
  * `src/views/`
  * `src/notifiers/` - notifiers for mail sending messages
  * `src/*` - other packages of sources
+ * `Bootstrap.php` - a bootstrap file with a Bootstrap class (not required)
 * `tests/` - sources of unit and functional tests
 * `assets/` - local asset directory of your app
 
 ---
+
+#### Create an application from template
+
+Open your console and cd to a root directory of Regenix. There will be `regenix` and `regenix.bat` 
+files therefore the command `regenix` will become available. Then use a special command `regenix new <name>` to
+create a new application from template.
+
+    cd /path/to/root_of_server_with_regenix/
+    regenix new myApp
+    
+After this, a new directory `myApp` will appear in `<root>/apps`. To check it is working or not, open
+your browser and navigate to `http://localhost/myApp`.
+
 
 #### Hello World
 
@@ -109,40 +124,3 @@ Next, define a new pattern in the routing of your project `conf/route`. Add a ne
     
 That is it. Now, you can open your browser, go to the url `http://localhost/helloworld` and you 
 can see the output of "Hello World".
-
-
-#### Using templates
-
-If you want to output some formatted text, you need to write views (or templates, this is the same).
-In Regenix templates has own its syntax. Create a new template in the path `/src/views/index.html`
-
-> *Notice*: All the views have the html extension.
-
-For example:
-
-    <html>
-        <head>
-            <title>{get 'title'}</title>
-            {html.asset 'mystyle.css'}
-            {html.asset 'myscript.js'}
-            {deps.asset 'jquery'}
-        </head>
-    <body>
-        Hello, {$user}!
-    </body>
-    </html>
-    
-Use the "hello world" example to create a controller and route pattern.
-Write the next code in the controller method `index`:
-
-    public function index(){
-        $this->put("user", "Mike");
-        $this->render("index.html");
-    }
-    
-At this example, we use the `render` method to output a template. We also put a user variable and
-we can use this variable in the template. You can also notice that we have used some expressions:
-`{html.asset ...}, {get ....}` etc. These expressions are tags. `{html.asset ...}` includes 
-an asset from the app directory. 
-
-In general, Regenix templates have many kinds of tags. 
