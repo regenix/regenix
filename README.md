@@ -98,29 +98,5 @@ create a new application from template.
     regenix new myApp
     
 After this, a new directory `myApp` will appear in `<root>/apps`. To check it is working or not, open
-your browser and navigate to `http://localhost/myApp`.
-
-
-#### Hello World
-
-Create a new controller inherited by `regenix\mvc\Controller` class in `controllers` namespace
-and define a public non-static method inside like this:
-
-    namespace controllers;
-
-    use regenix\mvc\Controller;
-
-    class MainCtrl extends Controller {
-    
-      public function index(){
-        // and here output "hello world"
-        $this->renderText("Hello World!");
-      }
-    }
-    
-Next, define a new pattern in the routing of your project `conf/route`. Add a new line there:
-
-    GET   /helloworld     MainCtrl.index
-    
-That is it. Now, you can open your browser, go to the url `http://localhost/helloworld` and you 
-can see the output of "Hello World".
+your browser and navigate to `http://localhost/myApp`. This template application will help you to 
+understand how create a typical application for Regenix.
