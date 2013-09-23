@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <!-- Config for app runtime -->
+    <propel>
+        <datasources default="{%APP_NAME%}">
+            <datasource id="{%APP_NAME%}">
+                <adapter>mysql</adapter> <!-- sqlite, mysql, mssql, oracle, or pgsql -->
+                <connection>
+                    <dsn>mysql:host=localhost;dbname={%APP_NAME%}</dsn>
+                    <user>root</user>
+                    <password></password>
+                </connection>
+            </datasource>
+        </datasources>
+    </propel>
+</config>

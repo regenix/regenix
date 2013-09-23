@@ -5,7 +5,7 @@
 <div class="error">
     <h1>{$info->getShortName()}</h1>
     <p id="detail">
-        {$desc}
+        { $desc | raw }
     </p>
     {if $source}
         {if $file}
