@@ -2,6 +2,8 @@
 <html>
     <head>
         <title>{get 'title'}</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
         {deps.asset 'jquery'}
         {html.asset 'css/main.css'}
         {html.asset 'js/main.js'}
@@ -14,6 +16,7 @@
 
     <div class="language">
         <a href="{path 'Application.index', _lang: 'ru'}">Russian Version</a>
+        /
         <a href="{path 'Application.index'}">Default Version</a>
     </div>
 </body>
