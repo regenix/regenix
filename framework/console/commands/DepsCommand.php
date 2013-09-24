@@ -18,6 +18,8 @@ use regenix\deps\Repository;
 use regenix\exceptions\HttpException;
 use regenix\exceptions\NotFoundException;
 use regenix\lang\CoreException;
+use regenix\lang\File;
+use regenix\lang\String;
 
 class DepsCommand extends ConsoleCommand {
 
@@ -72,6 +74,20 @@ class DepsCommand extends ConsoleCommand {
         $this->writeln();
     }
 
+    protected function renderComposerDeps($label, $deps){
+        $this->writeln('    %s:', $label);
+        $this->writeln();
+        if(sizeof($deps)){
+            foreach($deps as $group => $dep){
+                $this->writeln('        - %s (%s)', $group, $dep);
+            }
+        } else {
+            $this->writeln('        * empty');
+        }
+
+        $this->writeln();
+    }
+
     protected function checkConflicts($menv = false){
         $vars = array('assets', 'modules');
         foreach($vars as $env){
@@ -104,6 +120,8 @@ class DepsCommand extends ConsoleCommand {
         $this->renderDeps('Assets', 'assets', $this->app->deps['assets']);
         $this->writeln();
         $this->renderDeps('Modules', 'modules', $this->app->deps['modules']);
+        $this->writeln();
+        $this->renderComposerDeps('Composer', $this->app->deps['composer']);
 
         $this->checkConflicts();
     }
@@ -164,6 +182,7 @@ class DepsCommand extends ConsoleCommand {
             } else
                 throw $e;
         }
+
     }
 
     private static function recursiveDelete($str){
@@ -266,6 +285,32 @@ class DepsCommand extends ConsoleCommand {
             }
 
             $this->checkConflicts();
+
+
+            $composer = $this->app->deps['composer'];
+            if ($composer){
+                $this->writeln('Composer starting ...');
+                $json = array('require' => $composer);
+                $file = new File($this->app->getPath() . 'composer.json');
+
+                $file->open('w');
+                    $file->write(json_encode($json));
+                $file->close();
+
+                $output = '';
+                $cmd = String::format('cd "%s" && composer update 2>&1', $this->app->getPath());
+                exec($cmd, $output);
+
+                $this->writeln();
+                foreach((array)$output as $line)
+                    $this->writeln($line);
+
+                $file->delete();
+                $tmp = new File($this->app->getPath() . 'composer.lock');
+                $tmp->delete();
+
+                $this->writeln();
+            }
 
             $time = round((microtime(1) - $start));
             $this->writeln('[success] Total time %s s, completed %s', $time, date('d.m.Y h:i:s'));

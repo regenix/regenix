@@ -1053,6 +1053,7 @@ final class Regenix {
             if (is_file($file)){
                 if (REGENIX_IS_DEV){
                     $this->deps = json_decode(file_get_contents($file), true);
+
                     if (json_last_error()){
                         throw new JsonFileException('conf/deps.json');
                     }
@@ -1110,6 +1111,9 @@ final class Regenix {
 
             if (REGENIX_IS_DEV)
                 $this->getAssets();
+
+            if (file_exists($file = $this->getPath() . 'vendor/autoload.php'))
+                require $file;
         }
 
         private function _registerSystemController(){
