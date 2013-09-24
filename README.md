@@ -57,7 +57,7 @@ Getting started
 
 ### Installation
 
-Clone all the sources from our git repo. Our framework contains a few vendor libraries as git submodules 
+Clone all the sources from our git repo. Our framework contains a few vendor libraries as git submodules, 
 therefore you need to run `git submodule init` and `git submodule update` after cloning repo.
 
 
