@@ -91,7 +91,7 @@ The next step, you need to know the typical structure of an application.
 #### Create an application from template
 
 Open your console and cd to a root directory of Regenix. There will be `regenix` and `regenix.bat` 
-files therefore the command `regenix` will become available. Then use a special command `regenix new <name>` to
+files and therefore the command `regenix` will become available. Then use the special command `regenix new <name>` to
 create a new application from template.
 
     cd /path/to/root_of_server_with_regenix/
