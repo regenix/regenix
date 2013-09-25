@@ -205,10 +205,8 @@ class RegenixTemplate extends BaseTemplate {
         public static function getOne($group, $version = false, &$included = array()){
             $app  = Regenix::app();
 
-            $info = $app->getAsset($group, $version);
-
-            $assets   = $app->getAssetFiles($group, $version, $included);
-
+            //$info = $app->getAsset($group, $version);
+            $assets = $app->getAssetFiles($group, $version, $included);
             $result = '';
             foreach((array)$assets as $file){
                 $html = BaseTemplate::getAssetTemplate($file);
@@ -221,7 +219,24 @@ class RegenixTemplate extends BaseTemplate {
         }
 
         public function call($args, RegenixTPL $ctx) {
-            return self::getOne($args['_arg']);
+            $alreadyIncluded = $ctx->getArg('deps_assets_included');
+            if (!is_array($alreadyIncluded))
+                $alreadyIncluded = array();
+
+            $group = $args['_arg'];
+            if ($alreadyIncluded[$group])
+                return "";
+
+            if ($args['all']){
+                $tmp = array();
+                $result = self::getOne($group, false, $tmp);
+                $alreadyIncluded = array_merge($alreadyIncluded, $tmp);
+            } else {
+                $result = self::getOne($group, false, $alreadyIncluded);
+            }
+
+            $ctx->putArg('deps_assets_included', $alreadyIncluded);
+            return $result;
         }
     }
 
