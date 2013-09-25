@@ -22,3 +22,24 @@
 [submodule "framework/vendor/Propel"]
 	path = framework/vendor/Propel
 	url = git://github.com/propelorm/Propel.git
+[submodule "framework/vendor/Symfony/Component/Process"]
+	path = framework/vendor/Symfony/Component/Process
+	url = https://github.com/symfony/Process.git
+[submodule "framework/vendor/Symfony/Component/Console"]
+	path = framework/vendor/Symfony/Component/Console
+	url = https://github.com/symfony/Console.git
+[submodule "framework/vendor/Symfony/Component/EventDispatcher"]
+	path = framework/vendor/Symfony/Component/EventDispatcher
+	url = https://github.com/symfony/EventDispatcher.git
+[submodule "framework/vendor/Symfony/Component/DependencyInjection"]
+	path = framework/vendor/Symfony/Component/DependencyInjection
+	url = https://github.com/symfony/DependencyInjection.git
+[submodule "framework/vendor/Symfony/Component/ExpressionLanguage"]
+	path = framework/vendor/Symfony/Component/ExpressionLanguage
+	url = https://github.com/symfony/expression-language.git
+[submodule "framework/vendor/Symfony/Component/Yaml"]
+	path = framework/vendor/Symfony/Component/Yaml
+	url = https://github.com/symfony/Yaml.git
+[submodule "framework/vendor/Symfony/Component/Config"]
+	path = framework/vendor/Symfony/Component/Config
+	url = https://github.com/symfony/Config.git

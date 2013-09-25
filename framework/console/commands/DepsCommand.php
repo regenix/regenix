@@ -79,7 +79,11 @@ class DepsCommand extends ConsoleCommand {
         $this->writeln();
         if(sizeof($deps)){
             foreach($deps as $group => $dep){
-                $this->writeln('        - %s (%s)', $group, $dep);
+                $status = 'ok';
+                if (!is_dir($vendorDir = $this->app->getPath() . 'vendor/' . $group . '/'))
+                    $status = 'not installed';
+
+                $this->writeln('        - %s (%s) [%s]', $group, $dep, $status);
             }
         } else {
             $this->writeln('        * empty');
@@ -121,7 +125,7 @@ class DepsCommand extends ConsoleCommand {
         $this->writeln();
         $this->renderDeps('Modules', 'modules', $this->app->deps['modules']);
         $this->writeln();
-        $this->renderComposerDeps('Composer', $this->app->deps['composer']);
+        $this->renderComposerDeps('Composer', $this->app->deps['composer']['require']);
 
         $this->checkConflicts();
     }
@@ -290,7 +294,7 @@ class DepsCommand extends ConsoleCommand {
             $composer = $this->app->deps['composer'];
             if ($composer){
                 $this->writeln('Composer starting ...');
-                $json = array('require' => $composer);
+                $json = $composer;
                 $file = new File($this->app->getPath() . 'composer.json');
 
                 $file->open('w');
