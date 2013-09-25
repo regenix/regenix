@@ -586,6 +586,13 @@ class ClassScanner {
     }
 
     /**
+     * @return array
+     */
+    public static function getClassPaths(){
+        return self::$paths;
+    }
+
+    /**
      * @param string $extension
      */
     public static function removeSourceExtension($extension){

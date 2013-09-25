@@ -1,32 +1,41 @@
 <?php
 namespace regenix\console\commands;
 
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+use regenix\Regenix;
 use regenix\console\Commander;
-use regenix\console\ConsoleCommand;
+use regenix\console\RegenixCommand;
 use regenix\lang\File;
 
-class LoadCommand extends ConsoleCommand {
+class LoadCommand extends RegenixCommand {
 
-    const GROUP = 'load';
+    protected function configure() {
+        $this
+            ->setName('load')
+            ->setDescription('Load and set current app with name, example: `load <name>`')
+            ->addArgument(
+                'name',
+                InputArgument::OPTIONAL,
+                'name of application'
+            );
+    }
 
-    public function __default(){
-        $name = $this->args->get(0);
+    protected function execute(InputInterface $input, OutputInterface $output){
+        $name = $input->getArgument('name');
         $this->write('Load app: `%s`', $name);
 
-        $cmd = Commander::current();
-        if (!$cmd->apps[$name]){
+        $console = $this->getApplication();
+        if (!$console->apps[$name]){
             $this->writeln('[error: not exists]');
         } else {
-            $tmpFile = new File(sys_get_temp_dir() . '/regenix/.current');
+            $tmpFile = new File(Regenix::getTempPath() . '/regenix/.current');
             $tmpFile->getParentFile()->mkdirs();
             if (file_put_contents($tmpFile->getPath(), $name))
                 $this->writeln('[success]');
             else
                 $this->writeln('[error: can`t write to temp directory');
         }
-    }
-
-    public function getInlineHelp(){
-        return 'loads and sets a current app by the name, example: `load <name>`';
     }
 }

@@ -1,39 +1,69 @@
 <?php
-/**
- * Created by JetBrains PhpStorm.
- * User: dim-s
- * Date: 23.04.13
- * Time: 10:55
- * To change this template use File | Settings | File Templates.
- */
-
 namespace regenix\console\commands;
 
-use regenix\console\ConsoleCommand;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Process\Process;
+use regenix\console\RegenixCommand;
 use regenix\deps\ConnectException;
 use regenix\deps\DependencyDownloadException;
 use regenix\deps\DependencyNotFoundException;
 use regenix\deps\Origin;
 use regenix\deps\Repository;
 use regenix\exceptions\HttpException;
-use regenix\exceptions\NotFoundException;
 use regenix\lang\CoreException;
 use regenix\lang\File;
 use regenix\lang\String;
 
-class DepsCommand extends ConsoleCommand {
+class DepsCommand extends RegenixCommand {
 
-    const GROUP = 'deps';
+    const CHECK_APP_LOADED = true;
+
+    protected function configure() {
+        $this
+            ->setName('deps')
+            ->setDescription('Manage dependencies of a current app, example: deps update')
+            ->addArgument(
+                'task',
+                InputArgument::OPTIONAL | InputArgument::IS_ARRAY,
+                'additional propel command'
+            )
+            ->addOption(
+                'force',
+                InputOption::VALUE_NONE
+            );
+    }
 
     /** @var Repository */
     protected $repository;
 
-    public function onBefore(){
-        if (!$this->app)
-            throw new CoreException("To work with the command, load some application via `regenix load <app_name>`");
+    protected function execute(InputInterface $input, OutputInterface $output){
+        $console = $this->getApplication();
+        $console->app->loadDeps();
+        $this->repository = new Repository($console->app->deps);
 
-        $this->app->loadDeps();
-        $this->repository = new Repository($this->app->deps);
+        if($task = $input->getArgument('task')){
+            $sub = 'sub_' . $task[0];
+            if (!method_exists($this, $sub)){
+                $this->writeln('The command `deps %s` not found', $task[0]);
+                exit(1);
+            }
+            $this->{$sub}();
+            return;
+        }
+
+        $this->writeln('Dependencies of `%s`:', $console->app->getName());
+        $this->writeln();
+
+        $this->renderDeps('Assets', 'assets', $console->app->deps['assets']);
+        $this->writeln();
+        $this->renderDeps('Modules', 'modules', $console->app->deps['modules']);
+        $this->writeln();
+        $this->renderComposerDeps('Composer', $console->app->deps['composer']['require']);
+
+        $this->checkConflicts();
     }
 
     protected function renderDep($group, $pattern, $level = 0){
@@ -77,10 +107,11 @@ class DepsCommand extends ConsoleCommand {
     protected function renderComposerDeps($label, $deps){
         $this->writeln('    %s:', $label);
         $this->writeln();
+        $console = $this->getApplication();
         if(sizeof($deps)){
             foreach($deps as $group => $dep){
                 $status = 'ok';
-                if (!is_dir($vendorDir = $this->app->getPath() . 'vendor/' . $group . '/'))
+                if (!is_dir($vendorDir = $console->app->getPath() . 'vendor/' . $group . '/'))
                     $status = 'not installed';
 
                 $this->writeln('        - %s (%s) [%s]', $group, $dep, $status);
@@ -107,29 +138,6 @@ class DepsCommand extends ConsoleCommand {
         }
     }
 
-    public function __default(){
-        if($this->args->has(0)){
-            $sub = 'sub_' . $this->args->get(0);
-            if (!method_exists($this, $sub)){
-                $this->writeln('Command `deps %s` not found', $this->args->get(0));
-                return;
-            }
-            $this->{$sub}();
-            return;
-        }
-
-        $this->writeln('Dependencies of `%s`:', $this->app->getName());
-        $this->writeln();
-
-        $this->renderDeps('Assets', 'assets', $this->app->deps['assets']);
-        $this->writeln();
-        $this->renderDeps('Modules', 'modules', $this->app->deps['modules']);
-        $this->writeln();
-        $this->renderComposerDeps('Composer', $this->app->deps['composer']['require']);
-
-        $this->checkConflicts();
-    }
-
     protected function update($env, $group, $dep, $step = 0){
         try {
             $this->write(($step ? '  try '.$step.': ' : '->').' %s/%s/%s', $env, $group, $dep['version']);
@@ -139,7 +147,7 @@ class DepsCommand extends ConsoleCommand {
                 return;
             }
 
-            $result = $this->repository->download($group, $dep['version'], $this->opts->getBoolean('force'));
+            $result = $this->repository->download($group, $dep['version'], $this->input->getOption('force'));
             if (!$this->repository->isValid($group, $result['version'])){
                 $this->writeln('[error, download invalid]');
                 if ($step < 5){
@@ -223,10 +231,12 @@ class DepsCommand extends ConsoleCommand {
     }
 
     protected function sub_find(){
-        $group = $this->args->get(1);
+        $task = $this->input->getArgument('task');
+
+        $group = $task[1];
         if (!$group || sizeof(explode('/', $group)) !== 2){
             $this->writeln('[error] Group invalid name, try example: `regenix deps find assets/jquery`');
-            return;
+            exit(1);
         }
 
         $group = explode('/', $group);
@@ -247,11 +257,11 @@ class DepsCommand extends ConsoleCommand {
                 $meta = $this->repository->getMeta($group[1]);
             } catch(HttpException $ne){
                 $this->writeln('    - not found');
-                return;
+                exit(1);
             } catch (\Exception $e2){
                 $this->writeln('[error] Can`t connect to repository');
                 $this->writeln('    Last exception: %s', $e2->getMessage());
-                return;
+                exit(1);
             }
         }
 
@@ -264,8 +274,11 @@ class DepsCommand extends ConsoleCommand {
         $variants = array('assets', 'modules');
         $start = microtime(1);
 
-        if ($this->args->has(1)){
-            $variant = $this->args->get(1);
+        $command = $this->getApplication();
+        $task = $this->input->getArgument('task');
+
+        if ($task[1]){
+            $variant = $task[1];
             if (!in_array($variant, $variants, true)){
                 $this->writeln('It cannot find `%s` group dependencies', $variant);
                 return;
@@ -281,7 +294,7 @@ class DepsCommand extends ConsoleCommand {
                 }
 
                 $this->repository->setEnv($env);
-                $deps = $this->app->deps[$env];
+                $deps = $command->app->deps[$env];
                 foreach((array)$deps as $group => $dep){
                     $this->update($env, $group, $dep);
                 }
@@ -290,29 +303,26 @@ class DepsCommand extends ConsoleCommand {
 
             $this->checkConflicts();
 
-
-            $composer = $this->app->deps['composer'];
-            if ($composer){
+            $composer = $command->app->deps['composer'];
+            if ($composer && $composer['require']){
                 $this->writeln('Composer starting ...');
                 $json = $composer;
-                $file = new File($this->app->getPath() . 'composer.json');
+                $file = new File($command->app->getPath() . 'composer.json');
 
                 $file->open('w');
                     $file->write(json_encode($json));
                 $file->close();
 
-                $output = '';
-                $cmd = String::format('cd "%s" && composer update 2>&1', $this->app->getPath());
-                exec($cmd, $output);
-
-                $this->writeln();
-                foreach((array)$output as $line)
-                    $this->writeln($line);
+                $cmd = String::format('cd "%s" && composer update', $command->app->getPath());
+                $process = new Process($cmd);
+                $result = $process->run(function($type, $out){
+                    $this->writeln($out);
+                });
+                if ($result > 0){
+                    throw new CoreException('Composer has returned error code: %s', $result);
+                }
 
                 $file->delete();
-                $tmp = new File($this->app->getPath() . 'composer.lock');
-                $tmp->delete();
-
                 $this->writeln();
             }
 
@@ -322,13 +332,10 @@ class DepsCommand extends ConsoleCommand {
         } catch (\Exception $e){
             $this->writeln();
             $this->writeln('[error] Can`t update dependencies.');
-            $this->writeln('    Try again run `update` or `update -force` command');
+            $this->writeln('    Try again run `update` or `update --force` command');
             $this->writeln();
             $this->writeln('Last exception: %s', $e->getMessage());
+            exit(1);
         }
-    }
-
-    public function getInlineHelp(){
-        return 'shows and updates dependencies of a current app, example: deps update';
     }
 }

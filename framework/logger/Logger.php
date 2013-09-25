@@ -4,6 +4,7 @@ namespace regenix\logger;
 
 use regenix\Regenix;
 use regenix\Application;
+use regenix\config\PropertiesConfiguration;
 use regenix\lang\CoreException;
 use regenix\lang\File;
 use regenix\lang\FileIOException;
@@ -93,17 +94,45 @@ abstract class Logger implements IClassInitialization {
         self::$handlers = array();
     }
 
-    public static function initialize(){
-        $app =  Regenix::app();
+    /**
+     * @param null|Application|array $configOrApp
+     * @throws \regenix\lang\CoreException
+     */
+    public static function initialize($configOrApp = null){
+        if ($configOrApp && $configOrApp instanceof Application)
+            $app = $configOrApp;
+        else
+            $app = Regenix::app();
 
         if ($app){
             $enable   = $app->config->getBoolean('logger.enable', true);
             $division = $app->config->getBoolean('logger.division', true);
             $level    = $app->config->getString('logger.level', 'info');
-            if ( $enable ){
-                self::registerHandler(self::getLevelOrd($level),
-                    new LoggerDefaultHandler($app->getLogPath(), $division));
-            }
+            $logPath  = $app->getLogPath();
+        } else
+            $enable = false;
+
+        if ($configOrApp && is_array($configOrApp)){
+            $enable = true;
+            if (isset($configOrApp['division']))
+                $division = $configOrApp['division'];
+            else if (!isset($division))
+                $division = true;
+
+            if (isset($configOrApp['level']))
+                $level = $configOrApp['level'];
+            else if (!isset($level))
+                $level = 'info';
+
+            if (isset($configOrApp['logpath']))
+                $logPath = $configOrApp['logpath'];
+            else if (!isset($logPath))
+                throw new CoreException('Please, specify log path for Logger');
+        }
+
+        if ( $enable ){
+            self::registerHandler(self::getLevelOrd($level),
+                new LoggerDefaultHandler($logPath, $division));
         }
     }
 }

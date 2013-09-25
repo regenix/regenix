@@ -1,15 +1,21 @@
 <?php
 namespace regenix\console\commands;
 
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use regenix\Regenix;
 use regenix\Application;
 use regenix\console\Commander;
-use regenix\console\ConsoleCommand;
+use regenix\console\RegenixCommand;
 use regenix\modules\Module;
 
-class AboutCommand extends ConsoleCommand {
+class AboutCommand extends RegenixCommand {
 
-    const GROUP = 'about';
+    protected function configure() {
+        $this
+            ->setName('about')
+            ->setDescription('Shows information about versions, apps, modules');
+    }
 
     protected function printModules(){
         $this->writeln('Modules:');
@@ -19,9 +25,9 @@ class AboutCommand extends ConsoleCommand {
         foreach($modules as $name => $versions){
             $this->writeln('    - %s (%s)', $name, implode(', ', $versions));
         }
-   }
+    }
 
-    public function __default(){
+    protected function execute(InputInterface $input, OutputInterface $output){
         $this->writeln('Regenix framework v%s', Regenix::getVersion());
         $this->writeln();
         $this->writeln('    root path: `%s`', ROOT);
@@ -31,16 +37,13 @@ class AboutCommand extends ConsoleCommand {
 
         $this->printModules();
 
-        $cmd = Commander::current();
+        $console = $this->getApplication();
+
         $this->writeln();
         $this->writeln('apps:');
         $this->writeln();
-        foreach($cmd->apps as $app){
+        foreach($console->apps as $app){
             $this->writeln('    - %s (%s)', $app->getName(), $app->config->get('app.mode'));
         }
-    }
-
-    public function getInlineHelp(){
-        return 'shows information about versions, apps, modules';
     }
 }

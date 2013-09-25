@@ -1,17 +1,30 @@
 <?php
 namespace regenix\console\commands;
 
+use Symfony\Component\Console\Helper\DialogHelper;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use regenix\console\Commander;
 use regenix\console\Console;
-use regenix\console\ConsoleCommand;
 use regenix\Application;
+use regenix\console\RegenixCommand;
 use regenix\lang\CoreException;
 use regenix\lang\File;
 use regenix\lang\String;
 
-class NewCommand extends ConsoleCommand {
+class NewCommand extends RegenixCommand {
 
-    const GROUP = 'new';
+    protected function configure() {
+        $this
+            ->setName('new')
+            ->setDescription('Create a new application: `regenix new <name>`')
+            ->addArgument(
+                'name',
+                InputArgument::OPTIONAL,
+                'name of a new application'
+            );
+    }
 
     private static function recursive_copy($src, $dst, $replaces = array()) {
         $dir = opendir($src);
@@ -46,18 +59,28 @@ class NewCommand extends ConsoleCommand {
         closedir($dir);
     }
 
-    public function __default(){
-        $name = $this->args->get(0);
-        $this->writeln('Create app: `%s`', $name);
+    protected function execute(InputInterface $input, OutputInterface $output){
+        $name = $input->getArgument('name');
+        if (!$name){
+            /** @var $dialog DialogHelper */
+            $dialog = $this->getHelperSet()->get('dialog');
+            $name = $dialog->ask(
+                $output,
+                'Enter the name of the new application: ',
+                ''
+            );
+        }
 
+        $this->writeln('Create app: `%s`', $name);
         $name = File::sanitize($name);
         if (!trim($name)){
             $this->writeln('[error] \'%s\' - incorrect name for an application', $name);
             return;
         }
 
-        $cmd = Commander::current();
-        if ($cmd->apps[$name]){
+        $console = $this->getApplication();
+
+        if ($console->apps[$name]){
             $this->writeln('[error: application already exists]');
         }else{
             $fileApp = new File(Application::getApplicationsPath() . '/' . $name);
@@ -79,28 +102,24 @@ class NewCommand extends ConsoleCommand {
                 $replaces
             );
 
-            $commander = Commander::current();
-            $commander->_registerApps();
+            $console->registerApps();
 
             $this->writeln();
-            $commander->run('load', array($name));
-            $commander->_registerCurrentApp();
+            $console->executeAndDisplay('load', array('name' => $name));
+            $console->registerCurrentApp();
             $this->writeln();
 
-            $commander->run('deps', array('update'));
+            $console->executeAndDisplay('propel');
             $this->writeln();
 
-            $commander->run('propel');
+            $console->executeAndDisplay('deps', array('command' => 'update'));
             $this->writeln();
 
             $this->writeln('[ok] Application `%s` has been created!', $name);
             $this->writeln('[ok] Open `localhost/%s` in your browser to see the application', $name);
             $this->writeln();
             $this->writeln('    (!) You can change this address by `app.rules` in application.conf');
+            exit(0);
         }
-    }
-
-    public function getInlineHelp(){
-        return 'create a new application: `regenix new <name>`';
     }
 }

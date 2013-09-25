@@ -1,30 +1,44 @@
 <?php
 namespace regenix\console\commands;
 
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 use regenix\Regenix;
 use regenix\Application;
 use regenix\console\Commander;
 use regenix\console\ConsoleCommand;
+use regenix\console\RegenixCommand;
 use regenix\lang\CoreException;
 use regenix\modules\Module;
 use regenix\test\Tester;
 
-class TestCommand extends ConsoleCommand {
+class TestCommand extends RegenixCommand {
 
-    const GROUP = 'test';
+    protected function configure() {
+        $this
+            ->setName('test')
+            ->setDescription('Runs tests of an app or module, for module: test --module=name~0.5')
+            ->addOption(
+                'module',
+                null,
+                InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY
+            );
+    }
 
-    public function __default(){
-        if ($this->opts->has('module')){
-            $module = $this->opts->get('module');
+    protected function execute(InputInterface $input, OutputInterface $output){
+        $console = $this->getApplication();
+
+        if ($input->getOption('module')){
+            $module = $input->getOption('module');
+            $module = $module[0];
             Tester::startTesting(null, $module);
 
             $this->writeln('Start module "%s" testing ...', $module);
         } else {
-            if (!$this->app)
-                throw new CoreException("To work with the command, load some application via `regenix load <app_name>`");
-
-            $this->app->register(false);
-            $this->writeln('Start "%s" testing ...', $this->app->getName());
+            $this->checkApplicationLoaded();
+            $console->app->register(false);
+            $this->writeln('Start "%s" testing ...', $console->app->getName());
             Tester::startTesting();
         }
         $this->writeln();
@@ -50,9 +64,5 @@ class TestCommand extends ConsoleCommand {
         $this->writeln();
         $this->writeln('Tests %s, exit code: %s', $result['result'] ? 'success' : 'fail', $result['result'] ? 0 : 1);
         exit($result['result'] ? 0 : 1);
-    }
-
-    public function getInlineHelp(){
-        return 'runs tests of an app or module, for module: test -module=name~0.5';
     }
 }

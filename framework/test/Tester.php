@@ -11,8 +11,6 @@ use regenix\mvc\Controller;
 class Tester extends Controller {
 
     public static function startTesting($id = null, $moduleWithVersion = null){
-        $app =  Regenix::app();
-
         if ($moduleWithVersion){
             if (!is_dir(ROOT . 'modules/' . $moduleWithVersion . '/'))
                 throw new CoreException('Module `%s` not found', $moduleWithVersion);
@@ -37,6 +35,7 @@ class Tester extends Controller {
 
             $tests[] = new $testClass;
         } else {
+            $app = Regenix::app();
             $testClass = ClassScanner::find(UnitTest::type);
             foreach($testClass->getChildrensAll($namespace) as $child){
                 $class = $child->getName();

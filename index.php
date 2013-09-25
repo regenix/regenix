@@ -6,8 +6,8 @@ use regenix\Regenix;
     // require main file
     require 'framework/include.php';
 
-    // добавляем проект из внешней папки
+    // add external application
     //Regenix::addExternalApp('E:/apps/JupiterBackend/tests');
 
     // Init apps
-    Regenix::initWeb(__DIR__);
+    Regenix::init(__DIR__);

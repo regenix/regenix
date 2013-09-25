@@ -2,21 +2,35 @@
 namespace regenix\console\commands;
 
 
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Process\Process;
 use regenix\Regenix;
 use regenix\console\ConsoleCommand;
+use regenix\console\RegenixCommand;
 use regenix\lang\CoreException;
 use regenix\lang\File;
 
-class PropelCommand extends ConsoleCommand {
+class PropelCommand extends RegenixCommand {
 
-    const GROUP = 'propel';
+    const CHECK_APP_LOADED = true;
 
-    public function __default(){
-        if (!$this->app)
-            throw new CoreException("To work with the command, load some application via `regenix load <app_name>`");
+    protected function configure() {
+        $this
+            ->setName('propel')
+            ->setDescription('Propel-gen command within a current loaded application`')
+            ->addArgument(
+                'task',
+                InputArgument::OPTIONAL,
+                'additional propel command'
+            );
+    }
 
+    protected function execute(InputInterface $input, OutputInterface $output){
+        $console = $this->getApplication();
         $propelBin = ROOT . 'propel-gen';
-        $path = $this->app->getPath() . 'conf/orm/';
+        $path = $console->app->getPath() . 'conf/orm/';
 
         $schemaFile = new File($path . 'schema.xml');
         $propertiesFile = new File($path . 'build.properties');
@@ -26,45 +40,48 @@ class PropelCommand extends ConsoleCommand {
         if (!$schemaFile->isFile()){
             $this->writeln(
                 '[error] Cannot find a schema file `/apps/%s/conf/orm/schema.xml`',
-                $this->app->getName()
+                $console->app->getName()
             );
-            return;
+            exit(1);
         }
 
         if (!$propertiesFile->isFile()){
             $this->writeln(
                 '[error] Cannot find a build file `/apps/%s/conf/orm/build.properties`',
-                $this->app->getName()
+                $console->app->getName()
             );
-            return;
+            exit(1);
         }
 
         if (!$runtimeConfig->exists()){
             $this->writeln(
                 '[error] Cannot find a runtime-conf file `/apps/%s/conf/orm/runtime-conf.xml`'
             );
-            return;
+            exit(1);
         }
 
         if (!$buildtimeConfig->exists()){
             @copy($runtimeConfig->getPath(), $buildtimeConfig->getPath());
         }
 
-        $output = '';
-        $command = $propelBin . ' "' . $path . '" ' . $this->args->get(0) .
-            ' "-Dpropel.name=" "-Dpropel.php.dir=' . $this->app->getModelPath() . '"' .
-            ' "-Dpropel.schema.autoNamespace=true" 2>&1';
+        $command = $propelBin . ' "' . $path . '" ' . $input->getArgument('task') .
+            ' "-Dpropel.name=" "-Dpropel.php.dir=' . $console->app->getModelPath() . '"' .
+            ' "-Dpropel.schema.autoNamespace=true"';
 
         $this->writeln('>> ' . $command);
         $this->writeln();
-        exec($command, $output);
 
-        foreach((array)$output as $line)
-            $this->writeln($line);
-    }
+        $process = new Process($command);
+        $result = $process->run(function($type, $out) {
+            if ($type === 'err')
+                $this->writeln('ERROR > ' . $out);
+            else
+                $this->writeln($out);
+        });
 
-    public function getInlineHelp()
-    {
-        return 'propel-gen command within a current loaded application';
+        if ($result > 0){
+            $this->writeln('[fail] Propel return %s exit code', $result);
+            exit($result);
+        }
     }
 }

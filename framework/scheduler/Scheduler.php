@@ -36,6 +36,13 @@ class Scheduler {
         $this->loadCache();
     }
 
+    /**
+     * @return string
+     */
+    public function getName() {
+        return $this->name;
+    }
+
     public function update(){
         foreach($this->tasks as $task){
             $task->run();

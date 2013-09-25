@@ -49,6 +49,9 @@ final class Regenix {
     /** @var string */
     private static $tempPath;
 
+    /** @var string */
+    private static $rootTempPath;
+
     /** @var Application[] */
     private static $apps = array();
 
@@ -104,7 +107,7 @@ final class Regenix {
         return end(self::$profileLog);
     }
 
-    private static function init($rootDir, $inWeb = true){
+    public static function init($rootDir, $inWeb = true){
         ini_set('display_errors', 'Off');
         error_reporting(0);
 
@@ -125,7 +128,7 @@ final class Regenix {
         require REGENIX_ROOT . 'lang/PHP.php';
 
         set_include_path($rootDir);
-        self::$tempPath = sys_get_temp_dir() . '/';
+        self::$rootTempPath = sys_get_temp_dir() . '/regenix_v' . self::getVersion() . '/';
 
         unset($_GET, $_REQUEST);
 
@@ -174,30 +177,6 @@ final class Regenix {
 
         if (!REGENIX_IS_DEV)
             error_reporting(0);
-    }
-
-    /**
-     * Init for console src
-     * @param $rootDir
-     */
-    public static function initConsole($rootDir){
-        try {
-            self::init($rootDir, false);
-            register_shutdown_function(array(Regenix::type, '__shutdownConsole'));
-
-            $commander = Commander::current();
-            $commander->run();
-        } catch (\Exception $e){
-            if (self::$bootstrap)
-                self::$bootstrap->onException($e);
-
-            echo "\n    Exception error: " . str_replace('\\', '.', get_class($e)) . "\n";
-            echo "\n        message: " . $e->getMessage();
-            echo "\n        file: " . $e->getFile();
-            echo "\n        line: " . $e->getLine();
-            echo "\n\n      Exit code: 1\n";
-            exit(1);
-        }
     }
 
     /**
@@ -581,7 +560,7 @@ final class Regenix {
     }
 
     public static function getTempPath(){
-        return self::$tempPath;
+        return self::$rootTempPath . self::$tempPath;
     }
 
     /**
@@ -615,33 +594,6 @@ final class Regenix {
             }
         }
     }
-
-    public static function __shutdownConsole(){
-        $error = error_get_last();
-        if ($error){
-            switch($error['type']){
-                case E_ERROR:
-                case E_CORE_ERROR:
-                case E_COMPILE_ERROR:
-                case E_PARSE:
-                case E_USER_ERROR:
-                case 4096:
-                {
-                    echo "\n    Error: '" . $error['message'] . "'";
-                    echo "\n        file: '" . $error['file'] . "'";
-                    echo "\n        line: " . $error['line'] . "\n";
-
-                    break;
-                }
-                default: {
-                    return;
-                }
-            }
-            echo "\n    Exit code: " . $error['type'];
-            echo "\n";
-            exit($error['type']);
-        }
-    }
     
     public static function __shutdown(Application $app){
         $error = error_get_last();
@@ -673,11 +625,12 @@ final class Regenix {
 
     /*** utils ***/
     public static function setTempPath($dir){
-        if ( !is_dir($dir) ){
-            if ( !mkdir($dir, 0777, true) ){
+        $path = self::$rootTempPath . $dir;
+        if ( !is_dir($path) ){
+            if ( !mkdir($path, 0777, true) ){
                 throw new CoreException('Unable to create temp directory `/tmp/`');
             }
-            chmod($dir, 0777);
+            chmod($path, 0777);
         }
         self::$tempPath = str_replace('\\', '/', $dir);
     }
@@ -1017,7 +970,7 @@ final class Regenix {
             Regenix::trace('.register() application start');
 
             // temp
-            Regenix::setTempPath( sys_get_temp_dir() . '/regenix/' . $this->name . '/' );
+            Regenix::setTempPath( $this->name . '/' );
 
             $sessionDriver = new APCSession();
             $sessionDriver->register();

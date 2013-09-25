@@ -1,23 +1,25 @@
 <?php
 namespace regenix\console\commands;
 
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use regenix\Regenix;
 use regenix\Application;
 use regenix\cache\SystemCache;
 use regenix\console\Commander;
-use regenix\console\ConsoleCommand;
+use regenix\console\RegenixCommand;
 use regenix\modules\Module;
 
-class CleanCommand extends ConsoleCommand {
+class CleanCommand extends RegenixCommand {
 
-    const GROUP = 'clean';
-
-    public function __default(){
-        SystemCache::removeAll();
-        $this->writeln('[success] Cache has been removed.');
+    protected function configure() {
+        $this
+            ->setName('clean')
+            ->setDescription('Clean all cache');
     }
 
-    public function getInlineHelp(){
-        return 'clean all cache\'s data';
+    protected function execute(InputInterface $input, OutputInterface $output){
+        SystemCache::removeAll();
+        $this->writeln('[success] Cache has been removed.');
     }
 }

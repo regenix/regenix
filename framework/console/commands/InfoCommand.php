@@ -1,27 +1,31 @@
 <?php
 namespace regenix\console\commands;
 
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use regenix\console\ConsoleCommand;
+use regenix\console\RegenixCommand;
 use regenix\lang\CoreException;
 
-class InfoCommand extends ConsoleCommand {
+class InfoCommand extends RegenixCommand {
 
-    const GROUP = 'info';
+    const CHECK_APP_LOADED = true;
 
-    public function __default(){
-        if (!$this->app)
-            throw new CoreException("To work with the command, load some application via `regenix load <app_name>`");
-
-        $config = $this->app->config;
-
+    protected function configure() {
         $this
-            ->writeln('Current: %s', $this->app->getName())
-            ->writeln()
-            ->writeln('     mode = %s', $config->get('app.mode'))
-            ->writeln('     mode.strict = %s', $config->getBoolean('app.mode.strict', true) ? 'on' : 'off');
+            ->setName('info')
+            ->setDescription('Show information about current loaded application');
     }
 
-    public function getInlineHelp(){
-        return 'shows information of current app';
+    protected function execute(InputInterface $input, OutputInterface $output){
+        $console = $this->getApplication();
+        $config = $console->app->config;
+
+        $strict = $config->getBoolean('app.mode.strict', true);
+        $this
+            ->writeln('Current: %s', $console->app->getName())
+            ->writeln()
+            ->writeln('     rules = %s', $config->get('app.rules'))
+            ->writeln('     mode = %s %s', $config->get('app.mode'), $strict ? '(strict)' : '');
     }
 }
