@@ -84,10 +84,15 @@ class Repository implements IClassInitialization{
         return null;
     }
 
+    /**
+     * @param $meta
+     * @param $patternVersion
+     * @return array
+     */
     protected function findMaxVersion($meta, $patternVersion){
         $curVersion = false;
         foreach($meta as $version => $dep){
-            if (preg_match('#^' . $patternVersion . '$#', $version)){
+            if (preg_match('#^(' . $patternVersion . ')$#', $version)){
                 if ($curVersion === false || version_compare($version, $curVersion, '>')){
                     $curVersion = $version;
                 }
@@ -122,7 +127,7 @@ class Repository implements IClassInitialization{
      * @param $version
      * @param $result
      * @param bool $check
-     * @throws
+     * @throws \regenix\lang\CoreException
      */
     private function _getAllDependencies($env, $group, $version, &$result, $check = true){
         if (!$result)
@@ -150,15 +155,16 @@ class Repository implements IClassInitialization{
     /**
      * @param $env
      * @param bool $check
-     * @throws
+     * @throws \regenix\lang\CoreException
      * @return array
      */
     public function getAll($env, $check = true){
         $result = array();
         $this->setEnv($env);
 
-        foreach((array)$this->deps[$env] as $group => $patternVersion){
-            $dep  = $this->findLocalVersion($group, $patternVersion['version']);
+        $deps = (array)$this->deps[$env];
+        foreach($deps as $group => $patternVersion){
+            $dep = $this->findLocalVersion($group, $patternVersion['version']);
             if ($dep){
                 $this->_getAllDependencies($env, $group, $dep['version'], $result, $check);
             } elseif ($check){
@@ -177,6 +183,18 @@ class Repository implements IClassInitialization{
      * @return mixed
      */
     public function findLocalVersion($group, $patternVersion){
+        if ($tmpDep = $this->deps[$this->env][$group]){
+            if ($tmpDep['version'] != $patternVersion){
+                $dep = $this->findLocalVersion($group, $tmpDep['version']);
+                if ($dep){
+                    if (preg_match('#^(' . $patternVersion . ')$#', $dep['version'])){
+                        $dep['skip'] = true;
+                        return $dep;
+                    }
+                }
+            }
+        }
+
         $meta = array();
         $dirs = glob(ROOT . $this->env . '/' . $group . '~*', GLOB_ONLYDIR | GLOB_NOSORT);
         foreach($dirs as $dir){

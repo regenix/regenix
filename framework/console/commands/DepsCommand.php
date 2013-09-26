@@ -140,8 +140,13 @@ class DepsCommand extends RegenixCommand {
 
     protected function update($env, $group, $dep, $step = 0){
         try {
+            $local = $this->repository->findLocalVersion($group, $dep['version']);
+            if ($local['skip']){
+                //$this->writeln('[ok, %s skip]', $local['version']);
+                return;
+            }
+
             $this->write(($step ? '  try '.$step.': ' : '->').' %s/%s/%s', $env, $group, $dep['version']);
-            $local  = $this->repository->findLocalVersion($group, $dep['version']);
             if ($dep['skip']){
                 $this->writeln('[manual skip]');
                 return;
