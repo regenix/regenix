@@ -2,8 +2,7 @@
     "repository": "github:dim-s/regenix-repository/master",
 
     "assets": {
-        "jquery": {"version": "1.9.*"},
-        "bootstrap": {"version": "(2.*|3.*)"}
+        {%DEPS%}
     },
 
     "modules": {

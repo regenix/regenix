@@ -40,7 +40,8 @@ class NewCommand extends RegenixCommand {
                         $ext = $tmp->getExtension();
 
                         if ($ext === 'conf' || $ext === 'json' || $ext === 'properties' ||
-                            $ext === 'xml' || $ext === 'route' || $ext === 'lang' || $ext === ''){
+                            $ext === 'xml' || $ext === 'route' || $ext === 'lang' || $ext === ''
+                            || $ext === 'html'){
 
                             $data = str_replace(
                                 array_keys($replaces),
@@ -61,9 +62,9 @@ class NewCommand extends RegenixCommand {
 
     protected function execute(InputInterface $input, OutputInterface $output){
         $name = $input->getArgument('name');
+        /** @var $dialog DialogHelper */
+        $dialog = $this->getHelperSet()->get('dialog');
         if (!$name){
-            /** @var $dialog DialogHelper */
-            $dialog = $this->getHelperSet()->get('dialog');
             $name = $dialog->ask(
                 $output,
                 'Enter the name of the new application: ',
@@ -78,6 +79,16 @@ class NewCommand extends RegenixCommand {
             return;
         }
 
+        $this->writeln();
+        $jquery = $dialog->askConfirmation($output, 'Do you want to include jQuery (y/n)?', false);
+        if ($jquery)
+            $this->writeln('    jQuery - yes');
+
+        $this->writeln();
+        $bootstrap = $dialog->askConfirmation($output, 'Do you want to include Bootstrap (y/n)?', false);
+        if ($bootstrap)
+            $this->writeln('    Bootstrap - yes');
+
         $console = $this->getApplication();
 
         if ($console->apps[$name]){
@@ -91,9 +102,27 @@ class NewCommand extends RegenixCommand {
             $fileApp->mkdirs();
             $pathApp = $fileApp->getPath();
 
+            $DEPS = '';
+            if ($jquery){
+                if ($DEPS)
+                    $DEPS .= ",\n      ";
+
+                $DEPS .= '"jquery": {"version": "1.*"}';
+            }
+
+            if ($bootstrap){
+                if ($DEPS)
+                    $DEPS .= ",\n      ";
+
+                $DEPS .= '"bootstrap": {"version": "2.*|3.*"}';
+            }
+
             $replaces = array(
                 '{%SECRET_KEY%}' => String::randomRandom(32, 48, true, true),
-                '{%APP_NAME%}' => $name
+                '{%APP_NAME%}' => $name,
+                '{%DEPS%}' => $DEPS,
+                '{%INC_JQUERY%}' => $jquery ? '{deps.asset \'jquery\'}' : '',
+                '{%INC_BOOTSTRAP%}' => $bootstrap ? '{deps.asset \'bootstrap\'}' : '',
             );
 
             self::recursive_copy(
