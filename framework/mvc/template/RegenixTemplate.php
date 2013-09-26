@@ -202,6 +202,8 @@ class RegenixTemplate extends BaseTemplate {
             return 'deps.asset';
         }
 
+        private static $alreadyIncluded = array();
+
         public static function getOne($group, $version = false, &$included = array()){
             $app  = Regenix::app();
 
@@ -219,23 +221,18 @@ class RegenixTemplate extends BaseTemplate {
         }
 
         public function call($args, RegenixTPL $ctx) {
-            $alreadyIncluded = $ctx->getArg('deps_assets_included');
-            if (!is_array($alreadyIncluded))
-                $alreadyIncluded = array();
-
+            $alreadyIncluded =& self::$alreadyIncluded;
             $group = $args['_arg'];
-            if ($alreadyIncluded[$group])
-                return "";
 
             if ($args['all']){
                 $tmp = array();
                 $result = self::getOne($group, false, $tmp);
                 $alreadyIncluded = array_merge($alreadyIncluded, $tmp);
             } else {
+                if ($alreadyIncluded[$group])
+                    return "";
                 $result = self::getOne($group, false, $alreadyIncluded);
             }
-
-            $ctx->putArg('deps_assets_included', $alreadyIncluded);
             return $result;
         }
     }
