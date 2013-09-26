@@ -55,7 +55,8 @@ class PropelCommand extends RegenixCommand {
 
         if (!$runtimeConfig->exists()){
             $this->writeln(
-                '[error] Cannot find a runtime-conf file `/apps/%s/conf/orm/runtime-conf.xml`'
+                '[error] Cannot find a runtime-conf file `/apps/%s/conf/orm/runtime-conf.xml`',
+                $console->app->getName()
             );
             exit(1);
         }

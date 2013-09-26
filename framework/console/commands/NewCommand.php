@@ -12,6 +12,7 @@ use regenix\console\RegenixCommand;
 use regenix\lang\CoreException;
 use regenix\lang\File;
 use regenix\lang\String;
+use Symfony\Component\Process\Process;
 
 class NewCommand extends RegenixCommand {
 
@@ -139,9 +140,13 @@ class NewCommand extends RegenixCommand {
             $this->writeln();
 
             $console->executeAndDisplay('propel');
-            $this->writeln();
 
-            $console->executeAndDisplay('deps', array('command' => 'update'));
+            $process = new Process('regenix deps update');
+            $process->run(function($type, $out){
+                $this->write($out);
+            });
+
+            $console->executeAndDisplay('deps');
             $this->writeln();
 
             $this->writeln('[ok] Application `%s` has been created!', $name);
