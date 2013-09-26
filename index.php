@@ -10,4 +10,4 @@ use regenix\Regenix;
     //Regenix::addExternalApp('E:/apps/JupiterBackend/tests');
 
     // Init apps
-    Regenix::init(__DIR__);
+    Regenix::initWeb(__DIR__);
