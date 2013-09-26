@@ -336,6 +336,7 @@ final class Regenix {
     }
     
     public static function processRoute(){
+        self::trace('Request start ...');
         $app = Regenix::app();
         $router = $app->router;
 
@@ -379,6 +380,8 @@ final class Regenix {
             SDK::trigger('beforeRequest', array($controller));
             
             $controller->callBefore();
+            self::trace('Request controller proccessing ...');
+
             $return = $router->invokeMethod($controller, $reflection);
 
             // if use return statement
@@ -735,10 +738,11 @@ final class Regenix {
             if ($this->config === null){
                 $this->config = new PropertiesConfiguration(new File( $configFile ));
                 SystemCache::setWithCheckFile($cacheName, $this->config, $configFile);
+                Regenix::trace('Read config for new app - ' . $appName);
             }
 
             $this->applyConfig( $this->config );
-            Regenix::trace('New src - ' . $appName);
+            Regenix::trace('New app - ' . $appName);
         }
 
         /**
@@ -991,14 +995,16 @@ final class Regenix {
             if (REGENIX_IS_DEV)
                 $this->_registerTests();
 
-            if ($inWeb)
+            if ($inWeb){
                 $this->_registerSystemController();
+                Regenix::trace('.registerSystemController() application, finish register app');
+            }
 
             if ($this->bootstrap){
                 $this->bootstrap->onStart();
             }
 
-            Regenix::trace('.registerBootstrap() application, finish register src');
+            Regenix::trace('.registerBootstrap() application, finish register app');
         }
 
         public function loadDeps(){
@@ -1073,7 +1079,13 @@ final class Regenix {
 
         private function _registerSystemController(){
             if ($this->config->getBoolean('captcha.enable')){
-                $this->router->addRoute('GET', Captcha::URL, 'regenix.mvc.SystemController.captcha');
+                if (IS_DEV)
+                    Captcha::checkAvailable();
+
+                $this->router->addRouteFast('GET',
+                    '/system/captcha.img',
+                    'regenix.mvc.SystemController.captcha'
+                );
             }
 
             if ($this->config->getBoolean('i18n.js')){

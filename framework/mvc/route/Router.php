@@ -46,12 +46,11 @@ class Router extends StrictObject {
     }
     
     private function buildRoute($method, $path, $action, $params = ''){
-        
         $_path = str_replace(array('{', '}'), array('{#', '{'), $path);
         $_args = explode('{', $_path);
         
         // /users/{id}/{module}/
-        
+
         $args    = array();
         $pattern = '';
         $types   = array();
@@ -200,6 +199,10 @@ class Router extends StrictObject {
     
     public function addRoute($method, $path, $action, $params = ''){
         $this->routes[] = $this->buildRoute($method, $path, $action, $params);
+    }
+
+    public function addRouteFast($method, $path, $action, $params = ''){
+        //$this->routes[] = $this->buildRoute($method, $path, $action, $params);
     }
 
     public function invokeMethod(Controller $controller, \ReflectionMethod $method){

@@ -8,6 +8,12 @@ use regenix\mvc\URL;
 
 class FunctionalTest extends UnitTest {
 
+    private $lastMethod;
+
+    private $lastData;
+
+    private $lastUrl;
+
     /** @var string */
     private $baseUrl;
 
@@ -42,12 +48,26 @@ class FunctionalTest extends UnitTest {
         return $this;
     }
 
+    protected function RETRY(){
+        switch($this->lastMethod){
+            case 'POST': return $this->POST($this->lastUrl, $this->lastData);
+            case 'POST_JSON': return $this->POST_JSON($this->lastUrl, $this->lastData);
+            case 'GET': return $this->GET($this->lastUrl);
+            default: {
+                throw new CoreException('Cannot retry empty request, requests are not occur yet');
+            }
+        }
+    }
+
     /**
      * @param $path
      * @param array $data
      * @return WSResponse
      */
     protected function POST($path, array $data = array()){
+        $this->lastMethod = 'POST';
+        $this->lastUrl = $path;
+        $this->lastData = $data;
         return $this->response = WS::url($this->baseUrl . $path)->headers($this->headers)->params($data)->post();
     }
 
@@ -57,6 +77,9 @@ class FunctionalTest extends UnitTest {
      * @return WSResponse
      */
     protected function POST_JSON($path, $data){
+        $this->lastMethod = 'POST_JSON';
+        $this->lastUrl = $path;
+        $this->lastData = $data;
         return $this->response = WS::url($this->baseUrl . $path)->headers($this->headers)->bodyJson($data)->post();
     }
 
@@ -65,6 +88,10 @@ class FunctionalTest extends UnitTest {
      * @return WSResponse
      */
     protected function GET($path){
+        $this->lastMethod = 'GET';
+        $this->lastUrl = $path;
+        $this->lastData = null;
+
         return $this->response = WS::url($this->baseUrl . $path)->headers($this->headers)->get();
     }
 

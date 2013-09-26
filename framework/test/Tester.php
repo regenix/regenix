@@ -29,11 +29,11 @@ class Tester extends Controller {
         $tests = array();
         if ($id){
             $testClass = ClassScanner::find(str_replace('.', '\\', $id));
-            if (!$testClass->isChildOf( UnitTest::type ))
+            $tests[] = $testClass->newInstance();
+
+            if (!($tests[0] instanceof UnitTest))
                 throw new CoreException('Class "%s" should be inherited by "%s"',
                     $testClass->getName(), UnitTest::type);
-
-            $tests[] = new $testClass;
         } else {
             $app = Regenix::app();
             $testClass = ClassScanner::find(UnitTest::type);

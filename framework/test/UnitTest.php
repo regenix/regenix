@@ -1,6 +1,7 @@
 <?php
 namespace regenix\test;
 
+use regenix\lang\CoreException;
 use regenix\lang\StrictObject;
 use regenix\exceptions\TypeException;
 /**
@@ -44,6 +45,19 @@ abstract class UnitTest extends StrictObject {
 
     protected function required($unitTestClass, $needOk = false){
         $this->requires[$unitTestClass] = array('needOk' => $needOk);
+    }
+
+    protected function sleep($sec, $mlsec = 0){
+        if (!time_nanosleep($sec, $mlsec * 1000000)){
+            if ($sec && $mlsec){
+                sleep($sec);
+                usleep($mlsec * 1000000);
+            } else if ($sec && !$mlsec){
+                sleep($sec);
+            } else {
+                usleep($mlsec * 1000000);
+            }
+        }
     }
 
     public function getRequires(){

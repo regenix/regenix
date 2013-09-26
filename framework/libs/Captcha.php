@@ -27,7 +27,6 @@ class Captcha implements IClassInitialization {
 
     const type = __CLASS__;
     const SESSION_KEY = '__CAPTCHA_word';
-    const URL = '/system/captcha.img';
 
     /** @var string */
     protected $keyString;
@@ -69,13 +68,16 @@ class Captcha implements IClassInitialization {
         return strtolower($session_word) === strtolower($word);
     }
 
-    public static function initialize(){
+    public static function checkAvailable(){
         if (!extension_loaded('gd'))
             throw new CoreException('Captcha feature needs installed and enabled `GD2` extension');
 
         if (!class_exists('\\kcaptcha\\KCaptcha'))
             throw new CoreException('KCaptcha vendor library not found, `vendor/kcaptcha/` not found');
+    }
 
+    public static function initialize(){
+        self::checkAvailable();
         ResponseProvider::register(ResponseCaptchaProvider::type);
     }
 
