@@ -1,6 +1,7 @@
 <?php
 namespace regenix\cache;
 
+use regenix\Regenix;
 use regenix\lang\File;
 
 define('APC_ENABLED', extension_loaded('apc'));
@@ -19,7 +20,7 @@ else {
 }
 
 define('FAST_SERIALIZE_ENABLE', extension_loaded('igbinary'));
-define('SYSTEM_CACHE_TMP_DIR', sys_get_temp_dir() . '/regenix/syscache/');
+define('SYSTEM_CACHE_TMP_DIR', sys_get_temp_dir() . '/regenix_v' . Regenix::getVersion() .  '/syscache/');
 
 if (!is_dir(SYSTEM_CACHE_TMP_DIR))
     mkdir(SYSTEM_CACHE_TMP_DIR, 0777, true);
@@ -39,17 +40,18 @@ class SystemCache {
     }
 
     protected static function getFromFile($name){
-        $file = SYSTEM_CACHE_TMP_DIR . sha1(self::$id . '.' . $name);
+        $file = SYSTEM_CACHE_TMP_DIR . sha1(self::$id . '.' . $name) . '.php';
         if (file_exists($file)){
-            $result = unserialize(file_get_contents($file));
+            $result = include $file;
+                //unserialize(file_get_contents($file));
             return $result ? $result : null;
         }
         return null;
     }
 
     protected static function setToFile($name, $value){
-        $file = SYSTEM_CACHE_TMP_DIR . sha1(self::$id . '.' . $name);
-        file_put_contents($file, serialize($value));
+        $file = SYSTEM_CACHE_TMP_DIR . sha1(self::$id . '.' . $name) . '.php';
+        file_put_contents($file, '<?php return ' . var_export($value, true) . ';');
     }
 
     public static function get($name, $cacheInFiles = false){

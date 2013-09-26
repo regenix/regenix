@@ -463,6 +463,9 @@ class ClassScanner {
     protected static $paths = array();
 
     /** @var array */
+    protected static $ignorePaths = array();
+
+    /** @var array */
     protected static $scanned = array();
 
     /** @var array */
@@ -558,6 +561,7 @@ class ClassScanner {
      * @param bool $scan
      */
     public static function addClassPath($path, $scan = true){
+        $path = str_replace(array('\\', '//', '///', '////'), '/', $path);
         if (is_dir($path)){
             if (substr($path, -1) !== '/')
                 $path .= '/';
@@ -567,6 +571,18 @@ class ClassScanner {
 
         if ($scan)
             self::scan();
+    }
+
+    /**
+     * Add path to ignore when scans classes
+     * @param $path
+     */
+    public static function addIgnorePath($path){
+        $path = str_replace(array('\\', '//', '///', '////'), '/', $path);
+        if (substr($path, -1) !== '/')
+            $path .= '/';
+
+        self::$ignorePaths[$path] = $path;
     }
 
     /**
@@ -647,13 +663,24 @@ class ClassScanner {
      * @return array
      */
     protected static function scanPath($path){
-        // fix path string
-        $path = str_replace(array('\\', '//', '///', '////'), '/', $path);
-
         $result = array();
+        if (self::$ignorePaths[$path]){
+            return $result;
+        }
+
         foreach(self::$extensions as $extension){
             foreach(glob($path . '*.' . $extension) as $file){
                 $result = $result + self::scanFile($file);
+            }
+        }
+
+        if (is_file($path . 'classpath.ignore')){
+            $lines = file($path . 'classpath.ignore');
+            foreach($lines as $line){
+                $line = trim($line);
+                if ($line){
+                    self::addIgnorePath($path . '/' . $line);
+                }
             }
         }
 
