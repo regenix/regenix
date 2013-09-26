@@ -80,12 +80,12 @@ class NewCommand extends RegenixCommand {
         }
 
         $this->writeln();
-        $jquery = $dialog->askConfirmation($output, 'Do you want to include jQuery (y/n)?', false);
+        $jquery = $dialog->askConfirmation($output, 'Do you want to include jQuery (y/n)?: ', false);
         if ($jquery)
             $this->writeln('    jQuery - yes');
 
         $this->writeln();
-        $bootstrap = $dialog->askConfirmation($output, 'Do you want to include Bootstrap (y/n)?', false);
+        $bootstrap = $dialog->askConfirmation($output, 'Do you want to include Bootstrap (y/n)?: ', false);
         if ($bootstrap)
             $this->writeln('    Bootstrap - yes');
 
