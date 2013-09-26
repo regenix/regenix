@@ -328,7 +328,6 @@ final class Regenix {
 
                 if (self::$bootstrap)
                     self::$bootstrap->onAfterRegisterCurrentApp($app);
-
                 return;
             }
         }
@@ -861,7 +860,7 @@ final class Regenix {
             $versions = $all[$group];
 
             if (!$versions)
-                throw new CoreException('Asset `%s` not found', $group);
+                throw new CoreException('Asset `%s` is not found', $group);
 
             if ($version){
                 $info = $versions[$version];
@@ -892,8 +891,11 @@ final class Regenix {
         public function getAssetFiles($group, $version = false, &$included = array()){
             $info = $this->getAsset($group, $version);
 
-            if ($included[$group][$info['version']])
+            if ($included[$group])
                 return array();
+
+            /*if ($included[$group][$info['version']])
+                return array();*/
 
             $included[$group][$info['version']] = true;
 

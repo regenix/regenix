@@ -112,6 +112,22 @@ class RegenixTemplate {
         return $this->args;
     }
 
+    /**
+     * @param $name
+     * @param $value
+     */
+    public function putArg($name, $value){
+        $this->args[$name] = $value;
+    }
+
+    /**
+     * @param $name
+     * @return mixed
+     */
+    public function getArg($name){
+        return $this->args[$name];
+    }
+
     public function registerTag(RegenixTemplateTag $tag){
         $name = strtolower($tag->getName());
         if (!isset($this->tags[$name]))
