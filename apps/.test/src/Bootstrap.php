@@ -26,6 +26,8 @@ namespace {
         public function onTest(array &$tests){
             $tests = array(
                 new ClassloaderTest(),
+                new tests\lang\StringTest(),
+                new tests\lang\DITest(),
                 new LangTest(),
                 new LoggingTest(),
                 new I18nTest(),
@@ -41,7 +43,9 @@ namespace {
                 new tests\mvc\RequestBinderTest(),
                 new tests\mvc\URLTest(),
 
-                new tests\mvc\RequestTest()
+                new tests\mvc\RequestTest(),
+
+                new tests\template\RegenixTemplateTest(),
             );
         }
     }

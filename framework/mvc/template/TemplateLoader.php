@@ -145,7 +145,7 @@ class TemplateLoader {
         ResponseProvider::register('\regenix\mvc\providers\ResponseBaseTemplateProvider', $templateClass);
         
         self::$registered[ $templateClass ] = 1;
-        SDK::trigger('registerTemplateEngine', array($reflection));
+        //SDK::trigger('registerTemplateEngine', array($reflection));
     }
 
     public static function setDefaultExt($ext){

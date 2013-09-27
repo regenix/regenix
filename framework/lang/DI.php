@@ -10,10 +10,8 @@ use regenix\mvc\Annotations;
 final class DI {
 
     private static $reflections = array();
-    private static $metaInfo = array();
     private static $singletons = array();
 
-    private static $injectProperties = array();
     private static $binds = array();
     private static $namespaceBinds = array();
     private static $cacheNamespaceBinds = array();
@@ -31,34 +29,6 @@ final class DI {
         return self::$reflections[$class] = new \ReflectionClass($class);
     }
 
-    private static function getInjectProperties(\ReflectionClass $class){
-        if (($meta = self::$injectProperties[$class->getName()]) !== null){
-            return $meta;
-        }
-
-        $meta = array();
-        foreach($class->getProperties() as $property){
-            $info = Annotations::getPropertyAnnotation($property);
-            if ($info->has('inject')){
-                $type = $info->get('var');
-                if (!$type || !$type->getDefault())
-                    throw new DependencyInjectionException("Unknown type for injection, not found @var annotation");
-
-                $property->setAccessible(true);
-                $meta[$property->getName()] = array('property' => $property, 'type' => $type->getDefault());
-            }
-        }
-
-        return self::$injectProperties[$class->getName()] = $meta;
-    }
-
-    private static function getMetaInfo($class){
-        if ($meta = self::$metaInfo[$class]['#'])
-            return $meta;
-
-        return self::$metaInfo[$class]['#'] = Annotations::getClassAnnotation($class);
-    }
-
     private static function validateDI($interface, $implement){
         if (is_object($implement))
             $implement = get_class($implement);
@@ -70,7 +40,7 @@ final class DI {
         if (!($info = ClassScanner::find($implement)))
             throw new ClassNotFoundException($implement);
 
-        if (!$meta->isParentOf($implement)){
+        if (!$meta->isChildOf($implement)){
             throw new DependencyInjectionException('"%s" class should be implemented or inherited by "%s"', $implement, $interface);
         }
 
@@ -96,6 +66,11 @@ final class DI {
                         if (REGENIX_IS_DEV)
                             self::validateDI($class, $newClass);
 
+                        if (self::$singletons[$interfaceNamespace] === true){
+                            self::$singletons[$class] = true;
+                            return self::getInstance($class);
+                        }
+
                         $class = $newClass;
                         break;
                     }
@@ -103,8 +78,8 @@ final class DI {
             }
         }
 
-        if (is_object($class))
-            return $class;
+        /*if (is_object($class))
+            return $class;*/
 
         $reflection  = self::getReflection($class);
         $constructor = $reflection->getConstructor();
@@ -119,37 +94,22 @@ final class DI {
                     $args[] = null;
                 }
             }
-            $object = $reflection->newInstanceWithoutConstructor();
+            $object = $reflection->newInstance($args);
         } else {
             $object = $reflection->newInstance();
         }
-
-        foreach(self::getInjectProperties($reflection) as $meta){
-            /** @var $property \ReflectionProperty */
-            $property = $meta['property'];
-            $property->setValue($object, self::getInstance($meta['type']));
-        }
-
-        if ($constructor)
-            $constructor->invokeArgs($object, $args);
 
         return $object;
     }
 
     public static function getInstance($class){
         $class     = str_replace('.', '\\', $class);
-        $annotations = self::getMetaInfo($class);
-        $singleton = ($singletonInstance = self::$singletons[$class]) || $annotations->has('singleton');
+        $singleton = self::$singletons[$class];
 
-        if ($singleton){
-            if (!$singletonInstance){
-                $singletonInstance = self::$singletons[$class];
-            }
-
-            if (!$singletonInstance)
-                return self::$singletons[$class] = self::_getInstance($class);
-            else
-                return $singletonInstance;
+        if ($singleton === true){
+            return self::$singletons[$class] = self::_getInstance($class);
+        } else if ($singleton){
+            return $singleton;
         } else {
             return self::_getInstance($class);
         }
@@ -158,8 +118,10 @@ final class DI {
     /**
      * @param $interfaceNamespace
      * @param $implementNamespace
+     * @param bool $singleton
      */
-    public static function bindNamespaceTo($interfaceNamespace, $implementNamespace){
+    public static function bindNamespaceTo($interfaceNamespace, $implementNamespace,
+                                           $singleton = false){
         $interfaceNamespace = str_replace('.', '\\', $interfaceNamespace);
         $implementNamespace = str_replace('.', '\\', $implementNamespace);
 
@@ -171,15 +133,15 @@ final class DI {
 
         self::$namespaceBinds[$interfaceNamespace] = $implementNamespace;
         self::$cacheNamespaceBinds = array();
+        self::$singletons[ $interfaceNamespace ] = $singleton;
     }
 
     /**
      * @param $interface
      * @param $class
-     * @throws DependencyInjectionException
-     * @throws ClassNotFoundException
+     * @param bool $singleton
      */
-    public static function bindTo($interface, $class){
+    public static function bindTo($interface, $class, $singleton = false){
         $interface = str_replace('.', '\\', $interface);
         if (!is_object($class))
             $class = str_replace('.', '\\', $class);
@@ -188,16 +150,21 @@ final class DI {
             self::validateDI($interface, $class);
 
         self::$binds[ $interface ] = $class;
+        if ($singleton){
+            self::$singletons[ $interface ] = true;
+        }
     }
 
     public static function bind($object){
-        self::bindTo(get_class($object), $object);
+        self::$singletons[get_class($object)] = $object;
+    }
+
+    public static function clear(){
+        self::$singletons = array();
+        self::$cacheNamespaceBinds = array();
+        self::$namespaceBinds = array();
+        self::$binds = array();
     }
 }
-
-    {
-        Annotations::registerAnnotation('singleton', array('any' => true), 'class');
-        Annotations::registerAnnotation('inject', array('any' => true), array('property', 'method'));
-    }
 
 class DependencyInjectionException extends CoreException {}

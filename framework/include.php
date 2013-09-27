@@ -186,7 +186,12 @@ final class Regenix {
     public static function initWeb($rootDir){
         try {
             self::init($rootDir);
-            self::processRoute();
+
+            $app = Regenix::app();
+            $request = Request::current();
+            $request->setBasePath( $app->getUriPath() );
+
+            self::processRoute($app, $request);
         } catch (\Exception $e){
             if (self::$bootstrap)
                 self::$bootstrap->onException($e);
@@ -334,15 +339,18 @@ final class Regenix {
         
         throw new HttpException(HttpException::E_NOT_FOUND, "Can`t find an application for the current request");
     }
-    
-    public static function processRoute(){
+
+    /**
+     * @param Application $app
+     * @param Request $request
+     * @return Response
+     * @throws exceptions\HttpException
+     * @throws lang\CoreException
+     * @throws \Exception|exceptions\HttpException
+     */
+    public static function processRoute(Application $app, Request $request){
         self::trace('Request start ...');
-        $app = Regenix::app();
         $router = $app->router;
-
-        $request = Request::current();
-        $request->setBasePath( $app->getUriPath() );
-
         $router->route($request);
         try {
             if (!$router->action){
@@ -356,6 +364,7 @@ final class Regenix {
 
             /** @var $controller Controller */
             $controller = DI::getInstance($controllerClass);
+
             //$controller = new $controllerClass;
 
             $controller->actionMethod = $actionMethod;
@@ -380,7 +389,7 @@ final class Regenix {
             SDK::trigger('beforeRequest', array($controller));
             
             $controller->callBefore();
-            self::trace('Request controller proccessing ...');
+            self::trace('Request before processing ...');
 
             $return = $router->invokeMethod($controller, $reflection);
 
@@ -417,6 +426,7 @@ final class Regenix {
         }
         
         if ( !$responseErr ){
+            self::trace('Request after processing ...');
             $controller->callAfter();
             SDK::trigger('afterRequest', array($controller));
         }
@@ -434,6 +444,8 @@ final class Regenix {
 
         if (self::$bootstrap)
             self::$bootstrap->onFinallyRequest($request);
+
+        return $response;
     }
 
     private static function catchError($error, $logPath){
@@ -630,9 +642,10 @@ final class Regenix {
         $path = self::$rootTempPath . $dir;
         if ( !is_dir($path) ){
             if ( !mkdir($path, 0777, true) ){
-                throw new CoreException('Unable to create temp directory `/tmp/`');
+                echo 'Unable to create temp directory `' . $path . '`';
+                exit(1);
             }
-            chmod($path, 0777);
+            @chmod($path, 0777);
         }
         self::$tempPath = str_replace('\\', '/', $dir);
     }

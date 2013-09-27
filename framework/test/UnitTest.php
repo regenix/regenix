@@ -21,6 +21,7 @@ abstract class UnitTest extends StrictObject {
     /** @var \ReflectionMethod */
     protected $currentMethod = null;
     private $results = array();
+    private $lastOk = true;
 
     protected function onBefore(){}
     protected function onAfter(){}
@@ -40,6 +41,7 @@ abstract class UnitTest extends StrictObject {
             'result' => (boolean)$result,
             'message' => $message
         );
+        $this->lastOk = $result;
         return $this;
     }
 
@@ -210,13 +212,33 @@ abstract class UnitTest extends StrictObject {
     }
 
     /**
-     * @param array $what
+     * @param int $size
      * @param $array
      * @param string $message
      * @return $this
      */
-    protected function assertArraySize($what, $array, $message = ''){
-        return $this->assertWrite(is_array($array) && (sizeof($array) === (int)$what), $message);
+    protected function assertArraySize($size, $array, $message = ''){
+        return $this->assertWrite(is_array($array) && (sizeof($array) === (int)$size), $message);
+    }
+
+    /**
+     * @param int $size
+     * @param $string
+     * @param string $message
+     * @return $this
+     */
+    protected function assertStringLength($size, $string, $message = ''){
+        return $this->assertWrite(is_string($string) && (strlen($string) === (int)$size), $message);
+    }
+
+    /**
+     * @param string $pattern
+     * @param string $string
+     * @param string $message
+     * @return $this
+     */
+    protected function assertPattern($pattern, $string, $message = ''){
+        return $this->assertWrite(is_string($string) && preg_match($pattern, $string), $message);
     }
 
     /**
@@ -329,6 +351,10 @@ abstract class UnitTest extends StrictObject {
 
     public function getResult(){
         return $this->results;
+    }
+
+    public function isLastOk(){
+        return $this->lastOk;
     }
 
     public function isOk(){

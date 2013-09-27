@@ -76,16 +76,19 @@ class RegenixTemplate {
     /** @var string */
     protected $compiledFile;
 
-    public function __construct(){
-        $meta = ClassScanner::find(RegenixTemplateTag::type);
-        foreach($meta->getChildrensAll() as $class){
-            if (!$class->isAbstract())
-                $this->registerTag($class->newInstance());
-        }
-        $meta = ClassScanner::find(RegenixTemplateFilter::type);
-        foreach($meta->getChildrensAll() as $class){
-            if (!$class->isAbstract())
-                $this->registerFilter($class->newInstance());
+    public function __construct($autoregister = true){
+        if ($autoregister){
+            $meta = ClassScanner::find(RegenixTemplateTag::type);
+            foreach($meta->getChildrensAll() as $class){
+                if (!$class->isAbstract())
+                    $this->registerTag($class->newInstance());
+            }
+
+            $meta = ClassScanner::find(RegenixTemplateFilter::type);
+            foreach($meta->getChildrensAll() as $class){
+                if (!$class->isAbstract())
+                    $this->registerFilter($class->newInstance());
+            }
         }
     }
 
@@ -130,23 +133,31 @@ class RegenixTemplate {
 
     public function registerTag(RegenixTemplateTag $tag){
         $name = strtolower($tag->getName());
-        if (!isset($this->tags[$name]))
+        if (!isset($this->tags[$name])){
             $this->tags[$name] = $tag;
+            return true;
+        }
+
+        return false;
     }
 
     public function registerFilter(RegenixTemplateFilter $filter){
         $name = strtolower($filter->getName());
         if (!isset($this->filters[$name])){
             $this->filters[$name] = $filter;
+            return true;
         }
+
+        return false;
     }
 
     public function duplicate(){
-        $new = new RegenixTemplate();
+        $new = new RegenixTemplate(false);
         $new->setTplDirs($this->tplDirs);
         $new->setTempDir($this->tmpDir);
-        $new->tags   = $this->tags;
-        $new->blocks =& $this->blocks;
+        $new->tags    = $this->tags;
+        $new->filters = $this->filters;
+        $new->blocks  =& $this->blocks;
 
         return $new;
     }
@@ -421,7 +432,14 @@ class RegenixTemplate {
         }
     }
 
-    public function render($__args, $__cached = true){
+    /**
+     * @param $__args
+     * @param bool $__cached
+     * @param bool $return
+     * @return string
+     * @throws \Exception
+     */
+    public function render($__args, $__cached = true, $return = false){
         $this->compile($__cached);
         $this->args = $__args;
         $_tags = $this->tags;
@@ -437,7 +455,10 @@ class RegenixTemplate {
             include $this->compiledFile;
             $content = ob_get_contents();
             ob_end_clean();
-            echo $content;
+            if ($return)
+                return $content;
+            else
+                echo $content;
             //ob_end_flush();
         } catch (\Exception $e){
             ob_end_clean();
@@ -459,8 +480,11 @@ class RegenixTemplate {
             return RegenixVariable::current($var, $this);
     }
 
-    public function _renderTag($tag, array $args = array()){
-        echo $this->tags[$tag]->call($args, $this);
+    public function _renderTag($tag, array $args = array(), $return = false){
+        if ($return)
+            return $this->tags[$tag]->call($args, $this);
+        else
+            echo $this->tags[$tag]->call($args, $this);
     }
 
     public function _callFilter($name, $value, array $args = array()){
