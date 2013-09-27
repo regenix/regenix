@@ -102,7 +102,12 @@ final class DI {
         return $object;
     }
 
-    public static function getInstance($class){
+    /**
+     * @param $class
+     * @param bool $createNonSingleton
+     * @return null|object
+     */
+    public static function getInstance($class, $createNonSingleton = true){
         $class     = str_replace('.', '\\', $class);
         $singleton = self::$singletons[$class];
 
@@ -111,7 +116,27 @@ final class DI {
         } else if ($singleton){
             return $singleton;
         } else {
-            return self::_getInstance($class);
+            if ($createNonSingleton)
+                return self::_getInstance($class);
+            else
+                return null;
+        }
+    }
+
+    /**
+     * @param $class
+     * @param null $singletonDefault
+     * @return null|object
+     */
+    public static function getSingleton($class, $singletonDefault = null){
+        if ($singletonDefault){
+            $one = self::getInstance($class, false);
+            if ($one === null){
+                 return self::$singletons[$class] = $singletonDefault;
+            }
+            return $one;
+        } else {
+            return self::getInstance($class);
         }
     }
 

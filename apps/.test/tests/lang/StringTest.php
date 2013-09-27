@@ -31,6 +31,10 @@ class StringTest extends RegenixTest {
         $this->assertStringLength(45, $one);
         $this->assertPattern('#^([a-z]+)$#i', $one);
 
+        $one = String::random(100, true, true);
+        $this->assertStringLength(100, $one);
+        $this->assertNotPattern('#^([a-z0-9]+)$#i', $one);
+
         for($i = 0; $i < 5; $i++){
             $one = String::randomRandom(40, 42);
             $this->assert( strlen($one) >= 40 && strlen($one) <= 42 );

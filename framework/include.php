@@ -189,7 +189,7 @@ final class Regenix {
             $request = Request::current();
             $request->setBasePath( $app->getUriPath() );
 
-            self::processRoute($app, $request);
+            self::processRequest($app, $request);
         } catch (\Exception $e){
             if (self::$bootstrap)
                 self::$bootstrap->onException($e);
@@ -346,8 +346,7 @@ final class Regenix {
      * @throws lang\CoreException
      * @throws \Exception|exceptions\HttpException
      */
-    public static function processRoute(Application $app, Request $request){
-        self::trace('Request start ...');
+    public static function processRequest(Application $app, Request $request){
         $router = $app->router;
         $router->route($request);
         try {
@@ -387,8 +386,6 @@ final class Regenix {
             SDK::trigger('beforeRequest', array($controller));
             
             $controller->callBefore();
-            self::trace('Request before processing ...');
-
             $return = $router->invokeMethod($controller, $reflection);
 
             // if use return statement
@@ -407,7 +404,8 @@ final class Regenix {
 
                     // if no result, do:
                     $controller->callException($e);
-                    $app->bootstrap->onException($e);
+                    if ($app->bootstrap)
+                        $app->bootstrap->onException($e);
                 } catch (Result $result){
                     /** @var $responseErr Response */
                     $responseErr = $result->getResponse();
@@ -424,7 +422,6 @@ final class Regenix {
         }
         
         if ( !$responseErr ){
-            self::trace('Request after processing ...');
             $controller->callAfter();
             SDK::trigger('afterRequest', array($controller));
         }
@@ -579,7 +576,7 @@ final class Regenix {
      * @return bool
      */
     public static function isCLI(){
-        return PHP_SAPI === 'cli';
+        return IS_CLI;
     }
 
     public static function __errorHandler($errno, $errstr, $errfile, $errline){

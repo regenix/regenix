@@ -324,6 +324,8 @@ class Request extends StrictObject {
  */
 class Session extends StrictObject {
 
+    const type = __CLASS__;
+
     private $init = false;
     private $id;
 
@@ -459,8 +461,10 @@ abstract class SessionDriver {
 
 class Flash extends StrictObject {
 
+    const type = __CLASS__;
+
     /** @var Session */
-    private $session;
+    protected $session;
 
     protected function __construct(){
         $this->session = Session::current();
@@ -581,6 +585,8 @@ class Flash extends StrictObject {
 
 class Cookie extends StrictObject {
 
+    const type = __CLASS__;
+
     /**
      * @var ArrayTyped
      */
@@ -674,7 +680,9 @@ class Cookie extends StrictObject {
 }
 
 class RequestQuery extends StrictObject {
-    
+
+    const type = __CLASS__;
+
     /** @var Request */
     private $request;
     

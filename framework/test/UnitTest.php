@@ -242,6 +242,16 @@ abstract class UnitTest extends StrictObject {
     }
 
     /**
+     * @param string $pattern
+     * @param string $string
+     * @param string $message
+     * @return $this
+     */
+    protected function assertNotPattern($pattern, $string, $message = ''){
+        return $this->assertWrite(!is_string($string) || !preg_match($pattern, $string), $message);
+    }
+
+    /**
      * @param $what
      * @param string $message
      * @return $this

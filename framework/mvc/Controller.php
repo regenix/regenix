@@ -5,6 +5,7 @@ namespace regenix\mvc;
 use regenix\Regenix;
 use regenix\SDK;
 use regenix\exceptions\HttpException;
+use regenix\lang\DI;
 use regenix\lang\StrictObject;
 use regenix\lang\CoreException;
 use regenix\lang\File;
@@ -115,12 +116,12 @@ abstract class Controller extends StrictObject {
 
         $value = null;
         switch($name){
-            case 'body': $value = new RequestBody(); break;
-            case 'request': $value = Request::current(); break;
-            case 'cookie': $value = Cookie::current(); break;
-            case 'session': $value = Session::current(); break;
-            case 'flash': $value = Flash::current(); break;
-            case 'query': $value = new RequestQuery(); break;
+            case 'body': $value = DI::getSingleton(RequestBody::type, new RequestBody()); break;
+            case 'request': $value = DI::getSingleton(Regenix::type, Request::current()); break;
+            case 'cookie': $value = DI::getSingleton(Cookie::type, Cookie::current()); break;
+            case 'session': $value = DI::getSingleton(Session::type, Session::current()); break;
+            case 'flash': $value = DI::getSingleton(Flash::type, Flash::current()); break;
+            case 'query': $value = DI::getSingleton(RequestQuery::type, new RequestQuery()); break;
             case 'actionMethodAnnotations': $value = Annotations::getMethodAnnotation($this->actionMethodReflection); break;
             default: {
                 return parent::__get($name);
