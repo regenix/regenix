@@ -1,7 +1,7 @@
 <?php
 namespace regenix\mvc;
 
-use regenix\cache\SystemCache;
+use regenix\lang\SystemCache;
 use regenix\exceptions\AnnotationException;
 use regenix\lang\CoreException;
 use regenix\lang\ArrayTyped;

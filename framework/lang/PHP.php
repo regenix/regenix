@@ -3,13 +3,31 @@ namespace regenix\lang;
 
 use regenix\Application;
 use regenix\Regenix;
-use regenix\cache\SystemCache;
 use regenix\SDK;
-
-require REGENIX_ROOT . 'cache/SystemCache.php';
 
 if (!defined('T_TRAIT'))
     define('T_TRAIT', 355);
+
+defined('IS_CLI') or define('IS_CLI', isset($_SERVER['argc']));
+defined('APC_ENABLED') or define('APC_ENABLED', extension_loaded('apc'));
+defined('XCACHE_ENABLED') or define('XCACHE_ENABLED', extension_loaded('xcache'));
+
+if (!defined('SYSTEM_IN_MEM_CACHED')){
+    if (defined('IS_CORE_DEBUG') && IS_CORE_DEBUG === true)
+        define('SYSTEM_IN_MEM_CACHED', false);
+    else {
+        if (APC_ENABLED){
+            if (IS_CLI)
+                define('SYSTEM_IN_MEM_CACHED', false);
+            else
+                define('SYSTEM_IN_MEM_CACHED', true);
+        } else
+            define('SYSTEM_IN_MEM_CACHED', (XCACHE_ENABLED));
+    }
+}
+
+define('FAST_SERIALIZE_ENABLE', extension_loaded('igbinary'));
+defined('SYSTEM_CACHE_TMP_DIR') or define('SYSTEM_CACHE_TMP_DIR', Regenix::getTempPath() .  'syscache/');
 
 CoreException::showOnlyPublic(!defined('IS_CORE_DEBUG') || IS_CORE_DEBUG === false);
 
@@ -262,7 +280,7 @@ final class ClassMetaInfo {
      * @param string $interfaceOrClass
      * @return bool
      */
-    public function isChildOf($interfaceOrClass){
+    public function isParentOf($interfaceOrClass){
         if ($interfaceOrClass === $this->getName())
             return true;
 
@@ -279,6 +297,18 @@ final class ClassMetaInfo {
         }
 
         return false;
+    }
+
+    /**
+     * @param $parentClass
+     * @return bool
+     */
+    public function isChildOf($parentClass){
+        $info = ClassScanner::find($parentClass);
+        if ($info != null)
+            return $info->isParentOf($this->getName());
+        else
+            return false;
     }
 
     /**
@@ -466,6 +496,9 @@ class ClassScanner {
     protected static $ignorePaths = array();
 
     /** @var array */
+    protected static $onlyMeta = array();
+
+    /** @var array */
     protected static $scanned = array();
 
     /** @var array */
@@ -488,28 +521,57 @@ class ClassScanner {
             return null;
     }
 
+    private static function compressMeta(&$metaInfo, $onlyMeta = array()){
+        if (!$onlyMeta)
+            return;
+
+        $newMetaInfo = array();
+        foreach($metaInfo as $class => $meta){
+            $compress = true;
+            foreach($onlyMeta as $onlyClass => $el){
+                $info = ClassScanner::find($onlyClass);
+                if ($onlyClass === $class || ($info && $info->isParentOf($class))){
+                    $compress = false;
+                    break;
+                }
+            }
+
+            if ($compress){
+                unset($meta[255], $meta[1], $meta[2], $meta[3]);
+                unset($meta[3]);
+            }
+
+            if ($meta){
+                $newMetaInfo[$class] = $meta;
+            }
+            continue;
+        }
+        $metaInfo = $newMetaInfo;
+    }
+
     /**
      * run scan procedure
      */
     public static function scan($cached = true){
         if (sizeof(self::$paths) === 1){
             $path = current(self::$paths);
-            $hash = sha1($path);
+            $hash    = sha1($path);
 
             $meta = $cached ? SystemCache::getWithCheckFile('lang.sc.m.' . $hash, $path, true) : null;
             if ($meta === null){
                 self::scanPath($path);
                 if ($cached){
+                    self::compressMeta(self::$metaInfo, self::$onlyMeta);
                     SystemCache::setWithCheckFile('lang.sc.m.' . $hash, self::$metaInfo, $path, 3600, true);
                 }
             } else {
                 self::$metaInfo = $meta;
             }
-            self::$scanned[$hash] = true;
+            self::$scanned[$path] = true;
         } else
         foreach(self::$paths as $path){
             $hash    = sha1($path);
-            if (self::$scanned[$hash])
+            if (self::$scanned[$path])
                 continue;
 
             if (REGENIX_IS_DEV){
@@ -535,7 +597,7 @@ class ClassScanner {
                     self::addClassMeta($className, $meta);
                 }
             }
-            self::$scanned[$hash] = true;
+            self::$scanned[$path] = true;
         }
     }
 
@@ -562,12 +624,10 @@ class ClassScanner {
      */
     public static function addClassPath($path, $scan = true){
         $path = str_replace(array('\\', '//', '///', '////'), '/', $path);
-        if (is_dir($path)){
-            if (substr($path, -1) !== '/')
-                $path .= '/';
+        if (substr($path, -1) !== '/')
+            $path .= '/';
 
-            self::$paths[$path] = $path;
-        }
+        self::$paths[$path] = $path;
 
         if ($scan)
             self::scan();
@@ -583,6 +643,18 @@ class ClassScanner {
             $path .= '/';
 
         self::$ignorePaths[$path] = $path;
+    }
+
+    /**
+     * Collect meta information for only $class and other in $onlyMeta
+     * @param $class
+     */
+    public static function addOnlyMetaFor($class){
+        $class = str_replace('.', '\\', $class);
+        if ($class[0] === '\\')
+            $class = substr($class, 1);
+
+        self::$onlyMeta[$class] = true;
     }
 
     /**
@@ -680,6 +752,16 @@ class ClassScanner {
                 $line = trim($line);
                 if ($line){
                     self::addIgnorePath($path . '/' . $line);
+                }
+            }
+        }
+
+        if (is_file($path . 'classpath.meta')){
+            $lines = file($path . 'classpath.meta');
+            foreach($lines as $line){
+                $line = trim($line);
+                if ($line){
+                    self::addOnlyMetaFor($line);
                 }
             }
         }
@@ -1615,5 +1697,221 @@ class File extends StrictObject {
 
     public static function sanitize($fileName){
         return preg_replace('/[^a-zA-Z0-9-_\.]/', '', $fileName);
+    }
+}
+
+################ CACHE CLASSES
+
+class SystemFileCache {
+
+    private static $id = '';
+    private static $tempDirectory;
+
+    public static function getTempDirectory(){
+        if (self::$tempDirectory)
+            return self::$tempDirectory;
+
+        if (!file_exists(SYSTEM_CACHE_TMP_DIR)){
+            if (!mkdir(SYSTEM_CACHE_TMP_DIR, 0777, true)){
+                echo 'Cannot create a temp directory `' . SYSTEM_CACHE_TMP_DIR . '`';
+                exit(1);
+            }
+        }
+        return self::$tempDirectory = SYSTEM_CACHE_TMP_DIR;
+    }
+
+    public static function get($name){
+        $file = SystemFileCache::getTempDirectory() . self::$id . 's.' . $name . '.php';
+        if (file_exists($file) && filemtime($file) > time()){
+            $result = include $file;
+            return $result ? $result : null;
+        }
+        return null;
+    }
+
+    public static function getWithCheckFile($name, $path){
+        $data = self::get($name);
+        if ($data !== null){
+            if (filemtime($path) > $data[0]){
+                return null;
+            }
+        }
+        return $data[1];
+    }
+
+    public static function set($name, $value, $expires = 3600){
+        $file = self::getTempDirectory() . self::$id . 's.' . $name . '.php';
+        file_put_contents($file, '<?php return ' . var_export($value, true) . ';');
+        touch($file, time() + $expires);
+    }
+
+    public static function setWithCheckFile($name, $value, $path, $expires = 3600){
+        $value = array(filemtime($path), $value);
+        self::set($name, $value, $expires);
+    }
+
+    public static function setId($id){
+        self::$id = $id;
+    }
+}
+
+class SystemCache {
+
+    const type = __CLASS__;
+
+    private static $id = '';
+
+    public static function isCached(){
+        return SYSTEM_IN_MEM_CACHED === true;
+    }
+
+    public static function setId($id){
+        self::$id = $id;
+        SystemFileCache::setId($id);
+    }
+
+    protected static function getFromFile($name){
+        $file = SystemFileCache::getTempDirectory() . sha1(self::$id . '.' . $name) . '.php';
+        if (file_exists($file)){
+            $result = include $file;
+            return $result ? $result : null;
+        }
+        return null;
+    }
+
+    protected static function setToFile($name, $value){
+        $file = SystemFileCache::getTempDirectory() . sha1(self::$id . '.' . $name) . '.php';
+        file_put_contents($file, '<?php return ' . var_export($value, true) . ';');
+    }
+
+    public static function get($name, $cacheInFiles = false){
+        return SYSTEM_IN_MEM_CACHED === true
+            ? (($value = apc_fetch('$.s.' . self::$id . '.' . $name)) === false ? null : $value)
+            : ($cacheInFiles ? self::getFromFile($name) : null);
+    }
+
+    public static function set($name, $value, $lifetime = 3600, $cacheInFiles = false){
+        if ( SYSTEM_IN_MEM_CACHED === true ){
+            apc_store('$.s.' . self::$id . '.' . $name, $value, $lifetime);
+        } elseif ($cacheInFiles){
+            self::setToFile($name, $value);
+        }
+    }
+
+    public static function remove($name){
+        if (SYSTEM_IN_MEM_CACHED === true)
+            apc_delete($name);
+
+        $file = SYSTEM_CACHE_TMP_DIR . sha1(self::$id . '.' . $name);
+        if (is_file($file))
+            @unlink($file);
+    }
+
+    public static function removeAll(){
+        if (function_exists('apc_clear_cache'))
+            apc_clear_cache('user');
+
+        $dir = new File(SYSTEM_CACHE_TMP_DIR);
+        if ($dir->isDirectory())
+            $dir->delete();
+    }
+
+    public static function getWithCheckFile($name, $filePath, $cacheInFiles = false){
+        if ( !SYSTEM_IN_MEM_CACHED && !$cacheInFiles )
+            return null;
+
+        $result = self::get($name, $cacheInFiles);
+        if ( $result ){
+            $upd    = (int)self::get($name . '.$upd', $cacheInFiles);
+            if ($upd === 0)
+                return null;
+
+            $file = new File($filePath);
+            if (!$file->isModified($upd, false)){
+                return $result;
+            }
+        }
+        return null;
+    }
+
+    public static function getIf($name, $callback, $cacheInFiles = false){
+        if ( !SYSTEM_IN_MEM_CACHED && !$cacheInFiles )
+            return null;
+
+        if (REGENIX_IS_DEV && !is_callable($callback))
+            throw new \InvalidArgumentException('Callback must be callable');
+
+        $result = self::get($name, $cacheInFiles);
+        if ($result){
+            $st = call_user_func($callback);
+            if ($st){
+                return $result;
+            }
+        }
+        return null;
+    }
+
+    public static function setWithCheckFile($name, $value, $filePath, $lifetime = 3600, $cacheInFiles = false){
+        if ( !SYSTEM_IN_MEM_CACHED && !$cacheInFiles )
+            return;
+
+        self::set($name, $value, $lifetime, $cacheInFiles);
+        if (file_exists($filePath)){
+            $file = new File($filePath);
+            self::set($name.'.$upd', $file->lastModified(), $lifetime, $cacheInFiles);
+        }
+    }
+
+    public static function getFileContents($filePath, $lifetime = 3600){
+        if ( SYSTEM_IN_MEM_CACHED ){
+            $sha1  = '$.s.file.' . sha1($filePath);
+            $inmem = apc_fetch($sha1 . '.$upd');
+            if ( $inmem ){
+                $mtime = file_exists($filePath) ? filemtime($filePath) : -1;
+                if ( $inmem == $mtime ){
+                    $result = apc_fetch($sha1, $success);
+                    if ( $success )
+                        return $result;
+                }
+            } else {
+
+                $result = file_get_contents($filePath);
+                if (file_exists($filePath)){
+                    apc_store($sha1, $result, $lifetime);
+                    apc_store($sha1 . '.$upd', filemtime($filePath), $lifetime);
+                }
+                return $result;
+            }
+        } else
+            return file_get_contents($filePath);
+    }
+}
+
+
+if(!function_exists('apc_store')){
+    function apc_store($key, $var, $ttl = 0){
+        return xcache_set($key, $var, $ttl);
+    }
+
+    function apc_fetch($key, &$success=true){
+        $success = xcache_isset($key);
+        return xcache_get($key);
+    }
+
+    function apc_delete($key){
+        return xcache_unset($key);
+    }
+
+    function apc_exists($keys){
+        if(is_array($keys)){
+            $exists = array();
+            foreach($keys as $key){
+                if(xcache_isset($key))
+                    $exists[]=$key;
+            }
+            return $exists;
+        }
+
+        return xcache_isset($keys);
     }
 }

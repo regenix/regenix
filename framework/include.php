@@ -1,7 +1,7 @@
 <?php
 namespace regenix {
 
-    use regenix\cache\SystemCache;
+    use regenix\lang\SystemCache;
     use regenix\config\ConfigurationReadException;
     use regenix\config\PropertiesConfiguration;
     use regenix\console\Commander;
@@ -121,22 +121,20 @@ final class Regenix {
             $rootDir .= '/';
 
         define('ROOT', $rootDir);
-
         $frameworkDir = str_replace(DIRECTORY_SEPARATOR, '/', realpath(__DIR__)) . '/';
         define('REGENIX_ROOT', $frameworkDir);
+        require $frameworkDir . 'lang/PHP.php';
 
-        require REGENIX_ROOT . 'lang/PHP.php';
+        self::trace('PHP lang file included.');
 
         set_include_path($rootDir);
         self::$rootTempPath = sys_get_temp_dir() . '/regenix_v' . self::getVersion() . '/';
-
         unset($_GET, $_REQUEST);
 
-        self::trace('Start add framework class path');
 
         // register class loader
         ClassScanner::init($rootDir, array(REGENIX_ROOT));
-        self::trace('Finish init core');
+        self::trace('Add class path of framework done.');
 
         if ($inWeb){
             if (file_exists($globalFile = Application::getApplicationsPath() . '/GlobalBootstrap.php')){
@@ -986,8 +984,7 @@ final class Regenix {
                 throw new ConfigurationReadException($this->config, '`app.secret` should be set as a random string');
             }
 
-            Regenix::trace('.register() application start');
-
+            Regenix::trace('.register() application start, class path added.');
             // temp
             Regenix::setTempPath( $this->name . '/' );
 
@@ -1041,12 +1038,15 @@ final class Regenix {
                         SystemCache::setWithCheckFile('app.deps', $this->deps, $file, 60 * 5);
                     }
                 }
-            }
+                return true;
+            } else
+                return false;
         }
 
         /**
-         * Get all assets of src
-         * @throws static
+         * Get all assets of app
+         *
+         * @throws lang\CoreException
          * @return array
          */
         public function getAssets(){
@@ -1072,15 +1072,17 @@ final class Regenix {
             $this->repository = new Repository($this->deps);
 
             // modules
-            $this->repository->setEnv('modules');
-            foreach((array)$this->deps['modules'] as $name => $conf){
-                $dep = $this->repository->findLocalVersion($name, $conf['version']);
-                if (!$dep){
-                    throw new CoreException('Can`t find the `%s/%s` module, run `regenix deps update` in console to fix it', $name, $conf['version']);
-                } elseif (REGENIX_IS_DEV && !$this->repository->isValid($name, $dep['version'])){
-                    throw new CoreException('Module `%s` is not valid or non-exist, run `regenix deps update` in console to fix it', $name);
+            if ($this->deps['modules']){
+                $this->repository->setEnv('modules');
+                foreach((array)$this->deps['modules'] as $name => $conf){
+                    $dep = $this->repository->findLocalVersion($name, $conf['version']);
+                    if (!$dep){
+                        throw new CoreException('Can`t find the `%s/%s` module, run `regenix deps update` in console to fix it', $name, $conf['version']);
+                    } elseif (REGENIX_IS_DEV && !$this->repository->isValid($name, $dep['version'])){
+                        throw new CoreException('Module `%s` is not valid or non-exist, run `regenix deps update` in console to fix it', $name);
+                    }
+                    Module::register($name, $dep['version']);
                 }
-                Module::register($name, $dep['version']);
             }
 
             if (REGENIX_IS_DEV)
@@ -1132,11 +1134,14 @@ final class Regenix {
         private function _registerRoute(){
             // routes
             $routeFile = $this->getPath() . 'conf/route';
-            $this->router = SystemCache::getWithCheckFile('route', $routeFile);
+            $route = new File($routeFile);
+            $this->router = SystemCache::get('route');
             $routePatternDir = new File($this->getPath() . 'conf/routes/');
 
+            $upd = SystemCache::get('routes.$upd');
             if ( $this->router === null
-                || $routePatternDir->isModified(SystemCache::get('routes.$upd'), REGENIX_IS_DEV) ){
+                || $route->isModified($upd, false)
+                || $routePatternDir->isModified($upd, REGENIX_IS_DEV) ){
 
                 $this->router = new Router();
                 $routeConfig  = new RouterConfiguration();
@@ -1153,8 +1158,13 @@ final class Regenix {
 
                 $this->router->applyConfig($routeConfig);
 
-                SystemCache::setWithCheckFile('route', $this->router, $routeFile, 60 * 2);
-                SystemCache::set('routes.$upd', $routePatternDir->lastModified(REGENIX_IS_DEV));
+                SystemCache::setWithCheckFile('route', $this->router, $routeFile, 60 * 5);
+                $upd = $routePatternDir->lastModified(REGENIX_IS_DEV);
+                $updR = $route->lastModified();
+                if ($updR > $upd)
+                    $upd = $updR;
+
+                SystemCache::set('routes.$upd', $upd);
             }
         }
 

@@ -40,7 +40,7 @@ final class DI {
         if (!($info = ClassScanner::find($implement)))
             throw new ClassNotFoundException($implement);
 
-        if (!$meta->isChildOf($implement)){
+        if (!$meta->isParentOf($implement)){
             throw new DependencyInjectionException('"%s" class should be implemented or inherited by "%s"', $implement, $interface);
         }
 

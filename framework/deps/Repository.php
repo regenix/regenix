@@ -3,12 +3,14 @@
 namespace regenix\deps;
 
 use regenix\Application;
+use regenix\Regenix;
+use regenix\lang\ClassScanner;
 use regenix\lang\CoreException;
 use regenix\lang\File;
 use regenix\lang\IClassInitialization;
 use regenix\lang\String;
 
-class Repository implements IClassInitialization{
+class Repository implements IClassInitialization {
 
     private static $envList = array('assets', 'modules');
 
@@ -357,9 +359,10 @@ class Repository implements IClassInitialization{
         return true;
     }
 
-
     public static function initialize(){
-        Origin::register(GithubOrigin::type);
-        Origin::register(FileOrigin::type);
+        $meta = ClassScanner::find(Origin::type);
+        foreach($meta->getChildrensAll() as $info){
+            Origin::register($info->getName());
+        }
     }
 }

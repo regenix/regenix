@@ -5,7 +5,7 @@ namespace regenix\mvc\route;
 use regenix\Application;
 use regenix\Regenix;
 use regenix\lang\StrictObject;
-use regenix\cache\SystemCache;
+use regenix\lang\SystemCache;
 use regenix\lang\String;
 use regenix\logger\Logger;
 use regenix\mvc\Controller;

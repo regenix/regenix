@@ -1,0 +1,6 @@
+regenix\libs\RegenixTemplateTag
+regenix\libs\RegenixTemplateFilter
+regenix\scheduler\SchedulerTask
+regenix\test\UnitTest
+regenix\console\RegenixCommand
+regenix\deps\Origin

@@ -3,7 +3,7 @@ namespace regenix\mvc\template;
 
 use regenix\Application;
 use regenix\Regenix;
-use regenix\cache\SystemCache;
+use regenix\lang\SystemCache;
 use regenix\exceptions\TypeException;
 use regenix\lang\File;
 use regenix\lang\IClassInitialization;

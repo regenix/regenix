@@ -4,7 +4,7 @@ namespace regenix\libs;
 
 use regenix\Application;
 use regenix\Regenix;
-use regenix\cache\SystemCache;
+use regenix\lang\SystemCache;
 use regenix\config\PropertiesConfiguration;
 use regenix\lang\File;
 use regenix\lang\IClassInitialization;

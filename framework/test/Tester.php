@@ -3,7 +3,7 @@ namespace regenix\test;
 
 use regenix\Application;
 use regenix\Regenix;
-use regenix\cache\SystemCache;
+use regenix\lang\SystemCache;
 use regenix\lang\CoreException;
 use regenix\lang\ClassScanner;
 use regenix\mvc\Controller;

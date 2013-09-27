@@ -1486,6 +1486,10 @@ class Response extends StrictObject {
         return $this;
     }
 
+    /**
+     * @param $contentType
+     * @return $this
+     */
     public function setContentType($contentType){
         $this->contentType = $contentType;
         return $this;
