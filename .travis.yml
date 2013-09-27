@@ -5,7 +5,8 @@ php:
   - 5.3
 
 before_install:
-  - chmod +x regenix
+  - chmod +x install.sh
+  - ./install.sh
   - ./regenix load .test
 
 script: ./regenix test
