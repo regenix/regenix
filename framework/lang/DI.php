@@ -94,7 +94,7 @@ final class DI {
                     $args[] = null;
                 }
             }
-            $object = $reflection->newInstance($args);
+            $object = $reflection->newInstanceArgs($args);
         } else {
             $object = $reflection->newInstance();
         }

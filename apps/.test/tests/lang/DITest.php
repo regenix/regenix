@@ -67,6 +67,15 @@ class DITest extends RegenixTest {
         $this->assertType(DISingleton::type, $two);
         $this->assert($one && $one->equals($two));
     }
+
+    public function testArgs(){
+        DI::clear();
+        DI::bind($one = new Singleton());
+
+        /** @var ArgsClass $instance */
+        $instance = DI::getInstance(ArgsClass::type);
+        $this->assert($one->equals($instance->getOne()));
+    }
 }
 
 interface ISingleton {
@@ -88,5 +97,24 @@ class Singleton implements ISingleton {
             return false;
 
         return $this->id === $object->id;
+    }
+}
+
+class ArgsClass {
+
+    const type = __CLASS__;
+
+    private $one;
+
+    public function __construct(Singleton $one){
+        $this->one = $one;
+    }
+
+    /**
+     * @return \tests\lang\Singleton
+     */
+    public function getOne()
+    {
+        return $this->one;
     }
 }
