@@ -121,6 +121,7 @@ class Router extends StrictObject {
 
         $originArgs = $args;
         foreach($this->routes as $route){
+
             $args = $originArgs;
 
             if ($method != '*' && $route['method'] != '*' && strtoupper($method) != $route['method'])
@@ -201,10 +202,6 @@ class Router extends StrictObject {
         $this->routes[] = $this->buildRoute($method, $path, $action, $params);
     }
 
-    public function addRouteFast($method, $path, $action, $params = ''){
-        //$this->routes[] = $this->buildRoute($method, $path, $action, $params);
-    }
-
     public function invokeMethod(Controller $controller, \ReflectionMethod $method){
         $args       = array();
         $parsedBody = null;
@@ -227,15 +224,11 @@ class Router extends StrictObject {
                     } else
                         $value = RequestBinder::getValue($value, $type);
                 }
+
                 $args[$name] = $value;
             } else {
                 $class = $param->getClass();
-
-                /*if ( $class && $class->isSubclassOf(RequestBindParams::type) ){
-                    $cls_name = $class->getName();
-                    $value    = $cls_name::current();
-                    $args[$name] = $value;
-                } else*/ if ( $param->isArray() ){
+                if ( $param->isArray() ){
                     $args[$name] = $controller->query->getArray($name);
                 } else if ( $parsedBody && ($v = $parsedBody[$name]) ){
                     if ($class !== null)
@@ -249,6 +242,8 @@ class Router extends StrictObject {
                     else
                         $value = $controller->query->get($name);
                     $args[$name] = $value;
+                } else {
+                    $args[$name] = null;
                 }
             }
         }

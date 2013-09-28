@@ -1094,21 +1094,21 @@ final class Regenix {
                 if (IS_DEV)
                     Captcha::checkAvailable();
 
-                $this->router->addRouteFast('GET',
+                $this->router->addRoute('GET',
                     '/system/captcha.img',
-                    'regenix.mvc.SystemController.captcha'
+                    '.regenix.mvc.SystemController.captcha'
                 );
             }
 
             if ($this->config->getBoolean('i18n.js')){
-                $this->router->addRoute('GET', '/system/i18n.js', 'regenix.mvc.SystemController.i18n_js');
-                $this->router->addRoute('GET', '/system/i18n.{_lang}.js', 'regenix.mvc.SystemController.i18n_js');
+                $this->router->addRoute('GET', '/system/i18n.js', '.regenix.mvc.SystemController.i18n_js');
+                $this->router->addRoute('GET', '/system/i18n.{_lang}.js', '.regenix.mvc.SystemController.i18n_js');
             }
         }
 
         private function _registerTests(){
-            $this->router->addRoute('*', '/@test', 'regenix.test.Tester.run');
-            $this->router->addRoute('GET', '/@test.json', 'regenix.test.Tester.runAsJson');
+            $this->router->addRoute('*', '/@test', '.regenix.test.Tester.run');
+            $this->router->addRoute('GET', '/@test.json', '.regenix.test.Tester.runAsJson');
         }
 
         private function _registerOrm(){
