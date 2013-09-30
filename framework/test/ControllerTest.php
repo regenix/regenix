@@ -1,86 +1,56 @@
 <?php
 namespace regenix\test;
 
+use regenix\Regenix;
 use regenix\lang\CoreException;
+use regenix\lang\DI;
 use regenix\lang\String;
 use regenix\mvc\Controller;
+use regenix\mvc\Flash;
+use regenix\mvc\Request;
+use regenix\mvc\RequestBody;
+use regenix\mvc\Response;
+use regenix\mvc\Session;
 
 abstract class ControllerTest extends UnitTest {
 
-    /** @var Controller */
-    protected $controller;
+    /** @var Flash */
+    protected $flash;
 
-    /** @var \ReflectionMethod */
-    protected $actionMethod;
+    /** @var Session */
+    protected $session;
 
-    public function __construct(Controller $controller){
-        $this->controller = $controller;
+    /** @var Response */
+    protected $response;
+
+    public function __construct(){
     }
 
     /**
-     * @param null $method
-     * @throws \regenix\lang\CoreException
-     * @return ControllerRequest
+     * @param $httpMethod
+     * @param $relativeUrl
+     * @param $headers
      */
-    protected function newRequest($method = null){
-        if (!$method){
-            $name = $this->currentMethod->getName();
-            if (String::startsWith($name, 'test'))
-                $name = String::substring($name, 4);
-        } else {
-            $name = $method;
-        }
+    protected function newRequest($httpMethod, $relativeUrl, $headers = array()){
+        $app = Regenix::app();
+        $request = new Request($headers);
+        $request->setMethod($httpMethod);
+        $request->setUri($relativeUrl);
 
-        if (!method_exists($this->controller, $name)){
-            $this->actionMethod = null;
-        } else {
-            $this->actionMethod = new \ReflectionMethod(
-                $this->controller, $name
-            );
-            if ($this->actionMethod->getDeclaringClass()->isAbstract())
-                $this->actionMethod = null;
-        }
-
-        if ($this->actionMethod == null)
-            throw new CoreException('Method "%s" is not exist or not a due action for "%s" controller',
-                $name, get_class($this->controller));
-
-        return new ControllerRequest($this->controller, $this->actionMethod);
+        $this->response = Regenix::processRequest($app, $request);
     }
 }
 
-final class ControllerRequest {
+class TestableSession extends Session {
+    public function __construct(){}
+}
 
-    /** @var Controller */
-    private $controller;
-
-    /** @var \ReflectionMethod */
-    private $method;
-
-    /** @var array */
-    private $headers;
-
-    public function __construct(Controller $controller, \ReflectionMethod $method){
-        $this->controller = $controller;
-        $this->method = $method;
+class TestableFlash extends Flash {
+    public function __construct(TestableSession $session){
+        $this->session = $session;
     }
+}
 
-    /**
-     * @param $contentType
-     * @return $this
-     */
-    public function setContentType($contentType){
-        $this->addHeader('Content-Type', $contentType);
-        return $this;
-    }
+class TestableRequestBody extends RequestBody {
 
-    /**
-     * @param $name
-     * @param $value
-     * @return $this
-     */
-    public function addHeader($name, $value){
-        $this->headers[$name] = $value;
-        return $this;
-    }
 }

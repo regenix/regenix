@@ -1538,6 +1538,7 @@ class File extends StrictObject {
                 $todo = ($fileInfo->isDir() ? 'rmdir' : 'unlink');
                 @$todo($fileInfo->getRealPath());
             }
+            @rmdir($this->path);
         } else {
             @unlink($this->path);
         }
