@@ -80,6 +80,9 @@ abstract class WS {
 
 class WSRequest {
 
+    /** @var bool */
+    protected $persistent = false;
+
     /** @var string */
     protected $url;
 
@@ -121,6 +124,15 @@ class WSRequest {
     public function __construct($url, $encoding = 'utf-8'){
         $this->encoding = $encoding;
         $this->url      = $url;
+    }
+
+    /**
+     * @param $persist
+     * @return $this
+     */
+    public function persistent($persistent){
+        $this->persistent = $persistent;
+        return $this;
     }
 
     /**
@@ -268,7 +280,9 @@ class WSRequest {
             CURLOPT_MAXREDIRS      => 15,
 
             CURLOPT_FRESH_CONNECT => true,
+            CURLOPT_FORBID_REUSE  => $this->persistent
         ));
+
 
         if ($this->progressCallback){
             $callback = $this->progressCallback;

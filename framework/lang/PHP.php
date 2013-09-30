@@ -44,11 +44,15 @@ class ClassNotFoundException extends CoreException {
     }
 }
 
+class IOException extends CoreException {
+    const type = __CLASS__;
+}
+
 /**
  * Class FileIOException
  * @package regenix\lang
  */
-class FileIOException extends CoreException {
+class FileIOException extends IOException {
 
     const type = __CLASS__;
 
@@ -1310,6 +1314,16 @@ class File extends StrictObject {
 
         $path = tempnam(sys_get_temp_dir(), $prefix);
         return new File($path);
+    }
+
+    /**
+     * @param $handle
+     * @return File
+     */
+    public static function createFromHandle($handle){
+        $file = new File(null);
+        $file->handle = $handle;
+        return $file;
     }
 
     /**
