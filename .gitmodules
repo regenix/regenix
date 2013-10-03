@@ -43,3 +43,6 @@
 [submodule "framework/vendor/Symfony/Component/Config"]
 	path = framework/vendor/Symfony/Component/Config
 	url = https://github.com/symfony/Config.git
+[submodule "framework/vendor/Doctrine/Common/Cache"]
+	path = framework/vendor/Doctrine/Common/Cache
+	url = https://github.com/doctrine/cache.git

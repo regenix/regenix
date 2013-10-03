@@ -19,3 +19,4 @@ Symfony/Component/ExpressionLanguage/Tests
 Symfony/Component/ExpressionLanguage/Resources
 Symfony/Component/Process/Tests
 Symfony/Component/Yaml/Tests
+Doctrine/Common/Cache/tests
