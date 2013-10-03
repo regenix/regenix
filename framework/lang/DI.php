@@ -1,8 +1,6 @@
 <?php
 namespace regenix\lang;
 
-use regenix\mvc\Annotations;
-
 /**
  * Class DI - Dependency Injection Container
  * @package regenix\lang
@@ -30,6 +28,9 @@ final class DI {
     }
 
     private static function validateDI($interface, $implement){
+        if (is_callable($implement))
+            return;
+
         if (is_object($implement))
             $implement = get_class($implement);
 
@@ -52,6 +53,7 @@ final class DI {
     private static function _getInstance($class){
         if ($class[0] === '\\') $class = substr($class, 1);
 
+        $interfaceClass = $class;
         if ($bindClass = self::$binds[$class])
             $class = $bindClass;
         else {
@@ -78,25 +80,29 @@ final class DI {
             }
         }
 
-        /*if (is_object($class))
-            return $class;*/
-
-        $reflection  = self::getReflection($class);
-        $constructor = $reflection->getConstructor();
-
-        $args = array();
-        if ($constructor){
-            foreach($constructor->getParameters() as $parameter){
-                $class = $parameter->getClass();
-                if ($class){
-                    $args[] = self::getInstance($class->getName());
-                } else {
-                    $args[] = null;
-                }
+        if (is_callable($class)){
+            $object = call_user_func($class, $interfaceClass);
+            if (REGENIX_IS_DEV){
+                self::validateDI($interfaceClass, $object);
             }
-            $object = $reflection->newInstanceArgs($args);
         } else {
-            $object = $reflection->newInstance();
+            $reflection  = self::getReflection($class);
+            $constructor = $reflection->getConstructor();
+
+            $args = array();
+            if ($constructor){
+                foreach($constructor->getParameters() as $parameter){
+                    $class = $parameter->getClass();
+                    if ($class){
+                        $args[] = self::getInstance($class->getName());
+                    } else {
+                        $args[] = null;
+                    }
+                }
+                $object = $reflection->newInstanceArgs($args);
+            } else {
+                $object = $reflection->newInstance();
+            }
         }
 
         return $object;
@@ -126,9 +132,13 @@ final class DI {
     /**
      * @param $class
      * @param null $singletonDefault
+     * @throws DependencyInjectionException
      * @return null|object
      */
     public static function getSingleton($class, $singletonDefault = null){
+        if (self::$binds[$class] && !self::$singletons[$class])
+            throw new DependencyInjectionException("DI bind for '%s' class cannot be as singleton", $class);
+
         if ($singletonDefault){
             $one = self::getInstance($class, false);
             if ($one === null){
@@ -136,7 +146,13 @@ final class DI {
             }
             return $one;
         } else {
-            return self::getInstance($class);
+            $one = self::getInstance($class, false);
+            if ($one == null){
+                return self::$singletons[$class] = self::_getInstance($class);
+            } else {
+
+            }
+            return $one;
         }
     }
 
