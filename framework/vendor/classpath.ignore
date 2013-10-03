@@ -20,3 +20,5 @@ Symfony/Component/ExpressionLanguage/Resources
 Symfony/Component/Process/Tests
 Symfony/Component/Yaml/Tests
 Doctrine/Common/Cache/tests
+PHP-Parser/doc
+PHP-Parser/test_old

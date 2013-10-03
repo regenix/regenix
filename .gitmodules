@@ -46,3 +46,6 @@
 [submodule "framework/vendor/Doctrine/Common/Cache"]
 	path = framework/vendor/Doctrine/Common/Cache
 	url = https://github.com/doctrine/cache.git
+[submodule "framework/vendor/PHP-Parser"]
+	path = framework/vendor/PHP-Parser
+	url = https://github.com/nikic/PHP-Parser.git
