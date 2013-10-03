@@ -1,6 +1,7 @@
 <?php
 namespace regenix {
 
+    use regenix\analyze\AnalyzeManager;
     use regenix\lang\SystemCache;
     use regenix\config\ConfigurationReadException;
     use regenix\config\PropertiesConfiguration;
@@ -515,6 +516,16 @@ final class Regenix {
         }
         $info  = new \ReflectionClass($e);
 
+        if ($e instanceof CoreException){
+            $line = $e->getSourceLine();
+            if ($line !== null)
+                $stack['line'] = $line;
+
+            $file = $e->getSourceFile();
+            if ($file !== null)
+                $stack['file'] = $file;
+        }
+
         if ($stack){
             $file = str_replace('\\', '/', $stack['file']);
             $stack['line']         = CoreException::getErrorLine($file, $stack['line']);
@@ -985,6 +996,10 @@ final class Regenix {
             // temp
             Regenix::setTempPath( $this->name . '/' );
 
+            if (IS_DEV && APP_MODE_STRICT === true){
+                $this->analyze();
+            }
+
             $sessionDriver = new APCSession();
             $sessionDriver->register();
 
@@ -1012,6 +1027,11 @@ final class Regenix {
             }
 
             Regenix::trace('.registerBootstrap() application, finish register app');
+        }
+
+        protected function analyze(){
+            $manager = new AnalyzeManager($this->getPath());
+            $manager->analyze();
         }
 
         public function loadDeps(){

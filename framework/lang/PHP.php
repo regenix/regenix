@@ -120,11 +120,11 @@ class CoreException extends \Exception {
     }
 
     public function getSourceLine(){
-        return $this->getLine();
+        return null;
     }
 
     public function getSourceFile(){
-        return $this->getFile();
+        return null;
     }
 
     public static function findAppStack(\Exception $e){
@@ -1413,6 +1413,31 @@ class File extends StrictObject {
     }
 
     /**
+     * return true if file has passed extension
+     * @param $extension
+     * @return bool
+     */
+    public function hasExtension($extension){
+        if ($extension[0] === '.')
+            $extension = substr($extension, 1);
+
+        return strtolower($extension) === $this->getExtension();
+    }
+
+    /**
+     * return true if one of extensions is extension of file
+     * @param array $extensions
+     * @return bool
+     */
+    public function hasExtensions(array $extensions){
+        foreach($extensions as $extension){
+            if ($this->hasExtension($extension))
+                return true;
+        }
+        return false;
+    }
+
+    /**
      * check file exists
      * @return boolean
      */
@@ -1651,6 +1676,18 @@ class File extends StrictObject {
             return file_get_contents($this->path, $flags);
         else
             return '';
+    }
+
+    /**
+     * @param $content
+     * @param string $mode
+     * @return int
+     */
+    public function putContents($content, $mode = 'w'){
+        $this->open($mode);
+        $result = $this->write($content);
+        $this->close();
+        return $result;
     }
 
     /**
