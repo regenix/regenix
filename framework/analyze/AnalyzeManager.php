@@ -1,6 +1,8 @@
 <?php
 namespace regenix\analyze;
 
+use regenix\config\Configuration;
+use regenix\config\PropertiesConfiguration;
 use regenix\lang\ClassScanner;
 use regenix\lang\File;
 use regenix\lang\SystemCache;
@@ -17,6 +19,9 @@ class AnalyzeManager {
     /** @var array */
     protected $extensions;
 
+    /** @var PropertiesConfiguration */
+    protected $configuration;
+
     public function __construct($pathToDir, array $extensions = array('php')){
         $this->meta = SystemFileCache::get(sha1($pathToDir) . '.analyze');
         if ($this->meta == null){
@@ -24,6 +29,26 @@ class AnalyzeManager {
         }
         $this->directory = new File($pathToDir);
         $this->extensions = $extensions;
+        $this->configuration = new PropertiesConfiguration();
+    }
+
+    /**
+     * @return \regenix\lang\File
+     */
+    public function getDirectory(){
+        return $this->directory;
+    }
+
+
+    /**
+     * @return \regenix\config\PropertiesConfiguration
+     */
+    public function getConfiguration(){
+        return $this->configuration;
+    }
+
+    public function setConfiguration(PropertiesConfiguration $configuration){
+        $this->configuration = $configuration;
     }
 
     protected function saveMeta(){
@@ -33,11 +58,32 @@ class AnalyzeManager {
         SystemFileCache::set(sha1($this->directory->getPath()) . '.analyze', $this->meta);
     }
 
-    protected function analyzeFile(File $file){
+    public function analyzeFile(File $file){
+        $parser = new \PHPParser_Parser(new \PHPParser_Lexer_Emulative());
+        try {
+            $content = $file->getContents();
+            $statements = $parser->parse($content);
+        } catch (\PHPParser_Error $e) {
+            throw new ParseException($file, $e->getRawLine(), $e->getMessage());
+        }
+
         $info = ClassScanner::find(Analyzer::type);
         $childrens = $info->getChildrensAll();
+        /** @var $analyzers Analyzer[] */
+        $analyzers = array();
         foreach($childrens as $children){
-            $analyzer = $children->newInstance(array($this, $file));
+            $analyzers[] = $children->newInstance(array($this, $file, $statements, $content));
+        }
+
+        usort($analyzers, function($a, $b){
+            /** @var $a Analyzer */
+            /** @var $b Analyzer */
+            if ($a->getSort() === $b->getSort())
+                return 0;
+            return $a->getSort() > $b->getSort() ? 1 : -1;
+        });
+
+        foreach($analyzers as $analyzer){
             $analyzer->analyze();
         }
     }

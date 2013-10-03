@@ -130,8 +130,6 @@ final class Regenix {
 
         set_include_path($rootDir);
         self::$rootTempPath = sys_get_temp_dir() . '/regenix_v' . self::getVersion() . '/';
-        unset($_GET, $_REQUEST);
-
 
         // register class loader
         ClassScanner::init($rootDir, array(REGENIX_ROOT));
@@ -1030,7 +1028,15 @@ final class Regenix {
         }
 
         protected function analyze(){
-            $manager = new AnalyzeManager($this->getPath());
+            $manager = new AnalyzeManager($this->getSrcPath());
+            $configurationFile = new File($this->getPath() . 'conf/analyzer.conf');
+
+            if ($configurationFile->exists()){
+                $configuration = new PropertiesConfiguration($configurationFile);
+                $configuration->setEnv($this->mode);
+                $manager->setConfiguration($configuration);
+            }
+
             $manager->analyze();
         }
 
