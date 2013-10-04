@@ -60,7 +60,7 @@ class PSR0Analyzer extends Analyzer {
     }
 }
 
-class PSR0NodeVisitor extends \PHPParser_NodeVisitorAbstract{
+class PSR0NodeVisitor extends \PHPParser_NodeVisitorAbstract {
 
     /** @var File */
     protected $file;

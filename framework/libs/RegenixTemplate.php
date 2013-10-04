@@ -76,12 +76,14 @@ class RegenixTemplate {
     /** @var string */
     protected $compiledFile;
 
-    public function __construct($autoregister = true){
-        if ($autoregister){
+    public function __construct($autoRegister = true){
+        if ($autoRegister){
             $meta = ClassScanner::find(RegenixTemplateTag::type);
             foreach($meta->getChildrensAll() as $class){
-                if (!$class->isAbstract())
-                    $this->registerTag($class->newInstance());
+                if (!$class->isAbstract()){
+                    $instance = $class->newInstance();
+                    $this->registerTag($instance);
+                }
             }
 
             $meta = ClassScanner::find(RegenixTemplateFilter::type);

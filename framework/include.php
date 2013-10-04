@@ -124,12 +124,12 @@ final class Regenix {
         define('ROOT', $rootDir);
         $frameworkDir = str_replace(DIRECTORY_SEPARATOR, '/', realpath(__DIR__)) . '/';
         define('REGENIX_ROOT', $frameworkDir);
-        require $frameworkDir . 'lang/PHP.php';
+        self::$rootTempPath = sys_get_temp_dir() . '/regenix_v' . self::getVersion() . '/';
 
+        require $frameworkDir . 'lang/PHP.php';
         self::trace('PHP lang file included.');
 
         set_include_path($rootDir);
-        self::$rootTempPath = sys_get_temp_dir() . '/regenix_v' . self::getVersion() . '/';
 
         // register class loader
         ClassScanner::init($rootDir, array(REGENIX_ROOT));
@@ -144,8 +144,8 @@ final class Regenix {
             }
 
             self::_registerTriggers();
-            self::_deploy();
-            self::trace('Deploy finish.');
+            //self::_deploy();
+            //self::trace('Deploy finish.');
 
             self::_registerApps();
             self::trace('Register apps finish.');
@@ -385,6 +385,8 @@ final class Regenix {
             SDK::trigger('beforeRequest', array($controller));
             
             $controller->callBefore();
+            Regenix::trace('Process request preparing - finish.');
+
             $return = $router->invokeMethod($controller, $reflection);
 
             // if use return statement
@@ -438,6 +440,8 @@ final class Regenix {
 
         if (self::$bootstrap)
             self::$bootstrap->onFinallyRequest($request);
+
+        Regenix::trace('Process request finish.');
 
         return $response;
     }
@@ -550,7 +554,8 @@ final class Regenix {
         $hash = substr(md5(rand()), 12);
         $template = TemplateLoader::load('system/errors/exception.html');
 
-        $template->putArgs(array('exception' => $e,
+        $template->putArgs(array(
+            'exception' => $e instanceof CoreException && $e->isHidden() ? null : $e,
             'stack' => $stack, 'info' => $info, 'hash' => $hash,
             'desc' => $e->getMessage(),
             'file' => $file,
@@ -994,16 +999,16 @@ final class Regenix {
             // temp
             Regenix::setTempPath( $this->name . '/' );
 
-            if (IS_DEV && APP_MODE_STRICT === true){
-                $this->analyze();
-            }
-
             $sessionDriver = new APCSession();
             $sessionDriver->register();
 
             // module deps
             $this->_registerDependencies();
             Regenix::trace('.registerDependencies() application finish');
+
+            if (IS_DEV && APP_MODE_STRICT === true){
+                $this->analyze();
+            }
 
             // route
             $this->_registerRoute();

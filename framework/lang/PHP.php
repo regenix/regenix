@@ -127,6 +127,10 @@ class CoreException extends \Exception {
         return null;
     }
 
+    public function isHidden(){
+        return false;
+    }
+
     public static function findAppStack(\Exception $e){
         if (self::$hideDebug)
             return null;
@@ -271,12 +275,25 @@ final class ClassMetaInfo {
         $this->name = $className;
     }
 
+    protected function updateMeta(){
+        $scanner = new ClassFileScanner($this->getFilename());
+        $meta = $scanner->getMeta();
+        $this->info = $meta[$this->getName()];
+    }
+
     public function getName(){
         return $this->name;
     }
 
     public function getFilename(){
         return $this->info[0];
+    }
+
+    /**
+     * @return File
+     */
+    public function getFile(){
+        return new File($this->getFilename());
     }
 
     /**
@@ -326,6 +343,9 @@ final class ClassMetaInfo {
      * @return bool
      */
     public function isInterface(){
+        if (!isset($this->info[1]))
+            $this->updateMeta();
+
         return $this->info[1] === T_INTERFACE;
     }
 
@@ -333,6 +353,9 @@ final class ClassMetaInfo {
      * @return bool
      */
     public function isTrait(){
+        if (!isset($this->info[1]))
+            $this->updateMeta();
+
         return $this->info[1] === T_TRAIT;
     }
 
@@ -401,6 +424,7 @@ final class ClassMetaInfo {
 
     /**
      * @param string $namespace
+     * @throws CoreException
      * @return ClassMetaInfo[]
      */
     public function getChildrens($namespace = ''){
@@ -519,9 +543,12 @@ class ClassScanner {
         if ($className[0] === '\\')
             $className = substr($className, 1);
 
-        if ($meta = self::$metaInfo[$className])
-            return new ClassMetaInfo($className, $meta);
-        else
+        if ($meta = self::$metaInfo[$className]){
+            if ($meta[0])
+                return new ClassMetaInfo($className, $meta);
+            else
+                return null;
+        } else
             return null;
     }
 
@@ -1060,7 +1087,6 @@ class ClassFileScanner {
         }
     }
 }
-
 
 final class String {
 

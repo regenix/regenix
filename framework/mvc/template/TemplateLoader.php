@@ -68,6 +68,8 @@ class TemplateLoader {
      * @return BaseTemplate
      */
     public static function load($name, $throws = true){
+        Regenix::trace('load TPL - ' . $name . ' start ...');
+
         $name   = str_replace('\\', '/', $name);
         
         $ext = pathinfo($name, PATHINFO_EXTENSION);
@@ -94,8 +96,9 @@ class TemplateLoader {
             else
                 return null;
         }
-        
+
         $template = new $engine($templateFile, $templateName);
+        Regenix::trace('load TPL - ' . $name . ' finish.');
         return $template;
     }
     

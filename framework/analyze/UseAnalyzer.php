@@ -32,7 +32,7 @@ class UseNodeVisitor extends \PHPParser_NodeVisitorAbstract{
                     throw new UseAnalyzeException(
                         $this->file,
                         $one->getLine(),
-                        'Class "%s" not found in the use statement', $class
+                        'Class "%s" is not found in the use statement', $class
                     );
             }
         }

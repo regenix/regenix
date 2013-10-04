@@ -23,7 +23,7 @@
         <pre class="stackTrace">Action: {get_class($controller)}-><b>{$controller->actionMethod}</b>( ... )
 Router args: %{ print_r($controller->routeArgs) }</pre>
     {/if}
-    {if $stack}
+    {if $stack && $exception}
         <b class="stackTraceTitle">Stack Trace:</b>
         <pre class="stackTrace">{$exception -> getTraceAsString()}</pre>
     {/if}

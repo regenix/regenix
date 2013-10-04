@@ -339,10 +339,10 @@ abstract class Controller extends StrictObject {
             $errors = array_merge($errors, $validator->getErrors());
         }
         $this->put("errors", $errors);
-        
+
         $template = template\TemplateLoader::load($template);
         $template->putArgs( $this->renderArgs );
-        
+
         $this->response->setEntity($template);
         $this->send();
     }

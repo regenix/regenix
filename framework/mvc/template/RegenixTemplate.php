@@ -33,7 +33,6 @@ class RegenixTemplate extends BaseTemplate {
             self::$tpl->setTplDirs( TemplateLoader::getPaths() );
             self::$loaded = true;
         }
-
         self::$tpl->setFile($templateFile);
         self::$tpl->setRoot(TemplateLoader::getCurrentRoot());
     }
