@@ -144,8 +144,6 @@ final class Regenix {
             }
 
             self::_registerTriggers();
-            //self::_deploy();
-            //self::trace('Deploy finish.');
 
             self::_registerApps();
             self::trace('Register apps finish.');
@@ -179,6 +177,7 @@ final class Regenix {
     /**
      * Init for web src
      * @param $rootDir
+     * @return \regenix\Application
      */
     public static function initWeb($rootDir){
         try {
@@ -187,8 +186,9 @@ final class Regenix {
             $app = Regenix::app();
             $request = Request::current();
             $request->setBasePath( $app->getUriPath() );
-
             self::processRequest($app, $request);
+
+            return $app;
         } catch (\Exception $e){
             if (self::$bootstrap)
                 self::$bootstrap->onException($e);
@@ -1116,13 +1116,17 @@ final class Regenix {
             if (REGENIX_IS_DEV)
                 $this->getAssets();
 
-            if (file_exists($file = $this->getPath() . 'vendor/autoload.php'))
-                require $file;
+            if (file_exists($file = $this->getPath() . 'vendor/autoload.php')){
+                if ($this->isDev())
+                    ClassScanner::addClassPath($this->getPath() . 'vendor/');
+                else
+                    require $file;
+            }
         }
 
         private function _registerSystemController(){
             if ($this->config->getBoolean('captcha.enable')){
-                if (IS_DEV)
+                if ($this->isDev())
                     Captcha::checkAvailable();
 
                 $this->router->addRoute('GET',
