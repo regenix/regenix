@@ -1,5 +1,14 @@
 <?php
-namespace regenix\lang;
+namespace {
+    function _trait_exists($traitname, $autoload = true){
+        if (function_exists('trait_exists'))
+            return trait_exists($traitname, $autoload);
+        else
+            return false;
+    }
+}
+
+namespace regenix\lang {
 
 use regenix\Application;
 use regenix\Regenix;
@@ -1992,4 +2001,6 @@ if(!function_exists('apc_store')){
 
         return xcache_isset($keys);
     }
+}
+
 }

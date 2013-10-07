@@ -53,7 +53,7 @@ class StaticNodeVisitor extends \PHPParser_NodeVisitorAbstract {
         if (!$info
             && !class_exists($name, false)
             && !interface_exists($name, false)
-            && !trait_exists($name, false)){
+            && !_trait_exists($name, false)){
             return false;
         }
         return true;

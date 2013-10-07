@@ -4,7 +4,9 @@ namespace regenix\analyze;
 use regenix\config\Configuration;
 use regenix\config\PropertiesConfiguration;
 use regenix\lang\ClassScanner;
+use regenix\lang\CoreException;
 use regenix\lang\File;
+use regenix\lang\String;
 use regenix\lang\SystemCache;
 use regenix\lang\SystemFileCache;
 
@@ -15,6 +17,9 @@ class AnalyzeManager {
 
     /** @var File */
     private $directory;
+
+    /** @var string[] */
+    private $ignorePaths = array();
 
     /** @var array */
     protected $extensions;
@@ -30,6 +35,33 @@ class AnalyzeManager {
         $this->directory = new File($pathToDir);
         $this->extensions = $extensions;
         $this->configuration = new PropertiesConfiguration();
+    }
+
+    /**
+     * Add ignore path for ignore
+     * @param $path
+     */
+    public function addIgnorePath($path){
+        $path = str_replace('\\', '/', $path);
+        if (substr($path, -1) !== '/')
+            $path .= '/';
+
+        if ($path[0] !== '/')
+            $path = $this->directory->getPath() . $path;
+
+        $this->ignorePaths[$path] = $path;
+    }
+
+    private function isIgnorePath($path){
+        $path = str_replace('\\', '/', $path);
+        if (substr($path, -1) !== '/')
+            $path .= '/';
+
+        foreach($this->ignorePaths as $one){
+            if (String::startsWith($path, $one))
+                return true;
+        }
+        return false;
     }
 
     /**
@@ -88,27 +120,46 @@ class AnalyzeManager {
         }
     }
 
-    public function analyze($incremental = true){
+    public function analyze($incremental = true, $ignoreCache = false,
+                            $callbackException = null, $callbackScan = null){
         $upd = $this->meta['$$$upd'];
-        if (!$upd || $this->directory->isModified($upd)){
+        $fail = false;
+        if ($ignoreCache || (!$upd || $this->directory->isModified($upd))){
             $files = $this->directory->findFiles(true);
             foreach($files as $file){
-                $meta =& $this->meta[$file->getPath()];
-
-                if ($meta['upd'] && $file->lastModified() <= $meta['upd'])
+                $path = $file->getParent();
+                if ($this->isIgnorePath($path)){
                     continue;
+                }
 
                 if ($file->hasExtensions($this->extensions)){
-                    $this->analyzeFile($file);
-                    $meta['upd'] = $file->lastModified();
-                    if ($incremental)
-                        $this->saveMeta();
+                    try {
+                        if ($callbackScan)
+                            call_user_func($callbackScan, $file);
+
+                        $this->analyzeFile($file);
+                    } catch (AnalyzeException $e){
+                        $fail = true;
+                        if (!$incremental){
+                            if (!$callbackException)
+                                throw new CoreException('Please pass a callback for non-incremental mode');
+
+                            call_user_func($callbackException, $e);
+                        } else {
+                            if ($callbackException)
+                                call_user_func($callbackException, $e);
+                            else
+                                throw $e;
+                        }
+                    }
                 }
             }
         }
 
-        $this->meta['$$$upd'] = $this->directory->lastModified();
-        $this->saveMeta();
+        if (!$fail){
+            $this->meta['$$$upd'] = $this->directory->lastModified();
+            $this->saveMeta();
+        }
     }
 }
 

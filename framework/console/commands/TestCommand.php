@@ -6,8 +6,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use regenix\Regenix;
 use regenix\Application;
-use regenix\console\Commander;
-use regenix\console\ConsoleCommand;
 use regenix\console\RegenixCommand;
 use regenix\lang\CoreException;
 use regenix\modules\Module;

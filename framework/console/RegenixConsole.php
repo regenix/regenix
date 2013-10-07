@@ -100,6 +100,8 @@ class RegenixConsole extends ConsoleApplication {
         if ($this->app){
             $this->app->config->setEnv($this->app->config->getString('app.mode', 'dev'));
             ClassScanner::addClassPath($this->app->getSrcPath());
+            ClassScanner::addClassPath($this->app->getTestPath());
+            ClassScanner::addClassPath($this->app->getPath() . 'vendor/');
             Logger::initialize($this->app);
         }
     }

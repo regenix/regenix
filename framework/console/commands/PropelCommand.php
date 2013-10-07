@@ -73,11 +73,11 @@ class PropelCommand extends RegenixCommand {
         $this->writeln();
 
         $process = new Process($command);
-        $result = $process->run(function($type, $out) {
+        $result = $process->run(function($type, $out) use ($output) {
             if ($type === 'err')
-                $this->writeln('ERROR > ' . $out);
+                $output->writeln('ERROR > ' . $out);
             else
-                $this->writeln($out);
+                $output->writeln($out);
         });
 
         if ($result > 0){

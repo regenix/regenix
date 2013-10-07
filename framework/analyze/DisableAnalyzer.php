@@ -121,7 +121,8 @@ class DisableNodeVisitor extends \PHPParser_NodeVisitorAbstract{
                 );
             }
         } else if ($node instanceof \PHPParser_Node_Expr_FuncCall){
-            if ($node->name){
+            if ($node->name && $node instanceof \PHPParser_Node_Name){
+
                 $name = $node->name->toString();
                 $name = str_replace('.', '\\', strtolower($name));
                 if ($name[0] === '\\')

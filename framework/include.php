@@ -1,11 +1,10 @@
 <?php
 namespace regenix {
 
-    use regenix\analyze\AnalyzeManager;
+    use regenix\analyze\ApplicationAnalyzeManager;
     use regenix\lang\SystemCache;
     use regenix\config\ConfigurationReadException;
     use regenix\config\PropertiesConfiguration;
-    use regenix\console\Commander;
     use regenix\deps\Repository;
     use regenix\exceptions\JsonFileException;
     use regenix\exceptions\TypeException;
@@ -138,7 +137,8 @@ final class Regenix {
         if ($inWeb){
             if (file_exists($globalFile = Application::getApplicationsPath() . '/GlobalBootstrap.php')){
                 require $globalFile;
-                self::$bootstrap = new \GlobalBootstrap();
+                $nameClass = '\\GlobalBootstrap';
+                self::$bootstrap = new $nameClass();
                 if (!(self::$bootstrap instanceof AbstractGlobalBootstrap))
                     throw new CoreException("Your GlobalBootstrap class should be inherited by AbstractGlobalBootstrap");
             }
@@ -836,6 +836,12 @@ final class Regenix {
             }
         }
 
+        /**
+         * @return string
+         */
+        public function getMode() {
+            return $this->mode;
+        }
 
         /**
          * replace part configuration
@@ -966,7 +972,8 @@ final class Regenix {
                 require $boostrap;
 
             if (class_exists('\\Bootstrap')){
-                $this->bootstrap = new \Bootstrap();
+                $nameClass = '\\Bootstrap';
+                $this->bootstrap = new $nameClass();
                 $this->bootstrap->setApp($this);
             }
 
@@ -1007,7 +1014,8 @@ final class Regenix {
             Regenix::trace('.registerDependencies() application finish');
 
             if (IS_DEV && APP_MODE_STRICT === true){
-                $this->analyze();
+                $analyzeManager = new ApplicationAnalyzeManager($this);
+                $analyzeManager->analyze();
             }
 
             // route
@@ -1030,19 +1038,6 @@ final class Regenix {
             }
 
             Regenix::trace('.registerBootstrap() application, finish register app');
-        }
-
-        protected function analyze(){
-            $manager = new AnalyzeManager($this->getSrcPath());
-            $configurationFile = new File($this->getPath() . 'conf/analyzer.conf');
-
-            if ($configurationFile->exists()){
-                $configuration = new PropertiesConfiguration($configurationFile);
-                $configuration->setEnv($this->mode);
-                $manager->setConfiguration($configuration);
-            }
-
-            $manager->analyze();
         }
 
         public function loadDeps(){

@@ -320,9 +320,11 @@ class DepsCommand extends RegenixCommand {
 
                 $cmd = String::format('cd "%s" && composer update', $command->app->getPath());
                 $process = new Process($cmd);
-                $result = $process->run(function($type, $out){
-                    $this->writeln($out);
+                $output = $this->output;
+                $result = $process->run(function($type, $out) use ($output) {
+                    $output->writeln($out);
                 });
+
                 if ($result > 0){
                     throw new CoreException('Composer has returned error code: %s', $result);
                 }

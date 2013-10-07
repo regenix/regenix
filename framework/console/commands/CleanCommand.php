@@ -6,7 +6,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use regenix\Regenix;
 use regenix\Application;
 use regenix\lang\SystemCache;
-use regenix\console\Commander;
 use regenix\console\RegenixCommand;
 use regenix\modules\Module;
 

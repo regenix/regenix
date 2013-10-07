@@ -45,7 +45,7 @@ abstract class Analyzer {
 
         if (class_exists($className, false)
             || interface_exists($className, false)
-            || trait_exists($className, false)){
+            || _trait_exists($className, false)){
             $reflection = new \ReflectionClass($className);
             $methods = $reflection->getMethods();
             $result = array();
