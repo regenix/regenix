@@ -100,3 +100,9 @@ create a new application from template.
 After this, a new directory `myApp` will appear in `<root>/apps`. To check it is working or not, open
 your browser and navigate to `http://localhost/myApp`. This template application will help you to 
 understand how create a typical application for Regenix.
+
+---
+
+## Publications
+
++ http://habrahabr.ru/post/196604/ (Russian)
