@@ -1,8 +1,8 @@
 <?php
 namespace regenix\mvc\template;
 
-use regenix\Application;
-use regenix\Regenix;
+use regenix\core\Application;
+use regenix\core\Regenix;
 use regenix\lang\SystemCache;
 use regenix\exceptions\TypeException;
 use regenix\lang\File;
@@ -60,7 +60,7 @@ abstract class BaseTemplate implements IClassInitialization {
     private static $assetsTpls = array();
 
     public static function registerAssetTemplate($ext, $callback){
-        if (REGENIX_IS_DEV && !is_callable($callback)){
+        if (REGENIX_IS_DEV === true && !is_callable($callback)){
             throw new TypeException('$callback', 'callable');
         }
 

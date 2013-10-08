@@ -2,8 +2,8 @@
 
 namespace regenix\modules;
 
-use regenix\Regenix;
-use regenix\Application;
+use regenix\core\Regenix;
+use regenix\core\Application;
 use regenix\lang\ClassScanner;
 use regenix\mvc\route\Router;
 use regenix\lang\CoreException;

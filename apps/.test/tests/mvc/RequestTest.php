@@ -1,8 +1,7 @@
 <?php
 namespace tests\mvc;
 
-use regenix\Regenix;
-use regenix\mvc\Request;
+use regenix\mvc\http\Request;
 use tests\RegenixTest;
 
 class RequestTest extends RegenixTest {

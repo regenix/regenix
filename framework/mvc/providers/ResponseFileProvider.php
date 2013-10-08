@@ -2,10 +2,10 @@
 
 namespace regenix\mvc\providers;
 
-use regenix\lang\File;
-use regenix\mvc\MIMETypes;
-use regenix\mvc\Request;
-use regenix\mvc\Response;
+use regenix\lang\DI;
+use regenix\mvc\http\MimeTypes;
+use regenix\mvc\http\Request;
+use regenix\mvc\http\Response;
 
 class ResponseFileProvider extends ResponseProvider {
 
@@ -18,11 +18,11 @@ class ResponseFileProvider extends ResponseProvider {
     public function __construct(Response $response) {
         parent::__construct($response);
 
-        $request = Request::current();
+        $request = DI::getInstance(Request::type);
 
         /** @var $file FileResponse */
         $file = $response->getEntity();
-        $response->setContentType( MIMETypes::getByExt($file->file->getExtension()) );
+        $response->setContentType( MimeTypes::getByExt($file->file->getExtension()) );
 
         $etag = md5($file->file->lastModified());
         $response->cacheETag($etag);
@@ -52,25 +52,5 @@ class ResponseFileProvider extends ResponseProvider {
             flush();
             readfile($this->response->getEntity()->file->getPath());
         }
-    }
-}
-
-class FileResponse {
-
-    const type = __CLASS__;
-
-    public $attach;
-
-    /**
-     * @var File
-     */
-    public $file;
-
-    public function __construct($file, $attach = true){
-        if(!($file instanceof File))
-            $file = new File($file);
-
-        $this->file   = $file;
-        $this->attach = $attach;
     }
 }

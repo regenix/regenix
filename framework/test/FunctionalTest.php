@@ -2,9 +2,9 @@
 namespace regenix\test;
 
 use regenix\lang\CoreException;
-use regenix\libs\WS;
-use regenix\libs\WSResponse;
-use regenix\mvc\URL;
+use regenix\libs\ws\WS;
+use regenix\libs\ws\WSResponse;
+use regenix\mvc\http\URL;
 
 class FunctionalTest extends UnitTest {
 

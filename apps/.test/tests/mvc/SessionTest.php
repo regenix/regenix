@@ -1,7 +1,9 @@
 <?php
 namespace tests\mvc;
 
-use regenix\mvc\Session;
+use regenix\lang\DI;
+use regenix\mvc\http\session\drivers\ArraySessionDriver;
+use regenix\mvc\http\session\Session;
 use tests\RegenixTest;
 
 class SessionTest extends RegenixTest {
@@ -12,7 +14,9 @@ class SessionTest extends RegenixTest {
     protected $session;
 
     public function onGlobalBefore(){
-        $this->session = Session::current();
+        $sessionProvider = new ArraySessionDriver();
+        $sessionProvider->register();
+        $this->session = DI::getInstance(Session::type);
     }
 
     public function simple(){

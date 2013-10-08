@@ -4,12 +4,13 @@ namespace regenix\console\commands;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use regenix\Regenix;
-use regenix\Application;
-use regenix\analyze\AnalyzeException;
+use regenix\core\Regenix;
+use regenix\core\Application;
 use regenix\analyze\AnalyzeManager;
 use regenix\analyze\Analyzer;
 use regenix\analyze\ApplicationAnalyzeManager;
+use regenix\analyze\exceptions\AnalyzeException;
+use regenix\config\PropertiesConfiguration;
 use regenix\console\RegenixCommand;
 use regenix\lang\ClassScanner;
 use regenix\lang\File;
@@ -42,6 +43,11 @@ class AnalyzeCommand extends RegenixCommand {
             ClassScanner::scan(false);
             $analyzer = new AnalyzeManager(Regenix::getFrameworkPath());
             $analyzer->addIgnorePath('vendor/');
+            $analyzer->addIgnorePath('console/.resource');
+
+            $configFile = new File(Regenix::getFrameworkPath() . 'analyzer.conf');
+            if ($configFile->exists())
+                $analyzer->setConfiguration(new PropertiesConfiguration($configFile));
 
             $this->writeln('Analyzing the framework ...');
         } else {

@@ -2,8 +2,8 @@
 
 namespace regenix\deps;
 
-use regenix\Application;
-use regenix\Regenix;
+use regenix\core\Application;
+use regenix\core\Regenix;
 use regenix\lang\ClassScanner;
 use regenix\lang\CoreException;
 use regenix\lang\File;

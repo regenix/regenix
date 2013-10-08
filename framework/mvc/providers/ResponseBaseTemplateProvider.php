@@ -2,7 +2,7 @@
 
 namespace regenix\mvc\providers;
 
-use regenix\mvc\Response;
+use regenix\mvc\http\Response;
 use regenix\mvc\template\BaseTemplate;
 
 class ResponseBaseTemplateProvider extends ResponseProvider {

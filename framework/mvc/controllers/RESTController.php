@@ -78,10 +78,3 @@ class RESTController extends Controller {
         $this->renderJSON(array('status' => 'error', 'data' => null, 'message' => $e->getMessage()));
     }
 }
-
-class RESTException extends HttpException {
-
-    public function __construct($message = ''){
-        parent::__construct(HttpException::E_BAD_REQUEST, $message);
-    }
-}
