@@ -31,7 +31,8 @@ abstract class Analyzer {
         $this->statements = $statements;
     }
 
-    abstract function analyze();
+    public function analyze(){}
+    public function walk(\PHPParser_Node $node){}
 
     public function getSort(){
         return 0;
@@ -43,6 +44,7 @@ abstract class Analyzer {
         $methods = self::$methods[$className];
         if (isset($methods))
             return $methods;
+
         self::$methods[$className] = true;
 
         if (class_exists($className, false)

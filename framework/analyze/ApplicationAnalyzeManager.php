@@ -20,6 +20,8 @@ class ApplicationAnalyzeManager extends AnalyzeManager {
         }
 
         $this->application = $application;
+        $this->addIgnorePath('models/om/');
+        $this->addIgnorePath('models/map/');
     }
 
     public function getApplication() {

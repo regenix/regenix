@@ -15,7 +15,7 @@ class RegenixCaptchaTag implements RegenixTemplateTag {
 
     public function call($args, RegenixTemplate $ctx){
         $app =  Regenix::app();
-        if (!$app->config->getBoolean('captcha.enable'))
+        if (!$app->config->getBoolean('captcha.enabled'))
             throw new TemplateException('Captcha is not enabled in configuration, should be `captcha.enable = on`');
 
         return Router::path('.regenix.mvc.SystemController.captcha');

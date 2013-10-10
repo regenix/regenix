@@ -9,5 +9,6 @@ before_install:
   - ./install.sh
   - ./regenix analyze --framework=true
   - ./regenix load .test
+  - ./regenix analyze
 
 script: ./regenix test

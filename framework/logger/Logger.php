@@ -102,7 +102,7 @@ abstract class Logger implements IClassInitialization {
             $app = Regenix::app();
 
         if ($app){
-            $enable   = $app->config->getBoolean('logger.enable', true);
+            $enable   = $app->config->getBoolean('logger.enabled', true);
             $division = $app->config->getBoolean('logger.division', true);
             $level    = $app->config->getString('logger.level', 'info');
             $logPath  = $app->getLogPath();

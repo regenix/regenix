@@ -97,7 +97,7 @@ final class DI {
             if ($constructor){
                 foreach($constructor->getParameters() as $parameter){
                     $cls = $parameter->getClass();
-                    if ($class){
+                    if ($cls){
                         $args[] = self::getInstance($cls->getName());
                     } else {
                         $args[] = null;

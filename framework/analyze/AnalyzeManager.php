@@ -3,6 +3,7 @@ namespace regenix\analyze;
 
 use regenix\analyze\exceptions\AnalyzeException;
 use regenix\analyze\exceptions\ParseAnalyzeException;
+use regenix\analyze\visitors\DefaultNodeVisitor;
 use regenix\config\PropertiesConfiguration;
 use regenix\lang\ClassScanner;
 use regenix\lang\CoreException;
@@ -28,11 +29,20 @@ class AnalyzeManager {
     /** @var PropertiesConfiguration */
     protected $configuration;
 
+    /** @var array */
+    private $uses = array();
+
+    /** @var array */
+    private $dependClasses;
+
     public function __construct($pathToDir, array $extensions = array('php')){
         $this->meta = SystemFileCache::get(sha1($pathToDir) . '.analyze');
         if ($this->meta == null){
             $this->meta = array();
+        } else {
+            $this->uses = $this->meta['$$$uses'];
         }
+
         $this->directory = new File($pathToDir);
         $this->extensions = $extensions;
         $this->configuration = new PropertiesConfiguration();
@@ -86,8 +96,33 @@ class AnalyzeManager {
     protected function saveMeta(){
         if (!$this->meta['$$$upd'])
             $this->meta['$$$upd'] = $this->directory->lastModified();
+        $this->meta['$$$uses'] = $this->uses;
 
         SystemFileCache::set(sha1($this->directory->getPath()) . '.analyze', $this->meta);
+    }
+
+    protected function addUses(File $file, array $uses){
+        foreach($uses as $one){
+            $this->uses[$one][$file->getPath()] = true;
+        }
+    }
+
+    protected function addDependClasses($classes){
+        foreach($classes as $class){
+            $this->dependClasses[$class] = true;
+        }
+    }
+
+    protected function getDependFiles(){
+        $result = array();
+        foreach($this->dependClasses as $class => $one){
+            $files = $this->uses[$class];
+            if ($files)
+                foreach($files as $file => $el){
+                    $result[$file] = new File($file);
+                }
+        }
+        return $result;
     }
 
     public function analyzeFile(File $file){
@@ -118,26 +153,54 @@ class AnalyzeManager {
         foreach($analyzers as $analyzer){
             $analyzer->analyze();
         }
+
+        $traverser = new \PHPParser_NodeTraverser();
+        $traverser->addVisitor(new \PHPParser_NodeVisitor_NameResolver());
+        $traverser->addVisitor($visitor = new DefaultNodeVisitor($file, $analyzers));
+        $traverser->traverse($statements);
+
+        $uses = $visitor->getUses();
+        $classes = $visitor->getClasses();
+
+        $this->addUses($file, $uses);
+        $this->addDependClasses($classes);
     }
 
-    public function analyze($incremental = true, $ignoreCache = false,
-                            $callbackException = null, $callbackScan = null){
-        $upd = $this->meta['$$$upd'];
+    /**
+     * @param File[] $files
+     * @param bool $incremental
+     * @param bool $ignoreCache
+     * @param callback $callbackException
+     * @param callback $callbackScan
+     * @return bool
+     * @throws \regenix\lang\CoreException
+     * @throws \Exception|exceptions\AnalyzeException
+     */
+    protected function analyzeFiles(array $files, $incremental = true, $ignoreCache = false,
+                                    $callbackException = null, $callbackScan = null){
         $fail = false;
-        if ($ignoreCache || (!$upd || $this->directory->isModified($upd))){
-            $files = $this->directory->findFiles(true);
-            foreach($files as $file){
-                $path = $file->getParent();
-                if ($this->isIgnorePath($path)){
-                    continue;
+        /** @var $file File */
+        foreach($files as $file){
+            $path = $file->getParent();
+            if ($this->isIgnorePath($path)){
+                continue;
+            }
+
+            if ($file->hasExtensions($this->extensions)){
+                $meta =& $this->meta[$file->getPath()];
+                if (!$meta){
+                    $this->meta[$file->getPath()] = array();
+                    $meta =& $this->meta[$file->getPath()];
                 }
 
-                if ($file->hasExtensions($this->extensions)){
+                if ($ignoreCache || !$meta['upd'] || $file->lastModified() > $meta['upd']){
                     try {
                         if ($callbackScan)
                             call_user_func($callbackScan, $file);
 
                         $this->analyzeFile($file);
+                        $meta['upd'] = $file->lastModified();
+
                     } catch (AnalyzeException $e){
                         $fail = true;
                         if (!$incremental){
@@ -155,10 +218,27 @@ class AnalyzeManager {
                 }
             }
         }
+        return !$fail;
+    }
 
-        if (!$fail){
-            $this->meta['$$$upd'] = $this->directory->lastModified();
-            $this->saveMeta();
+    public function analyze($incremental = true, $ignoreCache = false,
+                            $callbackException = null, $callbackScan = null){
+        $this->dependClasses = array();
+
+        $upd = $this->meta['$$$upd'];
+        if ($ignoreCache || (!$upd || $this->directory->isModified($upd))){
+            $files = $this->directory->findFiles(true);
+            if($success = $this->analyzeFiles($files, $incremental, $ignoreCache, $callbackException, $callbackScan)){
+
+                $success = $this->analyzeFiles(
+                    $this->getDependFiles(), $incremental, true, $callbackException, $callbackScan
+                );
+
+                if ($success){
+                    $this->meta['$$$upd'] = $this->directory->lastModified();
+                    $this->saveMeta();
+                }
+            }
         }
     }
 }

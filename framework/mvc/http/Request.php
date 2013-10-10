@@ -303,9 +303,6 @@ class Request extends StrictObject
     }
 
     public static function initialize() {
-        DI::bindTo(Request::type, function(){
-            // get current
-            return Request::createFromGlobal();
-        }, true);
+        DI::bind(Request::createFromGlobal());
     }
 }

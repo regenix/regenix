@@ -81,12 +81,20 @@ class Application {
         SystemCache::setId($appName);
         $cacheName = 'app.conf';
 
-        $configFile   = $this->getPath() . 'conf/application.conf';
-        $this->config = SystemCache::getWithCheckFile($cacheName, $configFile);
+        $configFile = $this->getPath() . 'conf/application.conf';
+        if (REGENIX_STAT_OFF){
+            $configData = SystemCache::get($cacheName);
+        } else
+            $configData = SystemCache::getWithCheckFile($cacheName, $configFile);
+
+        if (is_array($configData)){
+            $this->config = new PropertiesConfiguration();
+            $this->config->addProperties($configData);
+        }
 
         if ($this->config === null){
             $this->config = new PropertiesConfiguration(new File( $configFile ));
-            SystemCache::setWithCheckFile($cacheName, $this->config, $configFile);
+            SystemCache::setWithCheckFile($cacheName, $this->config->all(), $configFile);
             Regenix::trace('Read config for new app - ' . $appName);
         }
 
@@ -319,7 +327,7 @@ class Application {
         define('APP_MODE_STRICT', $this->config->getBoolean('app.mode.strict', IS_DEV));
 
         define('APP_MODE', $this->mode);
-        $this->stat = $this->config->getBoolean('app.stat', true);
+        $this->stat = !REGENIX_STAT_OFF;
         $this->config->setEnv( $this->mode );
 
         ClassScanner::addClassPath($inWeb ? $this->getSrcPath() : $this->getPath());
@@ -354,7 +362,7 @@ class Application {
         $this->_registerDependencies();
         Regenix::trace('.registerDependencies() application finish');
 
-        if (IS_DEV && APP_MODE_STRICT === true){
+        if ($this->config->getBoolean('analyzer.enabled', IS_DEV)){
             $analyzeManager = new ApplicationAnalyzeManager($this);
             $analyzeManager->analyze();
         }
@@ -469,7 +477,7 @@ class Application {
     }
 
     private function _registerSystemController(){
-        if ($this->config->getBoolean('captcha.enable')){
+        if ($this->config->getBoolean('captcha.enabled')){
             if ($this->isDev())
                 Captcha::checkAvailable();
 
@@ -514,8 +522,19 @@ class Application {
     }
 
     private function _registerRoute(){
+        $routeFile = $this->getPath() . 'conf/route';
+        $route = new File($routeFile);
+        $routePatternDir = new File($this->getPath() . 'conf/routes/');
+
         // routes
-        $routeConfig = SystemCache::get('route');
+        $routeConfig = null;
+        $routeConfigData = SystemCache::get('route');
+        if (is_array($routeConfigData)){
+            $routeConfig = new RouterConfiguration();
+            $routeConfig->setPatternDir($routePatternDir);
+            $routeConfig->setFile($route);
+            $routeConfig->addPatterns($routeConfigData);
+        }
 
         // optimize, absolute cache
         if (!$this->stat && $routeConfig !== null){
@@ -523,12 +542,8 @@ class Application {
             return;
         }
 
-        $routeFile = $this->getPath() . 'conf/route';
-        $route = new File($routeFile);
-        $routePatternDir = new File($this->getPath() . 'conf/routes/');
-
         $upd = SystemCache::get('routes.$upd');
-        if ( $routeConfig === null && $this->stat
+        if ( !is_array($routeConfig)
             || $route->isModified($upd, false)
             || $routePatternDir->isModified($upd, REGENIX_IS_DEV) ){
 
@@ -540,14 +555,14 @@ class Application {
             }
 
             $routeConfig->setPatternDir($routePatternDir);
-            $routeConfig->setFile(new File($routeFile));
+            $routeConfig->setFile($route);
 
             $routeConfig->load();
             $routeConfig->validate();
 
             $this->router->applyConfig($routeConfig);
 
-            SystemCache::setWithCheckFile('route', $routeConfig, $routeFile, 60 * 5);
+            SystemCache::setWithCheckFile('route', $routeConfig->getRouters(), $routeFile, 60 * 5);
             $upd = $routePatternDir->lastModified(REGENIX_IS_DEV);
             $updR = $route->lastModified();
             if ($updR > $upd)

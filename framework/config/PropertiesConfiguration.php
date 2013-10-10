@@ -46,6 +46,10 @@ class PropertiesConfiguration extends Configuration {
         $this->data[ $key ] = $value;
     }
 
+    public function addProperties($values){
+        $this->data = array_merge($this->data, $values);
+    }
+
     public function clearProperty($key){
         if ( isset($this->data[$key]) )
             $this->data[$key] = null;

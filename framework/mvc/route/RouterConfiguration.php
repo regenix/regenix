@@ -39,6 +39,15 @@ class RouterConfiguration extends Configuration {
         $this->patterns[ $code ] = $routes;
     }
 
+    public function addPatterns(array $patterns){
+        if (REGENIX_IS_DEV){
+            foreach($patterns as $code => $routes)
+                $this->addPattern($code, $routes);
+        } else {
+            $this->patterns = array_merge($this->patterns, $patterns);
+        }
+    }
+
     public function setPatternDir(File $dir){
         $this->patternDir = $dir;
     }

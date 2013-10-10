@@ -128,14 +128,14 @@ final class Regenix {
             $rootDir .= '/';
 
         define('ROOT', $rootDir);
+        defined('REGENIX_STAT_OFF') or define('REGENIX_STAT_OFF', false);
+
         self::$rootTempPath = sys_get_temp_dir() . '/regenix_v' . self::getVersion() . '/';
 
         require REGENIX_ROOT . 'lang/PHP.php';
         CoreException::showOnlyPublic(!defined('IS_CORE_DEBUG') || IS_CORE_DEBUG === false);
 
         self::trace('PHP lang file included.');
-
-        set_include_path($rootDir);
 
         // register class loader
         ClassScanner::init($rootDir, array(REGENIX_ROOT));
@@ -160,11 +160,18 @@ final class Regenix {
 
             self::_registerTriggers();
 
-            self::_registerApps();
-            self::trace('Register apps finish.');
+            $done = false;
+            if (REGENIX_STAT_OFF){
+                $done = self::_registerCurrentAppFromCache();
+            }
 
-            self::_registerCurrentApp();
-            self::trace('Register current finish.');
+            if (!$done){
+                self::_registerApps();
+                self::trace('Register apps finish.');
+
+                self::_registerCurrentApp();
+                self::trace('Register current finish.');
+            }
 
             if (!Regenix::app())
                 register_shutdown_function(array(Regenix::type, '__shutdown'), null);
@@ -317,10 +324,29 @@ final class Regenix {
         foreach(self::$externalApps as $path){
             $paths[] = new File($path);
         }
-        $paths = array_merge($paths, $file->findFiles());
+
+        $key = '$rgx.' . sha1($file->getPath());
+        if (REGENIX_STAT_OFF){
+            $files = SystemCache::get($key);
+        } else {
+            $files = SystemCache::getWithCheckFile($key, $file->getPath());
+        }
+
+        if (!is_array($files)){
+            $files = $file->find();
+            SystemCache::setWithCheckFile($key, $files, $file->getPath());
+        }
+
+        foreach($files as &$one){
+            $one = new File($one);
+        } unset($one);
+
+        $paths = array_merge($paths, $files);
 
         foreach($paths as $path){
-            if ($path->isDirectory()){
+            /** @var $path File */
+            $tmp = $path->getName();
+            if (!$path->getExtension() || $tmp[0] === '.'){
                 $name = $origin = $path->getName();
                 $i = 1;
                 while(isset(self::$apps[$name])){
@@ -336,6 +362,38 @@ final class Regenix {
             self::$bootstrap->onAfterRegisterApps(self::$apps);
     }
 
+    private static function registerApplication(Application $app, URL $baseUrl){
+        register_shutdown_function(array(Regenix::type, '__shutdown'), $app);
+        if (self::$bootstrap)
+            self::$bootstrap->onBeforeRegisterCurrentApp($app);
+
+        $app->setUriPath( $baseUrl );
+        $app->register();
+        DI::bind($app);
+
+        if (self::$bootstrap)
+            self::$bootstrap->onAfterRegisterCurrentApp($app);
+    }
+
+    private static function _registerCurrentAppFromCache(){
+        /** @var $request Request */
+        $request = DI::getInstance(Request::type);
+        $hash = '$rgx.url.' . $request->getHash();
+
+        $app = SystemCache::get($hash, true);
+        if (is_string($app)){
+            $app = new Application(new File(Application::getApplicationsPath() . $app));
+            $app->register();
+
+            if ($app){
+                $url = $app->findCurrentPath();
+                self::registerApplication($app, $url);
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static function _registerCurrentApp(){
         /**
          * @var Application $app
@@ -343,16 +401,16 @@ final class Regenix {
         foreach (self::$apps as $app){
             $url = $app->findCurrentPath();
             if ( $url ){
-                register_shutdown_function(array(Regenix::type, '__shutdown'), $app);
-                if (self::$bootstrap)
-                    self::$bootstrap->onBeforeRegisterCurrentApp($app);
+                Regenix::trace('Current app detected, register it ...');
 
-                $app->setUriPath( $url );
-                $app->register();
-                DI::bind($app);
+                if (REGENIX_STAT_OFF){
+                    $request = DI::getInstance(Request::type);
+                    $hash = '$rgx.url.' . $request->getHash();
+                    SystemCache::setId('');
+                    SystemCache::set($hash, $app->getName(), 3600, true);
+                }
 
-                if (self::$bootstrap)
-                    self::$bootstrap->onAfterRegisterCurrentApp($app);
+                self::registerApplication($app, $url);
                 return;
             }
         }

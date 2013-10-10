@@ -673,10 +673,10 @@ class ClassScanner {
             $result[3] = $meta[3];
         }
 
-        $metaInfo =& self::$metaInfo;
+        $metaInfo =& ClassScanner::$metaInfo;
 
-        if ($childs = $metaInfo[$className][255])
-            $result[255] = $childs;
+        if ($children = $metaInfo[$className][255])
+            $result[255] = $children;
 
         // if exists parent...
         if ($extends || $implements){
@@ -1928,6 +1928,10 @@ class SystemCache {
             }
         } else
             return file_get_contents($filePath);
+    }
+
+    public static function getId(){
+        return self::$id;
     }
 }
 

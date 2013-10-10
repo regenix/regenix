@@ -4,7 +4,6 @@ namespace regenix\analyze\analyzers;
 use regenix\analyze\AnalyzeManager;
 use regenix\analyze\Analyzer;
 use regenix\analyze\exceptions\PSR0AnalyzeException;
-use regenix\analyze\visitors\PSR0NodeVisitor;
 use regenix\lang\File;
 use regenix\lang\String;
 
@@ -13,11 +12,12 @@ class PSR0Analyzer extends Analyzer {
     protected $exclude;
     protected $enable;
     protected $prefix;
+    protected $i = 0;
 
     public function __construct(AnalyzeManager $manager, File $file, array $statements, $content){
         parent::__construct($manager, $file, $statements, $content);
         $config = $manager->getConfiguration();
-        $this->enable = $config->getBoolean('psr0.enable');
+        $this->enable = $config->getBoolean('psr0.enabled');
         $this->exclude = $config->getArray('psr0.exclude');
         $this->prefix = str_replace('.', '\\', $config->getString('psr0.prefix'));
         $this->exclude = array_map('trim', $this->exclude);
@@ -68,9 +68,39 @@ class PSR0Analyzer extends Analyzer {
             );
         }
 
-        $traverser = new \PHPParser_NodeTraverser();
-        $traverser->addVisitor(new PSR0NodeVisitor($this->file, $this->prefix));
-        $traverser->traverse($this->statements);
+        $this->i = 0;
+    }
+
+    public function walk(\PHPParser_Node $node){
+        if (!$this->enable)
+            return;
+
+        if ($node instanceof \PHPParser_Node_Stmt_Class){
+            $name = $node->name;
+            $this->i++;
+
+            if ($this->i === 1){
+                $dueName = $this->file->getNameWithoutExtension();
+
+                if ($name !== $dueName){
+                    throw new PSR0AnalyzeException(
+                        $this->file,
+                        $node->getLine(),
+                        'PSR-0 Standard: The name of the first class should be "%s" instead of "%s"',
+                        $dueName, $name
+                    );
+                }
+            }
+
+            if ($this->i > 1){
+                throw new PSR0AnalyzeException(
+                    $this->file,
+                    $node->getLine(),
+                    'PSR-0 Standard: Only one class can be declared in a file, remove "%s" class',
+                    $name
+                );
+            }
+        }
     }
 }
 

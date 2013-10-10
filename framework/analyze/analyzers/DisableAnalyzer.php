@@ -3,7 +3,7 @@ namespace regenix\analyze\analyzers;
 
 use regenix\analyze\AnalyzeManager;
 use regenix\analyze\Analyzer;
-use regenix\analyze\visitors\DisableNodeVisitor;
+use regenix\analyze\exceptions\DisableAnalyzeException;
 use regenix\lang\CoreException;
 use regenix\lang\File;
 use regenix\lang\String;
@@ -53,18 +53,80 @@ class DisableAnalyzer extends Analyzer {
 
             return $item;
         }, $this->disableGlobals);
+
+        $this->disableFeatures = array_combine($this->disableFeatures, $this->disableFeatures);
+        $this->disableGlobals = array_combine($this->disableGlobals, $this->disableGlobals);
+        $this->disableFunctions = array_combine($this->disableFunctions, $this->disableFunctions);
     }
 
     public function getSort(){
         return 10000;
     }
 
-    public function analyze() {
-        $traverser = new \PHPParser_NodeTraverser();
-        $traverser->addVisitor(new DisableNodeVisitor(
-            $this->file,
-            $this->disableFeatures, $this->disableGlobals, $this->disableFunctions
-        ));
-        $traverser->traverse($this->statements);
+    public function walk(\PHPParser_Node $node){
+        if ($node instanceof \PHPParser_Node_Expr_Variable){
+            $name = $node->name;
+            if ($this->disableGlobals[$name]){
+                throw new DisableAnalyzeException(
+                    $this->file,
+                    $node->getLine(),
+                    'Forbidden usage of the super-global var "$%s", see `disable.globals` in `conf/analyzer.conf`',
+                    $name
+                );
+            }
+        } else if ($node instanceof \PHPParser_Node_Stmt_Global){
+            if ($this->disableFeatures['globals'] || $this->disableFeatures['global'])
+                throw new DisableAnalyzeException(
+                    $this->file,
+                    $node->getLine(),
+                    'Forbidden usage of global variables, see `disable.features` in configuration'
+                );
+        } else if ($node instanceof \PHPParser_Node_Stmt_Function){
+            if ($this->disableFeatures['functions'] || $this->disableFeatures['function']){
+                if ($node->name){
+                    throw new DisableAnalyzeException(
+                        $this->file,
+                        $node->getLine(),
+                        'Forbidden usage of simple named functions, see `disable.features` in configuration'
+                    );
+                }
+            }
+        } else if ($node instanceof \PHPParser_Node_Stmt_Goto){
+            if ($this->disableFeatures['goto']){
+                throw new DisableAnalyzeException(
+                    $this->file,
+                    $node->getLine(),
+                    'Forbidden usage of GOTO statement, see `disable.features` in configuration'
+                );
+            }
+        } else if ($node instanceof \PHPParser_Node_Expr_FuncCall){
+            if ($node->name && $node instanceof \PHPParser_Node_Name){
+
+                $name = $node->name->toString();
+                $name = str_replace('.', '\\', strtolower($name));
+                if ($name[0] === '\\')
+                    $name = substr($name, 1);
+
+                if ($this->disableFunctions[$name])
+                    throw new DisableAnalyzeException(
+                        $this->file,
+                        $node->getLine(),
+                        'Forbidden usage of the "%s()" function, see `disable.functions` in configuration',
+                        $name
+                    );
+
+                foreach($this->disableFunctions as $one){
+                    if (substr($one, -1) === '*')
+                        if (String::startsWith($name, substr($one, 0, -1))){
+                            throw new DisableAnalyzeException(
+                                $this->file,
+                                $node->getLine(),
+                                'Forbidden usage of the "%s()" function, see "%s" pattern in `disable.functions` in configuration',
+                                $name, $one
+                            );
+                        }
+                }
+            }
+        }
     }
 }
