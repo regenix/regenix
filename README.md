@@ -51,6 +51,7 @@ https://github.com/dim-s/regenix-documentation
 + [Logging](https://github.com/dim-s/regenix-documentation/blob/master/en/logs.md)
 + [CLI for regenix](https://github.com/dim-s/regenix-documentation/blob/master/en/cli.md)
 + [Class Scanner](https://github.com/dim-s/regenix-documentation/blob/master/en/class_scanner.md)
++ [Performance](https://github.com/dim-s/regenix-documentation/blob/master/en/performance.md)
 
 Getting started
 ---------------
