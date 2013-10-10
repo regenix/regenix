@@ -2,14 +2,17 @@
 
 namespace regenix\mvc\template;
 
-use regenix\SDK;
+use regenix\core\SDK;
+use regenix\exceptions\TemplateEngineNotFoundException;
+use regenix\exceptions\TemplateNotFoundException;
 use regenix\lang\CoreException;
+use regenix\lang\IClassInitialization;
 use regenix\lang\String;
 use regenix\mvc\providers\ResponseProvider;
-use regenix\Regenix;
-use regenix\Application;
+use regenix\core\Regenix;
+use regenix\core\Application;
 
-class TemplateLoader {
+class TemplateLoader implements IClassInitialization {
 
     const type = __CLASS__;
 
@@ -183,7 +186,8 @@ class TemplateLoader {
         
         return false;
     }
+
+    public static function initialize(){
+        TemplateLoader::__lazyLoad();
+    }
 }
-
-
-TemplateLoader::__lazyLoad();

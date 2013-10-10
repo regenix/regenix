@@ -1,7 +1,8 @@
 <?php
 namespace tests\mvc;
 
-use regenix\mvc\Flash;
+use regenix\lang\DI;
+use regenix\mvc\http\session\Flash;
 use tests\RegenixTest;
 
 class FlashTest extends RegenixTest {
@@ -16,7 +17,7 @@ class FlashTest extends RegenixTest {
     protected function onGlobalBefore(){
         parent::onGlobalBefore();
 
-        $this->flash = Flash::current();
+        $this->flash = DI::getInstance(Flash::type);
     }
 
     public function onBefore(){

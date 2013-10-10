@@ -1,6 +1,9 @@
 <?php
 namespace regenix\lang;
 
+use regenix\core\Regenix;
+use regenix\exceptions\ClassNotFoundException;
+
 /**
  * Class DI - Dependency Injection Container
  * @package regenix\lang
@@ -41,9 +44,10 @@ final class DI {
         if (!($info = ClassScanner::find($implement)))
             throw new ClassNotFoundException($implement);
 
-        if (!$meta->isParentOf($implement)){
-            throw new DependencyInjectionException('"%s" class should be implemented or inherited by "%s"', $implement, $interface);
-        }
+        /*if (!$meta->isParentOf($implement)){
+            throw new DependencyInjectionException('"%s" class should be implemented or inherited by "%s"', $implement,
+                $interface);
+        }*/
 
         if ($info->isAbstract() || $info->isInterface()){
             throw new DependencyInjectionException('"%s" cannot be an abstract class or interface');
@@ -65,7 +69,7 @@ final class DI {
                         $newClass = $implementNamespace . substr($class, strlen($interfaceNamespace));
                         self::$cacheNamespaceBinds[$class] = $newClass;
 
-                        if (REGENIX_IS_DEV)
+                        if (REGENIX_IS_DEV === true)
                             self::validateDI($class, $newClass);
 
                         if (self::$singletons[$interfaceNamespace] === true){
@@ -82,7 +86,7 @@ final class DI {
 
         if (is_callable($class)){
             $object = call_user_func($class, $interfaceClass);
-            if (REGENIX_IS_DEV){
+            if (REGENIX_IS_DEV === true){
                 self::validateDI($interfaceClass, $object);
             }
         } else {
@@ -92,14 +96,23 @@ final class DI {
             $args = array();
             if ($constructor){
                 foreach($constructor->getParameters() as $parameter){
-                    $class = $parameter->getClass();
+                    $cls = $parameter->getClass();
                     if ($class){
-                        $args[] = self::getInstance($class->getName());
+                        $args[] = self::getInstance($cls->getName());
                     } else {
                         $args[] = null;
                     }
                 }
-                $object = $reflection->newInstanceArgs($args);
+                if ($constructor->isPublic()){
+                    $object = $reflection->newInstanceArgs($args);
+                } else {
+                    // for private, protected constructors
+                    // PHP 5.3 does not support newInstanceWithoutConstructor :(, this is hack
+                    $object = unserialize(sprintf('O:%d:"%s":0:{}', strlen($class), $class));
+                    //$object = $reflection->newInstanceWithoutConstructor();
+                    $constructor->setAccessible(true);
+                    $constructor->invokeArgs($object, $args);
+                }
             } else {
                 $object = $reflection->newInstance();
             }
@@ -113,7 +126,7 @@ final class DI {
      * @param bool $createNonSingleton
      * @return null|object
      */
-    public static function getInstance($class, $createNonSingleton = true){
+    public static function getInstance($class, $createNonSingleton = true) {
         $class     = str_replace('.', '\\', $class);
         $singleton = self::$singletons[$class];
 
@@ -122,9 +135,12 @@ final class DI {
         } else if ($singleton){
             return $singleton;
         } else {
-            if ($createNonSingleton)
-                return self::_getInstance($class);
-            else
+            if ($createNonSingleton){
+                $result = self::_getInstance($class);
+                if ($result instanceof Singleton)
+                    return self::$singletons[$class] = $result;
+                return $result;
+            } else
                 return null;
         }
     }
@@ -179,7 +195,7 @@ final class DI {
 
     /**
      * @param $interface
-     * @param $class
+     * @param callback|string|null $class
      * @param bool $singleton
      */
     public static function bindTo($interface, $class, $singleton = false){
@@ -187,7 +203,10 @@ final class DI {
         if (!is_object($class))
             $class = str_replace('.', '\\', $class);
 
-        if (REGENIX_IS_DEV)
+        if (!$class)
+            $class = $interface;
+
+        if (REGENIX_IS_DEV === true)
             self::validateDI($interface, $class);
 
         self::$binds[ $interface ] = $class;
@@ -196,15 +215,28 @@ final class DI {
         }
     }
 
-    public static function bind($object){
-        self::$singletons[get_class($object)] = $object;
+    /**
+     * Bind object as Singleton
+     * @param object $object
+     * @param null|string $interface class or interface name
+     */
+    public static function bind($object, $interface = null){
+        if ($interface){
+            $interface = str_replace('.', '\\', $interface);
+            if (REGENIX_IS_DEV === true)
+                self::validateDI($interface, get_class($object));
+
+            self::$singletons[$interface] = $object;
+        } else
+            self::$singletons[get_class($object)] = $object;
     }
+
 
     public static function clear(){
         self::$singletons = array();
         self::$cacheNamespaceBinds = array();
-        self::$namespaceBinds = array();
-        self::$binds = array();
+        //self::$namespaceBinds = array();
+        //self::$binds = array();
     }
 }
 

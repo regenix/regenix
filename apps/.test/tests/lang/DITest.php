@@ -3,7 +3,6 @@ namespace tests\lang;
 
 use regenix\lang\DI;
 use regenix\lang\DependencyInjectionException;
-use regenix\lang\String;
 use tests\RegenixTest;
 use tests\lang\impl\DISingleton;
 
@@ -110,6 +109,15 @@ class DITest extends RegenixTest {
         $this->assert($one->equals($two));
     }
 
+    public function testArgs(){
+        DI::clear();
+        DI::bind($one = new Singleton());
+
+        /** @var ArgsClass $instance */
+        $instance = DI::getInstance(ArgsClass::type);
+        $this->assert($one->equals($instance->getOne()));
+    }
+
     public function testNamespaces(){
         DI::clear();
         DI::bindNamespaceTo('tests.lang.', 'tests.lang.impl.DI');
@@ -129,15 +137,6 @@ class DITest extends RegenixTest {
         $this->assertType(DISingleton::type, $one);
         $this->assertType(DISingleton::type, $two);
         $this->assert($one && $one->equals($two));
-    }
-
-    public function testArgs(){
-        DI::clear();
-        DI::bind($one = new Singleton());
-
-        /** @var ArgsClass $instance */
-        $instance = DI::getInstance(ArgsClass::type);
-        $this->assert($one->equals($instance->getOne()));
     }
 }
 

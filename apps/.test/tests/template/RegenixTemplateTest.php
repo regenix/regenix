@@ -1,12 +1,12 @@
 <?php
 namespace tests\template;
 
-use regenix\Regenix;
+use regenix\core\Regenix;
 use regenix\lang\String;
-use regenix\libs\RegenixTemplate;
-use regenix\libs\RegenixTemplateFilter;
-use regenix\libs\RegenixTemplateTag;
 use regenix\mvc\template\TemplateLoader;
+use regenix\template\RegenixTemplate;
+use regenix\template\RegenixTemplateFilter;
+use regenix\template\RegenixTemplateTag;
 use tests\RegenixTest;
 
 class RegenixTemplateTest extends RegenixTest {
@@ -36,7 +36,7 @@ class RegenixTemplateTest extends RegenixTest {
     public function testSimpleFilters(){
         $template = $this->template();
 
-        $result = $template->_callFilter('test_simple', 'foobar');
+        $result = $template->callFilter('test_simple', 'foobar');
         $this->assertEqual('[foobar]', $result);
         $this->assertStrongEqual(true, $template->getArg('test_simple_filter'));
     }
@@ -44,7 +44,7 @@ class RegenixTemplateTest extends RegenixTest {
     public function testSimpleTags(){
         $template = $this->template();
 
-        $result = $template->_renderTag('foobar', array(), true);
+        $result = $template->renderTag('foobar', array(), true);
         $this->assertEqual('FOOBAR', $result);
         $this->assertStrongEqual(true, $template->getArg('foobar_tag'));
     }
@@ -131,7 +131,7 @@ class RegenixTemplateTest extends RegenixTest {
     }
 }
 
-class SimpleFilter extends RegenixTemplateFilter {
+class SimpleFilter implements RegenixTemplateFilter {
 
     public function getName() {
         return 'test_simple';
@@ -145,7 +145,7 @@ class SimpleFilter extends RegenixTemplateFilter {
     }
 }
 
-class SimpleTag extends RegenixTemplateTag {
+class SimpleTag implements RegenixTemplateTag {
 
     function getName() {
         return 'foobar';

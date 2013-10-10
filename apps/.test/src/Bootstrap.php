@@ -1,9 +1,7 @@
 <?php
 namespace {
 
-    use regenix\AbstractBootstrap;
-    use regenix\lang\ClassScanner;
-    use regenix\mvc\template\BaseTemplate;
+    use regenix\core\AbstractBootstrap;
     use tests\ClassloaderTest;
     use tests\I18nTest;
     use tests\LangTest;

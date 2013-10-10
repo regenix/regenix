@@ -1,10 +1,8 @@
 <?php
 namespace tests;
 
-use regenix\Regenix;
-use regenix\Application;
+use regenix\core\Regenix;
 use regenix\lang\ClassFileScanner;
-use regenix\lang\ClassLoader;
 use regenix\lang\ClassScanner;
 use regenix\lang\File;
 use regenix\lang\String;

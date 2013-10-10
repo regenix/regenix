@@ -2,17 +2,19 @@
 
 namespace regenix\mvc\route;
 
-use regenix\Application;
-use regenix\Regenix;
+use regenix\core\Application;
+use regenix\core\Regenix;
+use regenix\lang\DI;
 use regenix\lang\StrictObject;
 use regenix\lang\SystemCache;
 use regenix\lang\String;
 use regenix\logger\Logger;
 use regenix\mvc\Controller;
-use regenix\mvc\Request;
-use regenix\mvc\RequestBinder;
+use regenix\mvc\binding\Binder;
+use regenix\mvc\http\Request;
 
-class Router extends StrictObject {
+class Router extends StrictObject
+    implements RouteInjectable {
 
     const type = __CLASS__;
 
@@ -34,9 +36,15 @@ class Router extends StrictObject {
     /** @var string */
     public $action;
 
+    /** @var Request */
+    private $request;
 
-    public function __construct() {
-        ;
+    /** @var Binder */
+    private $binder;
+
+    public function __construct(Request $request, Binder $binder) {
+        $this->request = $request;
+        $this->binder  = $binder;
     }
     
     public function applyConfig(RouterConfiguration $config){
@@ -203,7 +211,7 @@ class Router extends StrictObject {
     }
 
     public function invokeMethod(Controller $controller, \ReflectionMethod $method){
-        $args       = array();
+        $args       = array();;
         $parsedBody = null;
 
         // bind params for method call
@@ -217,12 +225,12 @@ class Router extends StrictObject {
                     if ( $type == 'auto' ){
                         $class = $param->getClass();
                         if ( $class !== null ){
-                            $value = RequestBinder::getValue($value, $class->getName());
+                            $value = $this->binder->getValue($value, $class->getName());
                         } else if ($param->isArray()){
                             $value = array($value);
                         }
                     } else
-                        $value = RequestBinder::getValue($value, $type);
+                        $value = $this->binder->getValue($value, $type);
                 }
 
                 $args[$name] = $value;
@@ -232,7 +240,7 @@ class Router extends StrictObject {
                     $args[$name] = $controller->query->getArray($name);
                 } else if ( $parsedBody && ($v = $parsedBody[$name]) ){
                     if ($class !== null)
-                        $args[$name] = RequestBinder::getValue($v, $class->getName());
+                        $args[$name] = $this->binder->getValue($v, $class->getName());
                     else
                         $args[$name] = $v;
                 } else if ( !$parsedBody && $controller->query->has($name) ){
@@ -243,6 +251,14 @@ class Router extends StrictObject {
                         $value = $controller->query->get($name);
                     $args[$name] = $value;
                 } else {
+                    if ($class){
+                        $className = $class->getName();
+                        $implements = class_implements($className, false);
+                        if ($implements[RouteInjectable::i_type])
+                            $args[$name] = DI::getInstance($className);
+                        else
+                            $args[$name] = null;
+                    }
                     $args[$name] = null;
                 }
             }
@@ -250,7 +266,9 @@ class Router extends StrictObject {
         return $method->invokeArgs($controller, $args);
     }
 
-    public function route(Request $request){
+    public function route(){
+        $request = $this->request;
+
         $isCached = REGENIX_IS_DEV !== true;
         if ($isCached){
             $hash  = $request->getHash();
@@ -275,7 +293,7 @@ class Router extends StrictObject {
 
         foreach($this->routes as $route){
             $args = self::routeMatches($route, $method, $path, $format, $domain);
-            
+
             if ( $args !== null ){
                 $this->args    = $args;
                 $this->current = $route;
@@ -299,6 +317,7 @@ class Router extends StrictObject {
     private static function routeMatches($route, $method, $path, $format, $domain){
         if ( $method === null || $route['method'] == '*' || $method == $route['method'] ){
             $args = array();
+
             $result = preg_match_all($route['pattern'], $path, $matches);
             if (!$result)
                 return null;

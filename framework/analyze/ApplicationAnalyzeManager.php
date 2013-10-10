@@ -1,7 +1,7 @@
 <?php
 namespace regenix\analyze;
 
-use regenix\Application;
+use regenix\core\Application;
 use regenix\config\PropertiesConfiguration;
 use regenix\lang\File;
 

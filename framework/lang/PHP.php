@@ -1,21 +1,15 @@
 <?php
-namespace {
-    function _trait_exists($traitname, $autoload = true){
-        if (function_exists('trait_exists'))
-            return trait_exists($traitname, $autoload);
-        else
-            return false;
-    }
-}
-
 namespace regenix\lang {
 
-use regenix\Application;
-use regenix\Regenix;
-use regenix\SDK;
+use regenix\core\Application;
+use regenix\core\Regenix;
+use regenix\core\SDK;
+use regenix\exceptions\ClassNotFoundException;
+use regenix\exceptions\FileIOException;
+use regenix\exceptions\FileNotOpenException;
 
 if (!defined('T_TRAIT'))
-    define('T_TRAIT', 355);
+   define('T_TRAIT', 355);
 
 defined('IS_CLI') or define('IS_CLI', isset($_SERVER['argc']));
 defined('APC_ENABLED') or define('APC_ENABLED', extension_loaded('apc'));
@@ -26,91 +20,18 @@ if (!defined('SYSTEM_IN_MEM_CACHED')){
         define('SYSTEM_IN_MEM_CACHED', false);
     else {
         if (APC_ENABLED){
-            if (IS_CLI)
+            if (IS_CLI){
                 define('SYSTEM_IN_MEM_CACHED', false);
-            else
-                define('SYSTEM_IN_MEM_CACHED', true);
+            } else {
+                define('SYSTEM_IN_MEM_CACHED', !!ini_get('apc.enabled') && XCACHE_ENABLED);
+            }
         } else
-            define('SYSTEM_IN_MEM_CACHED', (XCACHE_ENABLED));
+            define('SYSTEM_IN_MEM_CACHED', !IS_CLI && XCACHE_ENABLED);
     }
 }
 
 define('FAST_SERIALIZE_ENABLE', extension_loaded('igbinary'));
 defined('SYSTEM_CACHE_TMP_DIR') or define('SYSTEM_CACHE_TMP_DIR', Regenix::getTempPath() .  'syscache/');
-
-CoreException::showOnlyPublic(!defined('IS_CORE_DEBUG') || IS_CORE_DEBUG === false);
-
-/**
- * Class ClassNotFoundException
- * @package regenix\lang
- */
-class ClassNotFoundException extends CoreException {
-
-    const type = __CLASS__;
-
-    public function __construct($className){
-        parent::__construct( String::format('Class "%s" not found', $className) );
-    }
-}
-
-class IOException extends CoreException {
-    const type = __CLASS__;
-}
-
-/**
- * Class FileIOException
- * @package regenix\lang
- */
-class FileIOException extends IOException {
-
-    const type = __CLASS__;
-
-    /**
-     * @var string
-     */
-    protected $path;
-
-    public function __construct(File $file){
-        $this->path = $file->getPath();
-        parent::__construct( String::format('File "%s" can\'t read', $file->getPath()) );
-    }
-}
-
-/**
- * Class FileNotFoundException
- * @package regenix\lang
- */
-class FileNotFoundException extends CoreException {
-
-    const type = __CLASS__;
-
-    public $file;
-
-    public function __construct(File $file){
-        parent::__construct( String::format('File "%s" not found', $file->getPath()) );
-        $this->file = $file;
-    }
-}
-
-/**
- * Class FileNotOpenException
- * @package regenix\lang
- */
-class FileNotOpenException extends CoreException {
-
-    const type = __CLASS__;
-
-    /**
-     * @var string
-     */
-    protected $path;
-
-    public function __construct(File $file){
-        $this->path = $file->getPath();
-        parent::__construct( String::format('File "%s" is not opened to read or write', $file->getPath()) );
-    }
-}
-
 
 /**
  * Class CoreException
@@ -493,7 +414,10 @@ final class ClassMetaInfo {
 
         if ($force || !class_exists($class, false)){
             if ($file = $this->getFilename()){
-                require $file;
+                if ($file[0] !== '/' && $file[1] !== ':')
+                    require ROOT . $file;
+                else
+                    require $file;
 
                 $implements = class_implements($class);
                 if ( $implements[IClassInitialization::IClassInitialization_type] ){
@@ -597,7 +521,12 @@ class ClassScanner {
             $path = current(self::$paths);
             $hash    = sha1($path);
 
-            $meta = $cached ? SystemCache::getWithCheckFile('lang.sc.m.' . $hash, $path, true) : null;
+            $meta = $cached ?
+                (REGENIX_IS_DEV
+                    ? SystemCache::getWithCheckFile('lang.sc.m.' . $hash, $path, true)
+                    : SystemCache::get('lang.sc.m.' . $hash, true)
+                ) : null;
+
             if ($meta === null){
                 self::scanPath($path);
                 if ($cached){
@@ -614,7 +543,7 @@ class ClassScanner {
             if (self::$scanned[$path])
                 continue;
 
-            if (REGENIX_IS_DEV){
+            if (REGENIX_IS_DEV === true){
                 $results = $cached ? SystemCache::getIf('lang.sc.' . $hash, function() use ($path){
                     $upd = SystemCache::get('lang.sc.$upd', true);
                     if (!$upd)
@@ -1652,6 +1581,20 @@ class File extends StrictObject {
     }
 
     /**
+     * Open file and read all lines with callback
+     * @param $callback
+     * @param int $length
+     * @throws \regenix\exceptions\FileNotOpenException
+     */
+    public function readLines($callback, $length = 4096){
+        $this->open('r+');
+        while (($buffer = $this->gets($length)) !== false) {
+            call_user_func($callback, $buffer);
+        }
+        $this->close();
+    }
+
+    /**
      * @param $data
      * @param null $length
      * @return int
@@ -1879,7 +1822,10 @@ class SystemCache {
 
     public static function set($name, $value, $lifetime = 3600, $cacheInFiles = false){
         if ( SYSTEM_IN_MEM_CACHED === true ){
-            apc_store('$.s.' . self::$id . '.' . $name, $value, $lifetime);
+            if (!apc_store('$.s.' . self::$id . '.' . $name, $value, $lifetime)){
+                echo 'Cannot put data to cache, may be out of memory, key: '.$name.' (fix APC or XCache)';
+                exit(1);
+            }
         } elseif ($cacheInFiles){
             self::setToFile($name, $value);
         }
@@ -1898,9 +1844,19 @@ class SystemCache {
         if (function_exists('apc_clear_cache'))
             apc_clear_cache('user');
 
+        if (IS_CLI && SYSTEM_IN_MEM_CACHED)
+            apc_store('$$$removeAll', true);
+
         $dir = new File(SYSTEM_CACHE_TMP_DIR);
         if ($dir->isDirectory())
             $dir->delete();
+    }
+
+    /**
+     * @return bool
+     */
+    public static function isNeededForRemoveAll(){
+        return !! apc_fetch('$$$removeAll');
     }
 
     public static function getWithCheckFile($name, $filePath, $cacheInFiles = false){
@@ -1908,6 +1864,7 @@ class SystemCache {
             return null;
 
         $result = self::get($name, $cacheInFiles);
+
         if ( $result ){
             $upd    = (int)self::get($name . '.$upd', $cacheInFiles);
             if ($upd === 0)
@@ -1925,7 +1882,7 @@ class SystemCache {
         if ( !SYSTEM_IN_MEM_CACHED && !$cacheInFiles )
             return null;
 
-        if (REGENIX_IS_DEV && !is_callable($callback))
+        if (REGENIX_IS_DEV === true && !is_callable($callback))
             throw new \InvalidArgumentException('Callback must be callable');
 
         $result = self::get($name, $cacheInFiles);
@@ -1974,33 +1931,70 @@ class SystemCache {
     }
 }
 
-
-if(!function_exists('apc_store')){
-    function apc_store($key, $var, $ttl = 0){
-        return xcache_set($key, $var, $ttl);
-    }
-
-    function apc_fetch($key, &$success=true){
-        $success = xcache_isset($key);
-        return xcache_get($key);
-    }
-
-    function apc_delete($key){
-        return xcache_unset($key);
-    }
-
-    function apc_exists($keys){
-        if(is_array($keys)){
-            $exists = array();
-            foreach($keys as $key){
-                if(xcache_isset($key))
-                    $exists[]=$key;
-            }
-            return $exists;
-        }
-
-        return xcache_isset($keys);
-    }
 }
 
+namespace {
+
+    function _trait_exists($traitname, $autoload = true){
+        if (function_exists('trait_exists'))
+            return trait_exists($traitname, $autoload);
+        else
+            return false;
+    }
+
+    /**
+     * Resolve class name, also analyzer check class names in this function
+     * @param $className
+     * @return mixed|string
+     */
+    function cl($className){
+        $className = str_replace('.', '\\', $className);
+        if ($className[0] === '\\')
+            $className = substr($className, 1);
+
+        return $className;
+    }
+
+    if(!function_exists('apc_store')){
+        function apc_store($key, $var, $ttl = 0){
+            if (is_object($var))
+                $var = chr(1) . '$$$$' . serialize($var);
+
+            return xcache_set($key, $var, $ttl);
+        }
+
+        function apc_fetch($key, &$success=true){
+            $success = xcache_isset($key);
+            if ($success){
+                $value = (xcache_get($key));
+                if (is_string($value) && strpos($value, chr(1) . '$$$$') === 0){
+                    $value = unserialize(substr($value, 5));
+                }
+                return $value;
+            } else
+                return false;
+        }
+
+        function apc_delete($key){
+            return xcache_unset($key);
+        }
+
+        function apc_exists($keys){
+            if(is_array($keys)){
+                $exists = array();
+                foreach($keys as $key){
+                    if(xcache_isset($key))
+                        $exists[]=$key;
+                }
+                return $exists;
+            }
+
+            return xcache_isset($keys);
+        }
+
+        function apc_clear_cache($group = ''){
+            if (!IS_CLI)
+                xcache_clear_cache(XC_TYPE_PHP | XC_TYPE_VAR);
+        }
+    }
 }

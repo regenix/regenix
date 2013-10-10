@@ -1,7 +1,8 @@
 <?php
 namespace regenix\analyze;
 
-use regenix\config\Configuration;
+use regenix\analyze\exceptions\AnalyzeException;
+use regenix\analyze\exceptions\ParseAnalyzeException;
 use regenix\config\PropertiesConfiguration;
 use regenix\lang\ClassScanner;
 use regenix\lang\CoreException;
@@ -71,7 +72,6 @@ class AnalyzeManager {
         return $this->directory;
     }
 
-
     /**
      * @return \regenix\config\PropertiesConfiguration
      */
@@ -96,7 +96,7 @@ class AnalyzeManager {
             $content = $file->getContents();
             $statements = $parser->parse($content);
         } catch (\PHPParser_Error $e) {
-            throw new ParseException($file, $e->getRawLine(), $e->getMessage());
+            throw new ParseAnalyzeException($file, $e->getRawLine(), $e->getMessage());
         }
 
         $info = ClassScanner::find(Analyzer::type);
@@ -160,29 +160,5 @@ class AnalyzeManager {
             $this->meta['$$$upd'] = $this->directory->lastModified();
             $this->saveMeta();
         }
-    }
-}
-
-class AnalyzeFileInformation {
-    protected $modified;
-    protected $name;
-    protected $length;
-
-    public function __construct(File $file){
-        $this->modified = $file->lastModified();
-        $this->name = $file->getName();
-        $this->length = $file->length();
-    }
-
-    public function getLength(){
-        return $this->length;
-    }
-
-    public function getModified(){
-        return $this->modified;
-    }
-
-    public function getName(){
-        return $this->name;
     }
 }

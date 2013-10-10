@@ -1,8 +1,7 @@
 <?php
 namespace tests;
 
-
-use regenix\libs\I18n;
+use regenix\i18n\I18n;
 
 class I18nTest extends  RegenixTest {
 
