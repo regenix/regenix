@@ -2,7 +2,7 @@
 
 namespace regenix\console;
 
-use regenix\Application;
+use regenix\core\Application;
 use regenix\lang\ArrayTyped;
 use regenix\lang\String;
 

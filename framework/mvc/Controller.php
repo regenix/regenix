@@ -1,27 +1,31 @@
 <?php
-
 namespace regenix\mvc;
 
-use regenix\Regenix;
-use regenix\SDK;
+use regenix\core\Regenix;
 use regenix\exceptions\HttpException;
 use regenix\lang\DI;
+use regenix\lang\IClassInitialization;
 use regenix\lang\StrictObject;
 use regenix\lang\CoreException;
 use regenix\lang\File;
-use regenix\mvc\Response;
+use regenix\mvc\controllers\EmptyController;
+use regenix\mvc\http\Cookie;
+use regenix\mvc\http\Request;
+use regenix\mvc\http\RequestBody;
+use regenix\mvc\http\RequestQuery;
+use regenix\mvc\http\Response;
+use regenix\mvc\http\session\Flash;
+use regenix\mvc\http\session\Session;
 use regenix\mvc\providers\FileResponse;
 use regenix\mvc\providers\ResponseFileProvider;
 use regenix\mvc\providers\ResponseProvider;
 use regenix\mvc\route\Router;
 use regenix\mvc\template\TemplateLoader;
 use regenix\lang\String;
-use regenix\mvc\MIMETypes;
 use regenix\validation\Validator;
 
-final class EmptyController extends Controller {}
-
-abstract class Controller extends StrictObject {
+abstract class Controller extends StrictObject
+    implements IClassInitialization {
 
     const type = __CLASS__;
 
@@ -98,7 +102,6 @@ abstract class Controller extends StrictObject {
 
 
     public function __construct() {
-        self::$current  = $this;
         $this->response = new Response();
 
         unset($this->body);
@@ -116,13 +119,15 @@ abstract class Controller extends StrictObject {
 
         $value = null;
         switch($name){
-            case 'body': $value = DI::getSingleton(RequestBody::type, new RequestBody()); break;
-            case 'request': $value = DI::getSingleton(Regenix::type, Request::current()); break;
-            case 'cookie': $value = DI::getSingleton(Cookie::type, Cookie::current()); break;
-            case 'session': $value = DI::getSingleton(Session::type, Session::current()); break;
-            case 'flash': $value = DI::getSingleton(Flash::type, Flash::current()); break;
-            case 'query': $value = DI::getSingleton(RequestQuery::type, new RequestQuery()); break;
-            case 'actionMethodAnnotations': $value = Annotations::getMethodAnnotation($this->actionMethodReflection); break;
+            case 'body':    $value = DI::getSingleton(RequestBody::type); break;
+            case 'request': $value = DI::getSingleton(Regenix::type); break;
+            case 'cookie':  $value = DI::getSingleton(Cookie::type); break;
+            case 'session': $value = DI::getSingleton(Session::type); break;
+            case 'flash':   $value = DI::getSingleton(Flash::type); break;
+            case 'query':   $value = DI::getSingleton(RequestQuery::type); break;
+            case 'actionMethodAnnotations':
+                $value = Annotations::getMethodAnnotation($this->actionMethodReflection); break;
+
             default: {
                 return parent::__get($name);
             }
@@ -494,51 +499,17 @@ abstract class Controller extends StrictObject {
      *
      * @return Controller NotNull
      */
-    public static function current(){
+    public static function __current(){
         if (!self::$current)
             self::$current = new EmptyController();
 
         return self::$current;
     }
-}
 
-class Result extends \Exception {
-
-    const type = __CLASS__;
-
-    /** @var Response */
-    private $response;
-
-    public function __construct(Response $response) {
-        $this->response = $response;
-    }
-
-    public function getResponse(){
-        return $this->response;
-    }
-}
-
-class Pagination extends StrictObject {
-
-    public $currentPage;
-    public $elementOnPage;
-    public $allCount;
-
-    public $pageCount;
-
-    public function __construct($currentPage, $elementOnPage, $allCount){
-        $this->currentPage = $currentPage;
-        $this->elementOnPage = $elementOnPage;
-        $this->allCount    = $allCount;
-
-        $this->pageCount = ceil($this->allCount / $this->elementOnPage);
-    }
-
-    public function isLast(){
-        return $this->currentPage >= $this->pageCount;
-    }
-
-    public function isFirst(){
-        return $this->currentPage <= 1;
+    public static function initialize() {
+        DI::bindTo(Controller::type, function(){
+            // get current
+            return Controller::__current();
+        });
     }
 }

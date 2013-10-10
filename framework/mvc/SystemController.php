@@ -1,9 +1,11 @@
 <?php
 namespace regenix\mvc;
 
-use regenix\libs\Captcha;
-use regenix\libs\I18n;
+use regenix\lang\DI;
+use regenix\libs\captcha\Captcha;
+use regenix\i18n\I18n;
 use regenix\libs\ImageUtils;
+use regenix\mvc\http\MimeTypes;
 
 class SystemController extends Controller {
 
@@ -12,7 +14,8 @@ class SystemController extends Controller {
      */
     public function captcha(){
         $this->setUseSession(false);
-        $this->render(Captcha::current());
+        $captcha = DI::getInstance(Captcha::type);
+        $this->render($captcha);
     }
 
     /**
@@ -35,7 +38,7 @@ class SystemController extends Controller {
         $this->response->cacheForETag($etag);
 
         if (!$this->request->isCachedEtag($etag)){
-            $this->response->setContentType(MIMETypes::getByExt('js'));
+            $this->response->setContentType(MimeTypes::getByExt('js'));
             $this->renderText($out);
         } else {
             $this->response->setStatus(304);

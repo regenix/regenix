@@ -4,7 +4,7 @@ namespace regenix\mvc\route;
 
 use regenix\config\Configuration;
 use regenix\config\ConfigurationReadException;
-use regenix\lang\ClassNotFoundException;
+use regenix\exceptions\ActionNotFoundException;
 use regenix\lang\ClassScanner;
 use regenix\lang\CoreException;
 use regenix\lang\File;
@@ -51,12 +51,12 @@ class RouterConfiguration extends Configuration {
 
             if (strpos($class, '{') === false && strpos($class, '}') === false){
                 if (!ClassScanner::find(str_replace('.', '\\', $class))){
-                    throw new RouteActionNotFound($class . '.*');
+                    throw new ActionNotFoundException($class . '.*');
                 }
 
                 if (strpos($method, '{') === false && strpos($method, '}') === false){
                     if(!method_exists(str_replace('.', '\\', $class), $method)){
-                        throw new RouteActionNotFound($class . '.' . $method . '()');
+                        throw new ActionNotFoundException($class . '.' . $method . '()');
                     }
                 }
             }
@@ -198,11 +198,5 @@ class RouterConfiguration extends Configuration {
     
     public function getRouters(){
         return $this->data;
-    }
-}
-
-class RouteActionNotFound extends CoreException {
-    public function __construct($action){
-        parent::__construct('In routes: the action "%s" does not exist', $action);
     }
 }

@@ -4,15 +4,15 @@ namespace regenix\mvc\providers;
 
 use regenix\lang\CoreException;
 use regenix\lang\ClassScanner;
-use regenix\mvc\Response;
 use regenix\lang\String;
+use regenix\mvc\http\Response;
 
 abstract class ResponseProvider {
 
     const type = __CLASS__;
 
     /**
-     * @var Response 
+     * @var Response
      */
     public $response = null;
 

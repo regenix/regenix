@@ -4,8 +4,6 @@ namespace tests;
 use regenix\logger\Logger;
 use regenix\logger\LoggerHandler;
 
-Logger::debug('Init logger test');
-
 class LoggingTest extends RegenixTest {
 
     public function __construct(){
@@ -52,7 +50,7 @@ class LoggingTest extends RegenixTest {
     }
 }
 
-class LoggerTestHandler extends LoggerHandler {
+class LoggerTestHandler implements LoggerHandler {
 
     public static $log;
     public function writeLog($level, array $args){
@@ -60,7 +58,7 @@ class LoggerTestHandler extends LoggerHandler {
     }
 }
 
-class LoggerMultiTestHandler extends LoggerHandler {
+class LoggerMultiTestHandler implements LoggerHandler {
 
     public static $log = array();
     public function writeLog($level, array $args){

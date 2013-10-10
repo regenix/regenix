@@ -1,8 +1,8 @@
 <?php
 namespace regenix\mvc;
 
-use regenix\Application;
-use regenix\Regenix;
+use regenix\core\Application;
+use regenix\core\Regenix;
 use regenix\lang\File;
 use regenix\lang\IClassInitialization;
 use regenix\lang\String;

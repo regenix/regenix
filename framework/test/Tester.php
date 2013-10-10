@@ -1,8 +1,8 @@
 <?php
 namespace regenix\test;
 
-use regenix\Application;
-use regenix\Regenix;
+use regenix\core\Application;
+use regenix\core\Regenix;
 use regenix\lang\SystemCache;
 use regenix\lang\CoreException;
 use regenix\lang\ClassScanner;

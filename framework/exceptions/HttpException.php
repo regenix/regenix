@@ -3,7 +3,7 @@ namespace regenix\exceptions;
 
 use regenix\lang\CoreException;
 use regenix\lang\String;
-use regenix\mvc\Response;
+use regenix\mvc\http\Response;
 use regenix\mvc\template\TemplateLoader;
 
 class HttpException extends CoreException {

@@ -1,7 +1,7 @@
 <?php
 namespace regenix\exceptions;
 
-use regenix\Application;
+use regenix\core\Application;
 use regenix\lang\CoreException;
 use regenix\lang\String;
 

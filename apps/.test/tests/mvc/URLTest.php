@@ -1,7 +1,7 @@
 <?php
 namespace tests\mvc;
 
-use regenix\mvc\URL;
+use regenix\mvc\http\URL;
 use tests\RegenixTest;
 
 class URLTest extends RegenixTest {

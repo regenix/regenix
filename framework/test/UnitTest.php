@@ -90,7 +90,7 @@ abstract class UnitTest extends StrictObject {
         try {
             call_user_func_array($callback, $args);
         } catch (\Exception $e){
-            if ($meta->isSubclassOf($class) || $meta->getName() === $class){
+            if (is_subclass_of($e, $class) || $meta->getName() === $class){
                 $this->assertWrite(true, $message);
                 return $this;
             }
@@ -120,7 +120,7 @@ abstract class UnitTest extends StrictObject {
         try {
             call_user_func_array($callback, $args);
         } catch (\Exception $e){
-            if ($meta->isSubclassOf($class) || $meta->getName() === $class){
+            if (is_subclass_of($e, $class) || $meta->getName() === $class){
                 $this->assertWrite(false, $message);
                 return $this;
             }
