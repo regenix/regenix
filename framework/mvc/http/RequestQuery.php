@@ -2,14 +2,14 @@
 namespace regenix\mvc\http;
 
 use regenix\lang\DI;
+use regenix\lang\Injectable;
 use regenix\lang\Singleton;
 use regenix\lang\StrictObject;
 use regenix\mvc\binding\BindValue;
 use regenix\mvc\binding\Binder;
-use regenix\mvc\route\RouteInjectable;
 
 class RequestQuery extends StrictObject
-    implements Singleton, RouteInjectable {
+    implements Singleton, Injectable {
 
     const type = __CLASS__;
 
@@ -64,7 +64,7 @@ class RequestQuery extends StrictObject
      * @return bool|float|BindValue|int|string
      */
     public function getTyped($name, $type, $def = null){
-        return $this->binder->getValue($this->get($name, $def), $type);
+        return $this->binder->getValue($this->get($name, $def), $type, $name);
     }
 
     /**
@@ -156,5 +156,12 @@ class RequestQuery extends StrictObject
             $v = $this->binder->getValue($v, $type);
         }
         return $arg;
+    }
+
+    /**
+     * @return RequestQuery
+     */
+    public static function getInstance() {
+        return DI::getInstance(__CLASS__);
     }
 }

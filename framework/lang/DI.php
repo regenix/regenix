@@ -10,6 +10,8 @@ use regenix\exceptions\ClassNotFoundException;
  */
 final class DI {
 
+    const type = __CLASS__;
+
     private static $reflections = array();
     private static $singletons = array();
 

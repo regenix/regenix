@@ -1,16 +1,17 @@
 <?php
 namespace regenix\mvc\http\session;
 
+use regenix\lang\DI;
+use regenix\lang\Injectable;
 use regenix\lang\Singleton;
 use regenix\lang\StrictObject;
-use regenix\mvc\route\RouteInjectable;
 
 /**
  * Class Session
  * @package regenix\mvc
  */
 class Session extends StrictObject
-    implements Singleton, RouteInjectable {
+    implements Singleton, Injectable {
 
     const type = __CLASS__;
 
@@ -104,5 +105,9 @@ class Session extends StrictObject
     public function clear(){
         $this->check();
         session_unset();
+    }
+
+    public static function getInstance() {
+        return DI::getInstance(__CLASS__);
     }
 }

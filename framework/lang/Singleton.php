@@ -8,4 +8,6 @@ namespace regenix\lang;
  * Interface Singleton
  * @package regenix\lang
  */
-interface Singleton { }
+interface Singleton {
+    public static function getInstance();
+}

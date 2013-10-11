@@ -1,15 +1,17 @@
 <?php
 namespace regenix\mvc\http;
 
+use regenix\exceptions\JsonParseException;
 use regenix\lang\ArrayTyped;
 use regenix\lang\CoreException;
+use regenix\lang\DI;
+use regenix\lang\Injectable;
 use regenix\lang\Singleton;
 use regenix\lang\StrictObject;
 use regenix\lang\String;
-use regenix\mvc\route\RouteInjectable;
 
 class RequestBody extends StrictObject
-    implements Singleton, RouteInjectable {
+    implements Singleton, Injectable {
 
     const type = __CLASS__;
 
@@ -74,10 +76,14 @@ class RequestBody extends StrictObject
 
     /**
      * parse data as json
+     * @throws \regenix\exceptions\JsonParseException
      * @return array
      */
     public function asJson(){
         $json = json_decode($this->getData(), true);
+        if (json_last_error())
+            throw new JsonParseException();
+
         return $json;
     }
 
@@ -141,5 +147,12 @@ class RequestBody extends StrictObject
             throw new \InvalidArgumentException('Argument 1 must be object');
 
         return $object;
+    }
+
+    /**
+     * @return RequestBody
+     */
+    public static function getInstance() {
+        return DI::getInstance(__CLASS__);
     }
 }

@@ -12,6 +12,7 @@ use regenix\exceptions\HttpException;
 use regenix\lang\File;
 use regenix\lang\ClassScanner;
 use regenix\lang\String;
+use regenix\lang\SystemFileCache;
 use regenix\libs\captcha\Captcha;
 use regenix\logger\Logger;
 use regenix\modules\Module;
@@ -129,11 +130,12 @@ final class Regenix {
 
         define('ROOT', $rootDir);
         defined('REGENIX_STAT_OFF') or define('REGENIX_STAT_OFF', false);
+        defined('REGENIX_DEBUG') or define('REGENIX_DEBUG', false);
 
         self::$rootTempPath = sys_get_temp_dir() . '/regenix_v' . self::getVersion() . '/';
 
         require REGENIX_ROOT . 'lang/PHP.php';
-        CoreException::showOnlyPublic(!defined('IS_CORE_DEBUG') || IS_CORE_DEBUG === false);
+        CoreException::showOnlyPublic(!REGENIX_DEBUG);
 
         self::trace('PHP lang file included.');
 
@@ -147,8 +149,8 @@ final class Regenix {
         self::trace('Add class path of framework done.');
 
         if ($inWeb){
-            if (SystemCache::isNeededForRemoveAll())
-                SystemCache::removeAll();
+            if (REGENIX_DEBUG)
+                SystemFileCache::getTempDirectory();
 
             if (file_exists($globalFile = Application::getApplicationsPath() . '/GlobalBootstrap.php')){
                 require $globalFile;
@@ -595,11 +597,13 @@ final class Regenix {
 
 
         $stack = CoreException::findAppStack($e);
-        if ($stack === null && IS_CORE_DEBUG){
+        if ($stack === null && REGENIX_DEBUG){
             $stack = current($e->getTrace());
         }
         $info  = new \ReflectionClass($e);
 
+        $description = $e->getMessage();
+        $title = $info->getShortName();
         if ($e instanceof CoreException){
             $line = $e->getSourceLine();
             if ($line !== null)
@@ -608,6 +612,12 @@ final class Regenix {
             $file = $e->getSourceFile();
             if ($file !== null)
                 $stack['file'] = $file;
+
+            if ($value = $e->getDescription())
+                $description = $value;
+
+            if ($value = $e->getTitle())
+                $title = $value;
         }
 
         if ($stack){
@@ -638,8 +648,11 @@ final class Regenix {
 
         $template->putArgs(array(
             'exception' => $e instanceof CoreException && $e->isHidden() ? null : $e,
-            'stack' => $stack, 'info' => $info, 'hash' => $hash,
-            'desc' => $e->getMessage(),
+            'stack' => $stack,
+            'info' => $info,
+            'hash' => $hash,
+            'title' => $title,
+            'desc' => $description,
             'file' => $file,
             'source' => $source,
             'src' => Regenix::app(),

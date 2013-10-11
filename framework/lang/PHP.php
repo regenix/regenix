@@ -57,6 +57,14 @@ class CoreException extends \Exception {
         return null;
     }
 
+    public function getTitle(){
+        return null;
+    }
+
+    public function getDescription(){
+        return null;
+    }
+
     public function isHidden(){
         return false;
     }
@@ -1125,6 +1133,8 @@ final class String {
 
 class ArrayTyped implements \Iterator {
 
+    const type = __CLASS__;
+
     protected $data;
 
     /**
@@ -1209,6 +1219,14 @@ class ArrayTyped implements \Iterator {
     public function getDouble($name, $def = 0.0){
         $value = $this->data[$name];
         return isset($value) ? (double)$value : (double)$def;
+    }
+
+    /**
+     * @param $name
+     * @return \regenix\lang\ArrayTyped
+     */
+    public function getArray($name){
+        return new ArrayTyped((array)$this->data[$name]);
     }
 
     public function current(){
@@ -1746,6 +1764,7 @@ class SystemFileCache {
                 echo 'Cannot create a temp directory `' . SYSTEM_CACHE_TMP_DIR . '`';
                 exit(1);
             }
+            SystemCache::removeAll(true);
         }
         return self::$tempDirectory = SYSTEM_CACHE_TMP_DIR;
     }
@@ -1840,16 +1859,15 @@ class SystemCache {
             @unlink($file);
     }
 
-    public static function removeAll(){
+    public static function removeAll($onlyMemory = false){
         if (function_exists('apc_clear_cache'))
             apc_clear_cache('user');
 
-        if (IS_CLI && SYSTEM_IN_MEM_CACHED)
-            apc_store('$$$removeAll', true);
-
-        $dir = new File(SYSTEM_CACHE_TMP_DIR);
-        if ($dir->isDirectory())
-            $dir->delete();
+        if (!$onlyMemory){
+            $dir = new File(SYSTEM_CACHE_TMP_DIR);
+            if ($dir->isDirectory())
+                $dir->delete();
+        }
     }
 
     /**
@@ -1998,7 +2016,7 @@ namespace {
 
         function apc_clear_cache($group = ''){
             if (!IS_CLI)
-                xcache_clear_cache(XC_TYPE_PHP | XC_TYPE_VAR);
+                xcache_clear_cache(XC_TYPE_VAR);
         }
     }
 }

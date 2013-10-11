@@ -3,11 +3,12 @@ namespace regenix\mvc\binding;
 
 interface BindValue {
 
-    const i_type = __CLASS__;
+    const bindValue_type = __CLASS__;
 
     /**
      * @param $value string
+     * @param null $name
      * @return null
      */
-    public function onBindValue($value);
+    public function onBindValue($value, $name = null);
 }

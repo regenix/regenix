@@ -2,13 +2,14 @@
 namespace regenix\mvc\http;
 
 use regenix\lang\ArrayTyped;
+use regenix\lang\DI;
+use regenix\lang\Injectable;
 use regenix\lang\Singleton;
 use regenix\lang\StrictObject;
 use regenix\libs\Time;
-use regenix\mvc\route\RouteInjectable;
 
 class Cookie extends StrictObject
-    implements Singleton, RouteInjectable {
+    implements Singleton, Injectable {
 
     const type = __CLASS__;
 
@@ -89,5 +90,12 @@ class Cookie extends StrictObject
      */
     public function getDouble($name, $def = 0.0){
         return $this->data->getDouble($name, $def);
+    }
+
+    /**
+     * @return Cookie
+     */
+    public static function getInstance() {
+        return DI::getInstance(__CLASS__);
     }
 }

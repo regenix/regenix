@@ -3,7 +3,7 @@
 
 {if REGENIX_IS_DEV}
 <div class="error">
-    <h1>{$info->getShortName()}</h1>
+    <h1>{ $title }</h1>
     <p id="detail">
         { $desc | raw }
     </p>
@@ -18,7 +18,7 @@
     </div>
     {/if}
 </div>
-    {if $controller && !($controller instanceof regenix\mvc\EmptyController)}
+    {if $controller && !($controller instanceof regenix\mvc\controllers\EmptyController)}
         <b class="stackTraceTitle">Controller:</b>
         <pre class="stackTrace">Action: {get_class($controller)}-><b>{$controller->actionMethod}</b>( ... )
 Router args: %{ print_r($controller->routeArgs) }</pre>

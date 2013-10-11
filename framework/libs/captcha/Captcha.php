@@ -73,5 +73,12 @@ class Captcha implements IClassInitialization, Singleton {
         self::checkAvailable();
         ResponseProvider::register(ResponseCaptchaProvider::type);
     }
+
+    /**
+     * @return Captcha
+     */
+    public static function getInstance() {
+        return DI::getInstance(__CLASS__);
+    }
 }
 

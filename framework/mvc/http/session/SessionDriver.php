@@ -29,4 +29,8 @@ abstract class SessionDriver implements Singleton {
 
         DI::bind($this, SessionDriver::type);
     }
+
+    public static function getInstance() {
+        return DI::getInstance(__CLASS__);
+    }
 }

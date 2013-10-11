@@ -12,13 +12,17 @@ class PSR0Analyzer extends Analyzer {
     protected $exclude;
     protected $enable;
     protected $prefix;
+    protected $easing;
     protected $i = 0;
+
+    protected $mainClass;
 
     public function __construct(AnalyzeManager $manager, File $file, array $statements, $content){
         parent::__construct($manager, $file, $statements, $content);
         $config = $manager->getConfiguration();
         $this->enable = $config->getBoolean('psr0.enabled');
         $this->exclude = $config->getArray('psr0.exclude');
+        $this->easing = $config->getBoolean('psr0.easing');
         $this->prefix = str_replace('.', '\\', $config->getString('psr0.prefix'));
         $this->exclude = array_map('trim', $this->exclude);
     }
@@ -90,15 +94,27 @@ class PSR0Analyzer extends Analyzer {
                         $dueName, $name
                     );
                 }
+                $this->mainClass = $name;
             }
 
             if ($this->i > 1){
-                throw new PSR0AnalyzeException(
-                    $this->file,
-                    $node->getLine(),
-                    'PSR-0 Standard: Only one class can be declared in a file, remove "%s" class',
-                    $name
-                );
+                if ($this->easing){
+                    if (!String::startsWith($name, $this->mainClass)){
+                        throw new PSR0AnalyzeException(
+                            $this->file,
+                            $node->getLine(),
+                            'PSR-0: Tha name of "%s" sub class should be "%s", {psr0.easing = on}',
+                            $name,
+                            $this->mainClass . ucfirst($name)
+                        );
+                    }
+                } else
+                    throw new PSR0AnalyzeException(
+                        $this->file,
+                        $node->getLine(),
+                        'PSR-0 Standard: Only one class can be declared in a file, remove "%s" class',
+                        $name
+                    );
             }
         }
     }

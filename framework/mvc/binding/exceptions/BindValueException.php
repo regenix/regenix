@@ -4,7 +4,7 @@ namespace regenix\mvc\binding\exceptions;
 use regenix\lang\CoreException;
 use regenix\lang\String;
 
-class BindValueException extends CoreException {
+class BindValueException extends BindException {
 
     const type = __CLASS__;
 

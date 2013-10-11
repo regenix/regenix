@@ -150,8 +150,10 @@ class AnalyzeManager {
             return $a->getSort() > $b->getSort() ? 1 : -1;
         });
 
+        $uses = array();
         foreach($analyzers as $analyzer){
             $analyzer->analyze();
+            $uses = array_merge($uses, $analyzer->getDependUses());
         }
 
         $traverser = new \PHPParser_NodeTraverser();
@@ -159,9 +161,13 @@ class AnalyzeManager {
         $traverser->addVisitor($visitor = new DefaultNodeVisitor($file, $analyzers));
         $traverser->traverse($statements);
 
-        $uses = $visitor->getUses();
-        $classes = $visitor->getClasses();
+        $uses = array();
+        foreach($analyzers as $analyzer){
+            $uses = array_merge($uses, $analyzer->getDependUses());
+        }
+        $uses = array_merge($uses, $visitor->getUses());
 
+        $classes = $visitor->getClasses();
         $this->addUses($file, $uses);
         $this->addDependClasses($classes);
     }
@@ -230,9 +236,10 @@ class AnalyzeManager {
             $files = $this->directory->findFiles(true);
             if($success = $this->analyzeFiles($files, $incremental, $ignoreCache, $callbackException, $callbackScan)){
 
-                $success = $this->analyzeFiles(
-                    $this->getDependFiles(), $incremental, true, $callbackException, $callbackScan
-                );
+                if (!$ignoreCache)
+                    $success = $this->analyzeFiles(
+                        $this->getDependFiles(), $incremental, true, $callbackException, $callbackScan
+                    );
 
                 if ($success){
                     $this->meta['$$$upd'] = $this->directory->lastModified();

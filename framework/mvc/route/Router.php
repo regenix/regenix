@@ -4,17 +4,21 @@ namespace regenix\mvc\route;
 
 use regenix\core\Application;
 use regenix\core\Regenix;
+use regenix\exceptions\WrappedException;
 use regenix\lang\DI;
+use regenix\lang\File;
+use regenix\lang\Injectable;
 use regenix\lang\StrictObject;
 use regenix\lang\SystemCache;
 use regenix\lang\String;
 use regenix\logger\Logger;
 use regenix\mvc\Controller;
 use regenix\mvc\binding\Binder;
+use regenix\mvc\binding\exceptions\BindException;
 use regenix\mvc\http\Request;
 
 class Router extends StrictObject
-    implements RouteInjectable {
+    implements Injectable {
 
     const type = __CLASS__;
 
@@ -217,52 +221,55 @@ class Router extends StrictObject
         // bind params for method call
         $controller->callBindParams($parsedBody);
 
-        foreach($method->getParameters() as $param){
-            $name = $param->getName();
-            if ( isset($this->args[$name]) ){
-                $value = $this->args[$name];
-                if ( $type = $this->current['types'][$name] ){
-                    if ( $type == 'auto' ){
-                        $class = $param->getClass();
-                        if ( $class !== null ){
-                            $value = $this->binder->getValue($value, $class->getName());
-                        } else if ($param->isArray()){
-                            $value = array($value);
-                        }
-                    } else
-                        $value = $this->binder->getValue($value, $type);
-                }
+        try {
+            foreach($method->getParameters() as $param){
+                $name = $param->getName();
+                if ( isset($this->args[$name]) ){
+                    $value = $this->args[$name];
+                    if ( $type = $this->current['types'][$name] ){
+                        if ( $type == 'auto' ){
+                            $class = $param->getClass();
+                            if ( $class !== null ){
+                                $value = $this->binder->getValue($value, $class->getName(), $name);
+                            } else if ($param->isArray()){
+                                $value = array($value);
+                            }
+                        } else
+                            $value = $this->binder->getValue($value, $type, $name);
+                    }
 
-                $args[$name] = $value;
-            } else {
-                $class = $param->getClass();
-                if ( $param->isArray() ){
-                    $args[$name] = $controller->query->getArray($name);
-                } else if ( $parsedBody && ($v = $parsedBody[$name]) ){
-                    if ($class !== null)
-                        $args[$name] = $this->binder->getValue($v, $class->getName());
-                    else
-                        $args[$name] = $v;
-                } else if ( !$parsedBody && $controller->query->has($name) ){
-                    // получаем данные из GET
-                    if ( $class !== null )
-                        $value = $controller->query->getTyped($name, $class->getName());
-                    else
-                        $value = $controller->query->get($name);
                     $args[$name] = $value;
                 } else {
-                    if ($class){
-                        $className = $class->getName();
-                        $implements = class_implements($className, false);
-                        if ($implements[RouteInjectable::i_type])
-                            $args[$name] = DI::getInstance($className);
+                    $class = $param->getClass();
+                    if ( $param->isArray() ){
+                        $args[$name] = $controller->query->getArray($name);
+                    } else if ( $parsedBody && ($v = $parsedBody[$name]) ){
+                        if ($class !== null)
+                            $args[$name] = $this->binder->getValue($v, $class->getName(), $name);
                         else
+                            $args[$name] = $v;
+                    } else if ( !$parsedBody && $controller->query->has($name) ){
+                        // получаем данные из GET
+                        if ( $class !== null )
+                            $value = $this->binder->getValue(null, $class->getName(), $name);
+                        else
+                            $value = $controller->query->get($name);
+                        $args[$name] = $value;
+                    } else {
+                        if ($class){
+                            $value = $this->binder->getValue(null, $class->getName(), $name);
+                            $args[$name] = $value;
+                        } else
                             $args[$name] = null;
                     }
-                    $args[$name] = null;
                 }
             }
+        } catch (BindException $e){
+            $file = new File($method->getFileName());
+            throw new WrappedException($e, $file, $method->getStartLine());
         }
+
+
         return $method->invokeArgs($controller, $args);
     }
 

@@ -24,6 +24,9 @@ abstract class Analyzer {
     /** @var string */
     protected $content;
 
+    /** @var string */
+    private $dependUses = array();
+
     public function __construct(AnalyzeManager $manager, File $file, array $statements, $content){
         $this->file = $file;
         $this->content = $content;
@@ -36,6 +39,14 @@ abstract class Analyzer {
 
     public function getSort(){
         return 0;
+    }
+
+    protected function addDependUse($class){
+        $this->dependUses[] = $class;
+    }
+
+    public function getDependUses(){
+        return $this->dependUses;
     }
 
     protected static $methods = array();

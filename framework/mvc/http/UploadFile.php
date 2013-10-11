@@ -4,8 +4,9 @@ namespace regenix\mvc\http;
 use regenix\core\Regenix;
 use regenix\lang\CoreException;
 use regenix\lang\File;
+use regenix\mvc\binding\BindStaticValue;
 
-class UploadFile extends File {
+class UploadFile extends File implements BindStaticValue {
 
     protected $meta;
     protected $uploadName;
@@ -188,5 +189,15 @@ class UploadFile extends File {
         $file = $this->getUploadedFile();
         if ($file)
             $file->delete();
+    }
+
+    /**
+     * @param $value string
+     * @param null $name
+     * @return null
+     */
+    public static function onBindStaticValue($value, $name = null) {
+        $body = RequestBody::getInstance();
+        return $body->getFile($name);
     }
 }

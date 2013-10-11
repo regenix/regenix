@@ -2,13 +2,13 @@
 namespace regenix\mvc\http\session;
 
 use regenix\lang\DI;
+use regenix\lang\Injectable;
 use regenix\lang\Singleton;
 use regenix\lang\StrictObject;
 use regenix\lang\String;
-use regenix\mvc\route\RouteInjectable;
 
 class Flash extends StrictObject
-    implements Singleton, RouteInjectable {
+    implements Singleton, Injectable {
 
     const type = __CLASS__;
 
@@ -121,5 +121,12 @@ class Flash extends StrictObject
         $this->session->remove($name . '$$flash');
         $this->session->remove($name . '$$flash_i');
         return $this;
+    }
+
+    /**
+     * @return Flash
+     */
+    public static function getInstance() {
+        return DI::getInstance(__CLASS__);
     }
 }

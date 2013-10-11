@@ -15,13 +15,12 @@ class StaticAnalyzer extends Analyzer {
 
     public function walk(\PHPParser_Node $node) {
         if ($node instanceof \PHPParser_Node_Stmt_Trait){
-            $this->current = $node;
+
         } elseif ($node instanceof \PHPParser_Node_Stmt_ClassMethod){
-            $this->currentMethod = $node;
+
         } elseif ($node instanceof \PHPParser_Node_Name_FullyQualified){
-            $this->checkClassExists($node);
+            $this->checkClassExists($node->toString(), $node);
         } elseif ($node instanceof \PHPParser_Node_Stmt_Class){
-            $this->current = $node;
             $this->checkDefinedClass($node);
         } elseif ($node instanceof \PHPParser_Node_Expr_StaticCall){
             $this->checkStaticCall($node);
@@ -96,8 +95,7 @@ class StaticAnalyzer extends Analyzer {
         }
     }
 
-    protected function checkClassExists(\PHPParser_Node_Name_FullyQualified $node){
-        $name = $node->toString();
+    protected function checkClassExists($name, \PHPParser_Node $node){
         if (!$this->nameExists($name)){
             throw new StaticAnalyzeException(
                 $this->file,

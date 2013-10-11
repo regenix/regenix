@@ -363,6 +363,7 @@ class Application {
         Regenix::trace('.registerDependencies() application finish');
 
         if ($this->config->getBoolean('analyzer.enabled', IS_DEV)){
+            ClassScanner::addClassPath($this->getTestPath());
             $analyzeManager = new ApplicationAnalyzeManager($this);
             $analyzeManager->analyze();
         }

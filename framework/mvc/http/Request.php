@@ -5,12 +5,13 @@ namespace regenix\mvc\http;
 use regenix\core\Regenix;
 use regenix\lang\DI;
 use regenix\lang\IClassInitialization;
+use regenix\lang\Injectable;
+use regenix\lang\Singleton;
 use regenix\lang\StrictObject;
 use regenix\lang\String;
-use regenix\mvc\route\RouteInjectable;
 
 class Request extends StrictObject
-    implements RouteInjectable, IClassInitialization {
+    implements Injectable, Singleton, IClassInitialization {
 
     const type = __CLASS__;
 
@@ -304,5 +305,12 @@ class Request extends StrictObject
 
     public static function initialize() {
         DI::bind(Request::createFromGlobal());
+    }
+
+    /**
+     * @return Request
+     */
+    public static function getInstance() {
+        return DI::getInstance(__CLASS__);
     }
 }
