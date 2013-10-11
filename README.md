@@ -106,4 +106,5 @@ understand how create a typical application for Regenix.
 
 ## Publications
 
++ [Twitter](https://twitter.com/regenixnews)
 + http://habrahabr.ru/post/196604/ (Russian)
