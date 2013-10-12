@@ -1,5 +1,7 @@
 lang/Singleton.php
+lang/Injectable.php
 lang/DI.php
+lang/types/Callback.php
 
 core/AbstractBootstrap.php
 core/AbstractGlobalBootstrap.php

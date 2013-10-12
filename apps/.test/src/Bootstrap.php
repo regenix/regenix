@@ -25,6 +25,7 @@ namespace {
             $tests = array(
                 new ClassloaderTest(),
                 new tests\lang\StringTest(),
+                new tests\lang\types\CallbackTest(),
                 new tests\lang\DITest(),
                 new LangTest(),
                 new LoggingTest(),

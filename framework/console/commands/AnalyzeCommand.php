@@ -16,6 +16,7 @@ use regenix\lang\ClassScanner;
 use regenix\lang\File;
 use regenix\lang\String;
 use regenix\lang\SystemCache;
+use regenix\lang\types\Callback;
 use regenix\modules\Module;
 
 class AnalyzeCommand extends RegenixCommand {
@@ -63,20 +64,22 @@ class AnalyzeCommand extends RegenixCommand {
 
         $errors = array();
         $analyzer->analyze($input->getOption('incremental'), true,
-            function(AnalyzeException $e) use ($output, &$errors) {
-                $output->writeln(String::format(
-                    "       [fail] %s (line %s) \n" .
-                    "           %s",
-                    get_class($e), $e->getSourceLine(), $e->getMessage()
-                ));
-                $output->writeln('');
-                $errors[] = $e;
+            new Callback(function(AnalyzeException $e) use ($output, &$errors) {
+                    $output->writeln(String::format(
+                        "       [fail] %s (line %s) \n" .
+                        "           %s",
+                        get_class($e), $e->getSourceLine(), $e->getMessage()
+                    ));
+                    $output->writeln('');
+                    $errors[] = $e;
 
-        }, function(File $file) use ($output) {
-                $path = $file->getPath();
-                $path = str_replace(ROOT, '', $path);
-                $output->writeln('    -> ' . $path);
-        });
+            }),
+            new Callback(function(File $file) use ($output) {
+                    $path = $file->getPath();
+                    $path = str_replace(ROOT, '', $path);
+                    $output->writeln('    -> ' . $path);
+            })
+        );
 
         $this->writeln();
         if ($errors) {

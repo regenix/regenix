@@ -3,6 +3,7 @@ namespace regenix\libs\ws;
 
 use regenix\lang\CoreException;
 use regenix\lang\String;
+use regenix\lang\types\Callback;
 use regenix\libs\Time;
 
 class WSRequest {
@@ -37,7 +38,7 @@ class WSRequest {
     /** @var string */
     protected $mimeType;
 
-    /** @var callable */
+    /** @var Callback */
     protected $progressCallback;
 
     /**
@@ -72,10 +73,10 @@ class WSRequest {
     }
 
     /**
-     * @param callable $func
+     * @param Callback $func
      * @return $this
      */
-    public function onProgress($func){
+    public function onProgress(Callback $func){
         $this->progressCallback = $func;
         return $this;
     }
@@ -214,7 +215,7 @@ class WSRequest {
         if ($this->progressCallback){
             $callback = $this->progressCallback;
             curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, function($ch, $dlTotal, $dlNow, $ulTotal, $ulNow) use ($callback){
-                call_user_func($callback, $ch, $dlTotal, $dlNow, $ulTotal, $ulNow);
+                $callback->invoke($ch, $dlTotal, $dlNow, $ulTotal, $ulNow);
             });
         }
 

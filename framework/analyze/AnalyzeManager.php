@@ -11,6 +11,7 @@ use regenix\lang\File;
 use regenix\lang\String;
 use regenix\lang\SystemCache;
 use regenix\lang\SystemFileCache;
+use regenix\lang\types\Callback;
 
 class AnalyzeManager {
 
@@ -176,14 +177,14 @@ class AnalyzeManager {
      * @param File[] $files
      * @param bool $incremental
      * @param bool $ignoreCache
-     * @param callback $callbackException
-     * @param callback $callbackScan
-     * @return bool
+     * @param callable|\regenix\lang\types\Callback $callbackException
+     * @param callable|\regenix\lang\types\Callback $callbackScan
      * @throws \regenix\lang\CoreException
      * @throws \Exception|exceptions\AnalyzeException
+     * @return bool
      */
     protected function analyzeFiles(array $files, $incremental = true, $ignoreCache = false,
-                                    $callbackException = null, $callbackScan = null){
+                                    Callback $callbackException = null, Callback $callbackScan = null){
         $fail = false;
         /** @var $file File */
         foreach($files as $file){
@@ -201,8 +202,7 @@ class AnalyzeManager {
 
                 if ($ignoreCache || !$meta['upd'] || $file->lastModified() > $meta['upd']){
                     try {
-                        if ($callbackScan)
-                            call_user_func($callbackScan, $file);
+                        $callbackScan and $callbackScan->invoke($file);
 
                         $this->analyzeFile($file);
                         $meta['upd'] = $file->lastModified();
@@ -210,13 +210,13 @@ class AnalyzeManager {
                     } catch (AnalyzeException $e){
                         $fail = true;
                         if (!$incremental){
-                            if (!$callbackException)
+                            if (!$callbackException || $callbackException->isNop())
                                 throw new CoreException('Please pass a callback for non-incremental mode');
 
-                            call_user_func($callbackException, $e);
+                            $callbackException and $callbackException->invoke($e);
                         } else {
-                            if ($callbackException)
-                                call_user_func($callbackException, $e);
+                            if ($callbackException && !$callbackException->isNop())
+                                $callbackException->invoke($e);
                             else
                                 throw $e;
                         }
@@ -228,7 +228,7 @@ class AnalyzeManager {
     }
 
     public function analyze($incremental = true, $ignoreCache = false,
-                            $callbackException = null, $callbackScan = null){
+                            Callback $callbackException = null, Callback $callbackScan = null){
         $this->dependClasses = array();
 
         $upd = $this->meta['$$$upd'];

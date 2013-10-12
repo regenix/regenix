@@ -18,7 +18,8 @@ class StaticAnalyzer extends Analyzer {
 
         } elseif ($node instanceof \PHPParser_Node_Stmt_ClassMethod){
 
-        } elseif ($node instanceof \PHPParser_Node_Expr_New){
+        } elseif ($node instanceof \PHPParser_Node_Expr_New
+            || $node instanceof \PHPParser_Node_Expr_Instanceof){
             $class = $node->class;
             if ($class instanceof \PHPParser_Node_Name)
                 $this->checkClassExists($class->toString(), $node);
