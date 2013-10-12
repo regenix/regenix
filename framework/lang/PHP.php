@@ -243,13 +243,13 @@ final class ClassMetaInfo {
         if ($interfaceOrClass === $this->getName())
             return true;
 
-        $childrens = $this->getChildrensAll();
+        $childrens = $this->getAllChildren();
         foreach($childrens as $name => $el){
             if ($name === $interfaceOrClass)
                 return true;
         }
 
-        $implements = $this->getImplementsAll();
+        $implements = $this->getAllImplements();
         foreach($implements as $name => $el){
             if ($name === $interfaceOrClass)
                 return true;
@@ -348,13 +348,13 @@ final class ClassMetaInfo {
      * @return \regenix\lang\ClassMetaInfo[]
      * @return ClassMetaInfo[]
      */
-    public function getImplementsAll(&$result = null){
+    public function getAllImplements(&$result = null){
         $implements = $this->getImplements();
         if ($result === null)
             $result = $implements;
 
         foreach($implements as $meta){
-            $result = $result + $meta->getImplementsAll($result);
+            $result = $result + $meta->getAllImplements($result);
         }
 
         return (array)$result;
@@ -365,7 +365,7 @@ final class ClassMetaInfo {
      * @throws CoreException
      * @return ClassMetaInfo[]
      */
-    public function getChildrens($namespace = ''){
+    public function getChildren($namespace = ''){
         if ($items = $this->info[255]){
             if ($namespace && !String::endsWith($namespace, '\\'))
                 $namespace .= '\\';
@@ -383,21 +383,21 @@ final class ClassMetaInfo {
     }
 
     /**
-     * Find childrens recursive
+     * Find children recursive
      * @param string $namespace
      * @param null $result
      * @return ClassMetaInfo[]
      */
-    public function getChildrensAll($namespace = '', &$result = null){
-        $childrens = $this->getChildrens($namespace);
+    public function getAllChildren($namespace = '', &$result = null){
+        $children = $this->getChildren($namespace);
         if ($result === null){
-            $result = $childrens;
+            $result = $children;
         } else {
-            $result = array_merge($result, $childrens);
+            $result = array_merge($result, $children);
         }
 
-        foreach($childrens as $child){
-            $result = array_merge($result, $child->getChildrensAll($namespace, $result));
+        foreach($children as $child){
+            $result = array_merge($result, $child->getAllChildren($namespace, $result));
         }
         return $result;
     }
@@ -441,7 +441,7 @@ final class ClassMetaInfo {
  *
  *      - file
  *      - class parent
- *      - childrens
+ *      - children
  *      - namespace (dynamic)
  *
  * Class ClassScanner

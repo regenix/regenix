@@ -83,7 +83,7 @@ class RegenixTemplate {
     public function __construct($autoRegister = true){
         if ($autoRegister){
             $meta = ClassScanner::find(RegenixTemplateTag::regenixTemplateTag_type);
-            foreach($meta->getChildrensAll() as $class){
+            foreach($meta->getAllChildren() as $class){
                 if (!$class->isAbstract()){
                     $instance = $class->newInstance();
                     $this->registerTag($instance);
@@ -91,7 +91,7 @@ class RegenixTemplate {
             }
 
             $meta = ClassScanner::find(RegenixTemplateFilter::regenixTemplateFilter_type);
-            foreach($meta->getChildrensAll() as $class){
+            foreach($meta->getAllChildren() as $class){
                 if (!$class->isAbstract())
                     $this->registerFilter($class->newInstance());
             }

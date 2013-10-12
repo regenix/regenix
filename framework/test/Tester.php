@@ -37,7 +37,7 @@ class Tester extends Controller {
         } else {
             $app = Regenix::app();
             $testClass = ClassScanner::find(UnitTest::type);
-            foreach($testClass->getChildrensAll($namespace) as $child){
+            foreach($testClass->getAllChildren($namespace) as $child){
                 $class = $child->getName();
                 $reflection = new \ReflectionClass($class);
                 if ($reflection->isAbstract())

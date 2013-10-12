@@ -135,7 +135,7 @@ class AnalyzeManager {
         }
 
         $info = ClassScanner::find(Analyzer::type);
-        $childrens = $info->getChildrensAll();
+        $childrens = $info->getAllChildren();
         /** @var $analyzers Analyzer[] */
         $analyzers = array();
         foreach($childrens as $children){

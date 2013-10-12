@@ -361,7 +361,7 @@ class Repository implements IClassInitialization {
 
     public static function initialize(){
         $meta = ClassScanner::find(Origin::type);
-        foreach($meta->getChildrensAll() as $info){
+        foreach($meta->getAllChildren() as $info){
             Origin::register($info->getName());
         }
     }
