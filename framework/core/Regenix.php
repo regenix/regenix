@@ -4,6 +4,7 @@ namespace regenix\core;
 use regenix\core\AbstractGlobalBootstrap;
 use regenix\core\Application;
 use regenix\core\SDK;
+use regenix\exceptions\WrappedException;
 use regenix\lang\SystemCache;
 use regenix\lang\DI;
 use regenix\lang\CoreException;
@@ -689,15 +690,22 @@ final class Regenix {
     }
 
     public static function __errorHandler($errno, $errstr, $errfile, $errline){
+        if ($errno === E_RECOVERABLE_ERROR){
+            throw new WrappedException(new CoreException($errstr), new File($errfile), $errline);
+        }
+
         if ( APP_MODE_STRICT ){
             $app =  Regenix::app();
             $errfile = str_replace('\\', '/', $errfile);
 
             // only for src sources
             if (!$app || String::startsWith($errfile, $app->getPath())){
+
                 if ( $errno === E_DEPRECATED
                     || $errno === E_USER_DEPRECATED
-                    || $errno === E_WARNING ){
+                    || $errno === E_WARNING
+                    || $errno === E_STRICT){
+
                     throw new CoreStrictException($errstr);
                 }
 

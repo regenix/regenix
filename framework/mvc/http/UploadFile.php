@@ -8,17 +8,29 @@ use regenix\mvc\binding\BindStaticValue;
 
 class UploadFile extends File implements BindStaticValue {
 
+    /** @var array */
     protected $meta;
     protected $uploadName;
 
     /** @var File */
     protected $uploadFile;
 
+    /**
+     * @param string $uploadName
+     * @param array $meta
+     */
     public function __construct($uploadName, $meta){
         $this->uploadName = $uploadName;
         $this->meta       = $meta;
 
         parent::__construct($meta['tmp_name']);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isEmpty(){
+        return !$this->meta;
     }
 
     /**
@@ -198,6 +210,10 @@ class UploadFile extends File implements BindStaticValue {
      */
     public static function onBindStaticValue($value, $name = null) {
         $body = RequestBody::getInstance();
-        return $body->getFile($name);
+        $result = $body->getFile($name);
+        if ($result)
+            return $result;
+        else
+            return new UploadFile($name, array());
     }
 }

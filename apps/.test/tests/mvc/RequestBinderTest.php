@@ -71,9 +71,10 @@ class TestBindValue implements BindValue {
 
     /**
      * @param $value string
+     * @param null $name
      * @return null
      */
-    public function onBindValue($value){
+    public function onBindValue($value, $name = null){
         $this->value = $value;
     }
 }
