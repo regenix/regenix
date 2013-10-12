@@ -52,7 +52,7 @@ class WSResponse {
      * @return bool
      */
     public function isSuccess(){
-        return $this->status >= 200 && $this->status < 300;
+        return $this->status >= 200 && $this->status < 400;
     }
 
     /**
