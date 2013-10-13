@@ -1769,11 +1769,25 @@ class SystemFileCache {
         return self::$tempDirectory = SYSTEM_CACHE_TMP_DIR;
     }
 
+    private static function getFileName($key){
+        return SystemFileCache::getTempDirectory() . self::$id . 's.' . $key . '.php';
+    }
+
+    public static function remove($name){
+        $file = self::getFileName($name);
+        return unlink($file);
+    }
+
     public static function get($name){
-        $file = SystemFileCache::getTempDirectory() . self::$id . 's.' . $name . '.php';
-        if (file_exists($file) && filemtime($file) > time()){
-            $result = include $file;
-            return $result ? $result : null;
+        $file = self::getFileName($name);
+        if (file_exists($file)){
+            if (filemtime($file) > time()){
+                $result = include $file;
+                return $result ? $result : null;
+            } else {
+                self::remove($name);
+                return null;
+            }
         }
         return null;
     }
@@ -1789,7 +1803,7 @@ class SystemFileCache {
     }
 
     public static function set($name, $value, $expires = 3600){
-        $file = self::getTempDirectory() . self::$id . 's.' . $name . '.php';
+        $file = self::getFileName($name);
         file_put_contents($file, '<?php return ' . var_export($value, true) . ';');
         touch($file, time() + $expires);
     }
@@ -1801,6 +1815,10 @@ class SystemFileCache {
 
     public static function setId($id){
         self::$id = $id;
+    }
+
+    public static function getId(){
+        return self::$id;
     }
 }
 

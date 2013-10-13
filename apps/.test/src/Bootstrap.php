@@ -24,6 +24,7 @@ namespace {
         public function onTest(array &$tests){
             $tests = array(
                 new ClassloaderTest(),
+                new tests\lang\SystemFileCacheTest(),
                 new tests\lang\StringTest(),
                 new tests\lang\types\CallbackTest(),
                 new tests\lang\DITest(),
