@@ -1280,7 +1280,11 @@ class File extends StrictObject {
      */
     public function __construct($path, File $parent = null){
         if ( $parent != null ){
-            $this->path = $parent->getPath() . $path;
+            $pr = $parent->getPath();
+            if (substr($pr, -1) !== '\\' && substr($pr, -1) !== '/')
+                $pr .= '/';
+
+            $this->path = $pr . $path;
         } else
             $this->path = $path;
     }
@@ -1391,7 +1395,7 @@ class File extends StrictObject {
         if ( $p === false )
             return $this->extension = '';
 
-        return $this->extension = (substr( $this->path, $p + 1 ));
+        return $this->extension = strtolower(substr( $this->path, $p + 1 ));
     }
 
     /**
@@ -1453,7 +1457,7 @@ class File extends StrictObject {
      * @return bool
      */
     public function renameTo(File $new){
-        return rename($this->getAbsolutePath(), $new->getAbsolutePath());
+        return rename($this->getAbsolutePath(), $new->getPath());
     }
 
     /**
@@ -1650,6 +1654,13 @@ class File extends StrictObject {
             return feof($this->handle);
         else
             throw new FileNotOpenException($this);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isOpened(){
+        return is_resource($this->handle);
     }
 
     /**
