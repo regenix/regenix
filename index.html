@@ -1,0 +1,180 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Regenix by dim-s</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="stylesheets/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/dim-s/regenix">View On GitHub</a></li>
+          <li class="downloads"><a href="https://github.com/dim-s/regenix/zipball/master">ZIP</a></li>
+          <li class="downloads"><a href="https://github.com/dim-s/regenix/tarball/master">TAR</a></li>
+          <li class="title">DOWNLOADS</li>
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>Regenix</h1>
+          <p>Easy &amp; Power MVC framework for PHP</p>
+          <hr>
+          <span class="credits left">Project maintained by <a href="https://github.com/dim-s">dim-s</a></span>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
+        </div>
+
+        <h1>
+<a name="welcome-to-regenix-framework" class="anchor" href="#welcome-to-regenix-framework"><span class="octicon octicon-link"></span></a>Welcome to Regenix framework</h1>
+
+<p>Regenix is easy-to-learn and powerful MVC framework. Our framework is similar to <a href="http://playframework.com/">Play! Framework</a>,
+Ruby on Rails and Django frameworks, but has a lot of unique ideas.</p>
+
+<p><a href="https://travis-ci.org/dim-s/regenix"><img src="https://travis-ci.org/dim-s/regenix.png?branch=dev" alt="Build Status"></a></p>
+
+<p><img src="http://develstudio.ru/upload/medialibrary/cf8/cf88db498096a1eba21c75f7910a4ef4.png" alt="regenix"></p>
+
+<h2>
+<a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h2>
+
+<ul>
+<li>Clear MVC architecture.</li>
+<li>Multiple applications within one core.</li>
+<li>Easy and powerful routing (sub-routing, inserts, etc).</li>
+<li>Easy debugging, displaying errors in the detailed form.</li>
+<li>
+<a href="http://propelorm.org/">Propel ORM</a> integration for models</li>
+<li>Dependency Manager for assets and modules (git, local repos).</li>
+<li>REST and other special types of controllers.</li>
+<li>Dependency Injection Container.</li>
+<li>Convenient validators like tests.</li>
+<li>Fast template engine with simple syntax.</li>
+<li>Lazy loading of classes.</li>
+<li>Smart scanner for searching classes.</li>
+<li>HTTP util classes: Session, Flash, Headers, Query, Body, etc.</li>
+<li>Smart logger, logging any errors (even fatal and parse).</li>
+<li>CLI for managing applications.</li>
+<li>I18n features.</li>
+<li>Unit and Functional Tests (own implementation)</li>
+</ul><h2>
+<a name="requires" class="anchor" href="#requires"><span class="octicon octicon-link"></span></a>Requires</h2>
+
+<ul>
+<li>PHP 5.3 or greater</li>
+<li>Apache, Nginx or another server</li>
+<li>Mod_rewrite enabled (for apache)</li>
+</ul><h2>
+<a name="documentation-in-progress" class="anchor" href="#documentation-in-progress"><span class="octicon octicon-link"></span></a>Documentation (in progress)</h2>
+
+<p><a href="https://github.com/dim-s/regenix-documentation">https://github.com/dim-s/regenix-documentation</a></p>
+
+<ul>
+<li><a href="https://github.com/dim-s/regenix-documentation/blob/master/en/installation.md">Installation</a></li>
+<li><a href="https://github.com/dim-s/regenix-documentation/blob/master/en/configuration.md">Configuration</a></li>
+<li><a href="https://github.com/dim-s/regenix-documentation/blob/master/en/bootstraps.md">Bootstraps</a></li>
+<li><a href="https://github.com/dim-s/regenix-documentation/blob/master/en/controllers.md">Controllers</a></li>
+<li><a href="https://github.com/dim-s/regenix-documentation/blob/master/en/views.md">Views</a></li>
+<li><a href="https://github.com/dim-s/regenix-documentation/blob/master/en/validation.md">Validation</a></li>
+<li><a href="https://github.com/dim-s/regenix-documentation/blob/master/en/i18n.md">Localization (i18n)</a></li>
+<li><a href="https://github.com/dim-s/regenix-documentation/blob/master/en/logs.md">Logging</a></li>
+<li><a href="https://github.com/dim-s/regenix-documentation/blob/master/en/cli.md">CLI for regenix</a></li>
+<li><a href="https://github.com/dim-s/regenix-documentation/blob/master/en/class_scanner.md">Class Scanner</a></li>
+<li><a href="https://github.com/dim-s/regenix-documentation/blob/master/en/performance.md">Performance</a></li>
+</ul><h2>
+<a name="getting-started" class="anchor" href="#getting-started"><span class="octicon octicon-link"></span></a>Getting started</h2>
+
+<h3>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h3>
+
+<p>Clone all the sources from our git repo. Our framework contains a few vendor libraries as git submodules, 
+therefore you need to run <code>git submodule init</code> and <code>git submodule update</code> after cloning repo.</p>
+
+<p>Next, create a directory in the location <code>/apps/</code> of your copy of the framework.
+This directory will be the directory of a project. For example, you can name it like <code>myApp</code>. Then the full path of your 
+app will be <code>&lt;framework_path&gt;/apps/myApp/</code>. </p>
+
+<p>The directory <code>/apps/</code> contains all applications and that allows to use one copy of the framework for
+several projects. You do not need something like symlinks in Linux to support a few applications. </p>
+
+<p>The next step, you need to know the typical structure of an application.</p>
+
+<ul>
+<li>
+<code>conf/</code> - configurations
+
+<ul>
+<li>
+<code>conf/application.conf</code> - the general config</li>
+<li>
+<code>conf/deps.json</code> - the configuration of asset and module dependencies</li>
+<li>
+<code>conf/route</code> - the url routing config</li>
+<li>
+<code>conf/routes/</code> - directory of sub-routes</li>
+<li>
+<code>conf/orm/</code> - configurations for Propel ORM (schema.xml, built.properties, etc.)</li>
+</ul>
+</li>
+<li>
+<code>src/</code> - php sources of your application
+
+<ul>
+<li><code>src/controllers/</code></li>
+<li><code>src/models/</code></li>
+<li><code>src/views/</code></li>
+<li>
+<code>src/notifiers/</code> - notifiers for mail sending messages</li>
+<li>
+<code>src/*</code> - other packages of sources</li>
+<li>
+<code>Bootstrap.php</code> - a bootstrap file with a Bootstrap class (not required)</li>
+</ul>
+</li>
+<li>
+<code>tests/</code> - sources of unit and functional tests</li>
+<li>
+<code>assets/</code> - local asset directory of your app</li>
+</ul><hr><h4>
+<a name="create-an-application-from-template" class="anchor" href="#create-an-application-from-template"><span class="octicon octicon-link"></span></a>Create an application from template</h4>
+
+<p>Open your console and cd to a root directory of Regenix. There will be <code>regenix</code> and <code>regenix.bat</code> 
+files and therefore the command <code>regenix</code> will become available. Then use the special command <code>regenix new &lt;name&gt;</code> to
+create a new application from template.</p>
+
+<pre><code>cd /path/to/root_of_server_with_regenix/
+regenix new myApp
+</code></pre>
+
+<p>After this, a new directory <code>myApp</code> will appear in <code>&lt;root&gt;/apps</code>. To check it is working or not, open
+your browser and navigate to <code>http://localhost/myApp</code>. This template application will help you to 
+understand how create a typical application for Regenix.</p>
+
+<hr><h2>
+<a name="publications" class="anchor" href="#publications"><span class="octicon octicon-link"></span></a>Publications</h2>
+
+<ul>
+<li><a href="https://twitter.com/regenixnews">Twitter</a></li>
+<li>
+<a href="http://habrahabr.ru/post/196604/">http://habrahabr.ru/post/196604/</a> (Russian)</li>
+</ul>
+      </section>
+
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
