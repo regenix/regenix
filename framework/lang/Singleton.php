@@ -9,5 +9,5 @@ namespace regenix\lang;
  * @package regenix\lang
  */
 interface Singleton {
-    public static function getInstance();
+
 }

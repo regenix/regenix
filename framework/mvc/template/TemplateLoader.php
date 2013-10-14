@@ -5,7 +5,9 @@ namespace regenix\mvc\template;
 use regenix\core\SDK;
 use regenix\exceptions\TemplateEngineNotFoundException;
 use regenix\exceptions\TemplateNotFoundException;
+use regenix\frontend\FrontendManager;
 use regenix\lang\CoreException;
+use regenix\lang\DI;
 use regenix\lang\IClassInitialization;
 use regenix\lang\String;
 use regenix\mvc\providers\ResponseProvider;
@@ -51,6 +53,12 @@ class TemplateLoader implements IClassInitialization {
 
                 self::switchEngine($classTemplate);
                 self::registerPath( $app->getViewPath() );
+
+                $frontendManager = DI::get(FrontendManager::type);
+                if ($frontendManager == null){
+                    $frontendManager = new FrontendManager($app);
+                    DI::bind($frontendManager);
+                }
             } else {
                 self::switchEngine('Regenix');
             }
@@ -109,7 +117,7 @@ class TemplateLoader implements IClassInitialization {
         $reflection = new \ReflectionClass($templateClass);
         
         if ( REGENIX_IS_DEV ){
-            if ( !$reflection->isSubclassOf( '\regenix\mvc\template\BaseTemplate' ) )
+            if ( !$reflection->isSubclassOf( '\\regenix\\mvc\\template\\BaseTemplate' ) )
                 throw new CoreException(String::format('%s.class must be extends of BaseTemplate', $templateClass));
 
             if ( !$reflection->isInstantiable() )
@@ -148,7 +156,7 @@ class TemplateLoader implements IClassInitialization {
             self::setDefaultExt($ext);
         
         self::$engines[ $ext ] = $reflection->getName();
-        ResponseProvider::register('\regenix\mvc\providers\ResponseBaseTemplateProvider', $templateClass);
+        ResponseProvider::register('regenix\\mvc\\providers\\ResponseBaseTemplateProvider', $templateClass);
         
         self::$registered[ $templateClass ] = 1;
         //SDK::trigger('registerTemplateEngine', array($reflection));

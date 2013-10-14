@@ -530,9 +530,9 @@ class ClassScanner {
             $hash    = sha1($path);
 
             $meta = $cached ?
-                (REGENIX_IS_DEV
-                    ? SystemCache::getWithCheckFile('lang.sc.m.' . $hash, $path, true)
-                    : SystemCache::get('lang.sc.m.' . $hash, true)
+                (REGENIX_STAT_OFF
+                    ? SystemCache::get('lang.sc.m.' . $hash, true)
+                    : SystemCache::getWithCheckFile('lang.sc.m.' . $hash, $path, true)
                 ) : null;
 
             if ($meta === null){
@@ -561,7 +561,13 @@ class ClassScanner {
                     return !$file->isModified($upd, true);
                 }, true) : null;
             } else {
-                $results = $cached ? SystemCache::getWithCheckFile('lang.sc.' . $hash, $path, true) : null;
+                $results = $cached
+                    ?
+                        (REGENIX_STAT_OFF
+                            ? SystemCache::get('lang.sc.' . $hash, true)
+                            : SystemCache::getWithCheckFile('lang.sc.' . $hash, $path, true)
+                        )
+                    : null;
             }
 
             if ($results === null){
@@ -1495,14 +1501,18 @@ class File extends StrictObject {
     /**
      * Get last modified of file or directory in unix time format
      * @param bool $absolute
+     * @param null|callable $filter
      * @return int unix time
      */
-    public function lastModified($absolute = true){
+    public function lastModified($absolute = true, $filter = null){
         if ($absolute && $this->isDirectory()){
             $files  = $this->findFiles();
             $result = filemtime($this->path);
             foreach($files as $file){
-                $m_time = $file->lastModified();
+                if ($filter && !call_user_func($filter, $file))
+                    continue;
+
+                $m_time = $file->lastModified($absolute, $filter);
                 if ($m_time > $result)
                     $result = $m_time;
             }

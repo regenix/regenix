@@ -121,13 +121,13 @@ class UploadFile extends File implements BindStaticValue {
      */
     public function getUploadedUrl(){
         if ($this->uploadFile){
-            return static::convertToPathToUrl($this->uploadFile->getPath());
+            return static::convertPathToUrl($this->uploadFile->getPath());
         } else {
             return null;
         }
     }
 
-    public static function convertToPathToUrl($path){
+    public static function convertPathToUrl($path){
         $src = str_replace(array('//', '///', '////', '/////'), '/', $path);
         return str_replace(ROOT, '/', $src);
     }

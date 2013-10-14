@@ -1,7 +1,9 @@
 <?php
 namespace regenix\template;
 
-interface RegenixTemplateFilter {
+use regenix\lang\Singleton;
+
+interface RegenixTemplateFilter extends Singleton {
     const regenixTemplateFilter_type = __CLASS__;
 
     public function getName();
