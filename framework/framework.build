@@ -19,10 +19,15 @@ validation/Validator.php
 validation/results/ValidationResult.php
 validation/
 
+frontend/Language.php
+frontend/
+
 logger/
 libs/
 i18n/
 
+template/RegenixTemplateTag.php
+template/RegenixTemplateFilter.php
 template/tags/RegenixRenderTag.php
 template/
 

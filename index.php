@@ -4,7 +4,7 @@ use regenix\core\Regenix;
     define('REGENIX_DEBUG', true);
 
     // uncomment this in Production if you want to avoid some file operations
-    // define('REGENIX_STAT_OFF', true);
+    //define('REGENIX_STAT_OFF', true);
 
     // require main file
     require __DIR__ . '/framework/include.php';

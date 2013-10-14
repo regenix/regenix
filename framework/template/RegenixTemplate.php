@@ -85,7 +85,7 @@ class RegenixTemplate {
             $meta = ClassScanner::find(RegenixTemplateTag::regenixTemplateTag_type);
             foreach($meta->getAllChildren() as $class){
                 if (!$class->isAbstract()){
-                    $instance = $class->newInstance();
+                    $instance = DI::getInstance($class->getName());
                     $this->registerTag($instance);
                 }
             }
@@ -93,7 +93,7 @@ class RegenixTemplate {
             $meta = ClassScanner::find(RegenixTemplateFilter::regenixTemplateFilter_type);
             foreach($meta->getAllChildren() as $class){
                 if (!$class->isAbstract())
-                    $this->registerFilter($class->newInstance());
+                    $this->registerFilter(DI::getInstance($class->getName()));
             }
         }
         $this->addUse(RegenixTagAdapter::type, 'TPL');

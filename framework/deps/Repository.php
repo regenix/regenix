@@ -4,11 +4,13 @@ namespace regenix\deps;
 
 use regenix\core\Application;
 use regenix\core\Regenix;
+use regenix\exceptions\JsonFileException;
 use regenix\lang\ClassScanner;
 use regenix\lang\CoreException;
 use regenix\lang\File;
 use regenix\lang\IClassInitialization;
 use regenix\lang\String;
+use regenix\lang\SystemCache;
 
 class Repository implements IClassInitialization {
 
@@ -71,6 +73,7 @@ class Repository implements IClassInitialization {
     /**
      * @param $group
      * @param $version
+     * @throws \regenix\exceptions\JsonFileException
      * @return mixed|null
      */
     public function getLocalMeta($group, $version){
@@ -78,11 +81,25 @@ class Repository implements IClassInitialization {
             return $json;
 
         $file = (ROOT . $this->env . '/' . $group . '~' . $version . '/meta.json');
+        $cacheKey = 'asmeta.' . $group . '.' . $version;
+
+        if (REGENIX_STAT_OFF)
+            $json = SystemCache::get($cacheKey);
+        else
+            $json = SystemCache::getWithCheckFile($cacheKey, $file);
+
+        if ($json !== null)
+            return $json;
+
         if (is_file($file)){
             $json = json_decode(file_get_contents($file), true);
-            if (!json_last_error())
+            if (!json_last_error()){
+                SystemCache::setWithCheckFile($cacheKey, $json, $file);
                 return $this->localMetas[$group][$version] = $json;
+            } else
+                throw new JsonFileException($file);
         }
+
         return null;
     }
 

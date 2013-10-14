@@ -1,7 +1,9 @@
 <?php
 namespace regenix\template;
 
-interface RegenixTemplateTag {
+use regenix\lang\Singleton;
+
+interface RegenixTemplateTag extends Singleton {
 
     const regenixTemplateTag_type = __CLASS__;
 

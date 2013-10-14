@@ -134,6 +134,10 @@ class Application {
         return $this->getPath() . 'tests/';
     }
 
+    public function getAssetPath(){
+        return $this->getPath() . 'assets/';
+    }
+
     public function getLogPath(){
         return ROOT . 'logs/' . $this->name . '/';
     }
@@ -238,7 +242,9 @@ class Application {
             list($version, $info) = each($versions);
         }
 
+        $this->repository->setEnv('assets');
         $meta = $this->repository->getLocalMeta($group, $version);
+
         if (!$meta)
             throw new CoreException('Meta information is not found for `%s` asset, run `deps update` to fix it', $group);
 
@@ -301,6 +307,8 @@ class Application {
         Regenix::trace('.register() application pre-start');
 
         Application::$instance = $this;
+        DI::bind($this);
+
         SystemCache::setId($this->name);
 
         if (file_exists($boostrap = $this->getSrcPath() . 'Bootstrap.php'))
