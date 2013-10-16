@@ -46,6 +46,10 @@ abstract class UnitTest extends StrictObject {
     }
 
     protected function required($unitTestClass, $needOk = false){
+        $reflect = new \ReflectionClass($unitTestClass);
+        if ($reflect->isAbstract())
+            throw new CoreException('Required test class cannot be abstract: "%s" is abstract', $unitTestClass);
+
         $this->requires[$unitTestClass] = array('needOk' => $needOk);
     }
 
@@ -219,6 +223,31 @@ abstract class UnitTest extends StrictObject {
      */
     protected function assertArraySize($size, $array, $message = ''){
         return $this->assertWrite(is_array($array) && (sizeof($array) === (int)$size), $message);
+    }
+
+    /**
+     * @param array $what
+     * @param $array
+     * @param bool $strong
+     * @param string $message
+     * @return $this
+     */
+    protected function assertArrayContains(array $what, $array, $strong = false, $message = ''){
+        if (!is_array($array))
+            return $this->assertWrite(false, $message);
+
+        foreach($what as $key => $value){
+
+            if ($strong){
+                if ($array[$key] !== $value)
+                    return $this->assertWrite(false, $message);
+            } else {
+                dump($value); dump($array[$key]);
+                if ($array[$key] != $value)
+                    return $this->assertWrite(false, $message);
+            }
+        }
+        $this->assertWrite(true, $message);
     }
 
     /**

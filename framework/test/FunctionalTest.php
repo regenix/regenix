@@ -80,7 +80,10 @@ class FunctionalTest extends UnitTest {
         $this->lastMethod = 'POST_JSON';
         $this->lastUrl = $path;
         $this->lastData = $data;
-        return $this->response = WS::url($this->baseUrl . $path)->headers($this->headers)->bodyJson($data)->post();
+        return $this->response = WS::url($this->baseUrl . $path)
+            ->headers($this->headers)
+            ->bodyJson($data, JSON_NUMERIC_CHECK)
+            ->post();
     }
 
     /**

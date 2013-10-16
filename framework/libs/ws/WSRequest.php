@@ -134,11 +134,12 @@ class WSRequest {
 
     /**
      * @param mixed $body
+     * @param int $options
      * @return $this
      */
-    public function bodyJson($body){
+    public function bodyJson($body, $options = 0){
         $this->contentType('application/json');
-        return $this->body(json_encode($body));
+        return $this->body(json_encode($body, $options));
     }
 
     /**
