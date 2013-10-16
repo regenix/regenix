@@ -1761,7 +1761,7 @@ class File extends StrictObject {
     }
 
     public function __toString() {
-        return String::format( 'io\\File("%s")', $this->path );
+        return $this->path;
     }
 
     public static function sanitize($fileName){

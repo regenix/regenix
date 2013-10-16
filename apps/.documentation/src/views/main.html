@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{get 'title', default: 'Home'} - Regenix Documentation</title>
+        {html.asset 'css/style.css'}
+    </head>
+<body>
+    <table class="skeleton">
+        <tr>
+            <td class="hands">
+                {include '.inc/left_menu.html'}
+            </td>
+            <td class="body">
+                {content}
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

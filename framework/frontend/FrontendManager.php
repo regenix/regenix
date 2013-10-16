@@ -117,8 +117,9 @@ class FrontendManager {
             }
             return $outFile;
         }
-        throw new LanguageException('Language for "%s" file is not registered',
+        return $file;
+        /*throw new LanguageException('Language for "%s" file is not registered',
             $file->getRelativePath(new File(ROOT))
-        );
+        );*/
     }
 }

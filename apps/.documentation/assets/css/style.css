@@ -1,0 +1,60 @@
+
+body {
+    padding: 0 20px;
+    margin: 0 20px;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    font-family: Verdana, sans-serif;
+    font-size: 13px;
+    line-height: 19px;
+    color: #414141;
+}
+
+a {color: #448017; }
+a:hover { text-decoration: none; }
+
+p { margin: 0; margin-bottom: 10px; margin-top: 3px;}
+h1, h2 { font-weight: normal; }
+h4 { font-size: 15px; padding: 0; margin: 0; padding-bottom: 3px; padding-top: 8px;
+    color: #448017; font-weight: normal; text-shadow: 0 0 1px silver;
+}
+
+hr { border: 0; border-top: 1px solid #d3d3d3; margin:0; padding: 0; margin-top: 20px; padding-bottom: 5px; }
+blockquote { padding: 0; padding-top: 5px; margin: 0; color: gray;
+    border-left: 3px solid silver; padding-left: 15px; }
+blockquote p { margin: 0; padding: 0; padding-bottom: 5px; }
+
+code, tt, pre {
+    background-color: #F5F5F5;
+    border: 1px solid #DDDDDD;
+    border-radius: 3px 3px 3px 3px;
+    margin: 0 2px;
+    padding: 1px 3px;
+    font-family: monospace;
+    font-size: 12px;
+    color: darkred;
+}
+
+pre { padding: 10px;
+    margin-bottom: 10px; }
+pre code {
+    color: #272727;
+    border: 0;
+}
+
+.menu { position: fixed }
+.menu ul {  margin: 0; padding: 0; margin-left: 15px; list-style-type: none }
+.menu li { padding: 3px 0; font-size: 1.1em;  }
+.menu li a { text-decoration: none; }
+.menu li a:hover { text-decoration: underline; }
+
+.languages { font-size: 0.8em; padding: 2px 8px; padding-top: 0px; background: #f4f4f4;
+    border-radius: 3px; margin-bottom: 15px; margin-top: 5px;
+}
+
+.skeleton { width: 100%; }
+.skeleton .hands { width: 220px; vertical-align: top; }
+.skeleton .body { vertical-align: top; }
+
+.welcome { margin: 0 auto; width: 500px; text-align: center; margin-top: 60px }
+.welcome .languages { background: #ffffff; font-size: 17px; }

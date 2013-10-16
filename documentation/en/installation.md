@@ -1,4 +1,4 @@
-## Installation 
+## Installation
 
 > Regenix is easy to install. You need only to copy the framework source to
 > the root directory of a webserver. 

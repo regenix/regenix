@@ -1,0 +1,18 @@
+<div class="menu">
+    <div class="languages">
+        <b>Version: </b>
+        {foreach $languages as $lang => $label}
+            {if $lang === $LANG}
+                {$label}
+            {else}
+                <a href="{path $currentAction, _lang: $lang, file: $originFile}">{$label}</a>
+            {/if}
+            {if !$label_isLast} / {/if}
+        {/foreach}
+    </div>
+
+    <h2>_{'Contents'}</h2>
+    {include.markdown $LANG . '/.menu.md'}
+    <hr>
+    <small><a href="{path 'Documentation.detail', _lang: $LANG}">back to index</a></small>
+</div>

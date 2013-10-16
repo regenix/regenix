@@ -47,11 +47,11 @@ helpers to control the HTTP cycle. See the next example:
 
 
     namespace controllers;
-    
+
     use regenix\mvc\Controller;
-    
+
     class Clients extends Controller {
-    
+
         public function show($id){
             // show client with $id
             $this->put("client", /* findById($id) */);

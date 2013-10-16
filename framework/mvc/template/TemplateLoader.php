@@ -74,21 +74,24 @@ class TemplateLoader implements IClassInitialization {
     /**
      * @param string $name
      * @param bool $throws
-     * @throws TemplateNotFoundException
-     * @throws TemplateEngineNotFoundException
+     * @param bool $extension
+     * @throws \regenix\exceptions\TemplateEngineNotFoundException
+     * @throws \regenix\exceptions\TemplateNotFoundException
      * @return BaseTemplate
      */
-    public static function load($name, $throws = true){
+    public static function load($name, $throws = true, $extension = false){
         Regenix::trace('load TPL - ' . $name . ' start ...');
-
         $name   = str_replace('\\', '/', $name);
-        
-        $ext = pathinfo($name, PATHINFO_EXTENSION);
-        if ( !$ext && self::$default ){
-            $ext  = self::$default;
-            if ( $ext )
-                $name .= '.' . $ext;
-        }
+
+        if ($extension === false){
+            $ext = pathinfo($name, PATHINFO_EXTENSION);
+            if ( !$ext && self::$default ){
+                $ext  = self::$default;
+                if ( $ext )
+                    $name .= '.' . $ext;
+            }
+        } else
+            $ext = $extension;
         
         $templateName = $name;
         
@@ -99,7 +102,7 @@ class TemplateLoader implements IClassInitialization {
             else
                 return null;
         }
-        
+
         $templateFile = self::findFile($name);
         if ( $templateFile === false ){
             if ($throws)
@@ -156,9 +159,9 @@ class TemplateLoader implements IClassInitialization {
             self::setDefaultExt($ext);
         
         self::$engines[ $ext ] = $reflection->getName();
-        ResponseProvider::register('regenix\\mvc\\providers\\ResponseBaseTemplateProvider', $templateClass);
-        
-        self::$registered[ $templateClass ] = 1;
+        ResponseProvider::register('regenix\\mvc\\providers\\ResponseBaseTemplateProvider', $reflection->getName());
+
+        self::$registered[ $reflection->getName() ] = 1;
         //SDK::trigger('registerTemplateEngine', array($reflection));
     }
 

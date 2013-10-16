@@ -56,11 +56,7 @@ abstract class BaseTemplate implements IClassInitialization {
     }
 
     public function onBeforeRender(){
-        $app = Regenix::app();
-        if ($app->bootstrap)
-            $app->bootstrap->onTemplateRender($this);
     }
-
 
     private static $assetsTpls = array();
 

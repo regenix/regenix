@@ -54,7 +54,7 @@ class I18n implements IClassInitialization {
      */
     public static function availLang($lang = null){
         if ( $lang === null ){
-            $lang = self::detectLang();
+            $lang = self::detectLang(DI::getInstance(Request::type));
             return !$lang || self::availLang($lang);
         } else
             return self::$loader && (self::$messages[$lang] || self::$loader->loadLang($lang));

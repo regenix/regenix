@@ -1,0 +1,5 @@
+
+*       /                           Documentation.index
+
+*       /{_lang}/{file<(.+?)>}      Documentation.detail
+*       /{_lang}/                   Documentation.detail

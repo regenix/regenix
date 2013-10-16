@@ -2,6 +2,7 @@
 namespace regenix\template\tags;
 
 use regenix\exceptions\TemplateException;
+use regenix\lang\String;
 use regenix\mvc\route\Router;
 use regenix\mvc\template\TemplateLoader;
 use regenix\template\RegenixTemplate;

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welcome to Regenix Framework</title>
+    {html.asset 'css/style.css'}
+</head>
+<body>
+    <div class="welcome">
+        <img src="{asset 'images/logo.png'}" width="250px">
+        <h1>Regenix Documentation</h1>
+        <p>
+            Select language version
+        </p>
+        <p class="languages">
+            {foreach $languages as $lang => $label}
+                <a href="{path 'Documentation.detail', _lang: $lang}">{$label}</a>
+                {if !$label_isLast} - {/if}
+            {/foreach}
+        </p>
+    </div>
+</body>
+</html>

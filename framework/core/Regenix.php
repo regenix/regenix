@@ -661,7 +661,6 @@ final class Regenix {
             'controller' => DI::getInstance(Controller::type)
         ));
 
-
         Logger::error('%s, in file `%s(%s)`, id: %s', $e->getMessage(), $file ? $file : "nofile", (int)$stack['line'], $hash);
 
         $response = new Response();

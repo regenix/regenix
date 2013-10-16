@@ -49,3 +49,6 @@
 [submodule "framework/vendor/PHP-Parser"]
 	path = framework/vendor/PHP-Parser
 	url = https://github.com/nikic/PHP-Parser.git
+[submodule "apps/.documentation/src/php-markdown"]
+	path = apps/.documentation/src/php-markdown
+	url = https://github.com/michelf/php-markdown.git

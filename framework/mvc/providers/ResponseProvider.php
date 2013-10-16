@@ -33,9 +33,9 @@ abstract class ResponseProvider {
      * @throws CoreException
      */
     public static function get($className){
-        if ( $className[0] !== '\\' )
-            $className = '\\' . $className;
-        
+        if ( $className[0] === '\\' )
+            $className = substr($className, 1);
+
         $provider = self::$providers[ $className ];
         if ( !$provider )
             throw new CoreException(
@@ -45,7 +45,6 @@ abstract class ResponseProvider {
     }
     
     public static function getInstance(Response $response){
-        
         $entity = $response->getEntity();
         $providerClass = self::get(get_class($entity));
         

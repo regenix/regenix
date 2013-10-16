@@ -31,12 +31,10 @@ To create a validator you need to do the following, e.g.:
 2. Define a protected method, it will be a checking procedure.
 3. In defined method, you need to write something like this:
 
-```
-protected function main(){
-  $this->requires($value)->message('It is required');
-  ...
-}
-```
+        protected function main(){
+          $this->requires($value)->message('It is required');
+          ...
+        }
 
 The `requires` method is for checking data - empty or not. However, it
 is not one method that is in the Validator class for checking, 
@@ -44,43 +42,39 @@ you can also use: `minLength`, `maxLength`, `match`, `isEmpty`, etc.
 
 --- 
 
+## Create a simple validator
+
 We consider a simple example of a validator. For example, you need to check
 login and password fields. So, for this we write a new validator 
 that will verify an array of fields. 
 
-```
-class LoginPasswordValidator extends Validator {
+    class LoginPasswordValidator extends Validator {
 
-  private $fields;
+      private $fields;
 
-  public function __construct(array $fields){
-    $this->fields = $fields;
-  }
-  
-  public function main(){
-    $this->minSize($this->fields['login'], 3)->message('Minimal size for login field is 3 letters');
-    if ($this->isLastOk()){
-      $this->match($this->fields['login'], '/([a-z0-9\.]+)/i')
-           ->message('Login must contain latin letters, numbers ant point symbol');
+      public function __construct(array $fields){
+        $this->fields = $fields;
+      }
+
+      public function main(){
+        $this->minSize($this->fields['login'], 3)->message('Minimal size for login field is 3 letters');
+        if ($this->isLastOk()){
+          $this->match($this->fields['login'], '/([a-z0-9\.]+)/i')
+               ->message('Login must contain latin letters, numbers ant point symbol');
+        }
+
+        $this->minSize($this->fields['password'], 6)->message('Minimal size for password is 6 letters');
+      }
     }
-    
-    $this->minSize($this->fields['password'], 6)->message('Minimal size for password is 6 letters');
-  }
-}
-```
 
 To use our validator we need to create a new instance and to call the `validate` method.
 
-```
-
-$validator = new LoginPasswordValidator($postData);
-if ($validator->validate()){
-  // no errors
-} else {
-  $errors = $validator->getErrors();
-}
-
-```
+    $validator = new LoginPasswordValidator($postData);
+    if ($validator->validate()){
+      // no errors
+    } else {
+      $errors = $validator->getErrors();
+    }
 
 ---
 
@@ -91,21 +85,19 @@ protected and they are invoked in the `validate` procedure. A Validator automati
 finds all protected methods defined in your validator's class and calls them. The calls
 occur in the order they are declared. However, you can always validate with only one method.
 
-```
-class MyValidator extends Validator {
-    protected function one(){
-      ...
-    }
-    
-    protected function two(){
-      ....
-    }
-}
+    class MyValidator extends Validator {
+        protected function one(){
+          ...
+        }
 
-  $validator = new MyValidator();
-  $validator->validate(); // validates by using all protected methods are defined in a class ("one" and "two").
-  $validator->validate('one'); // validates by using only one method "one"
-```
+        protected function two(){
+          ....
+        }
+    }
+
+      $validator = new MyValidator();
+      $validator->validate(); // validates by using all protected methods are defined in a class ("one" and "two").
+      $validator->validate('one'); // validates by using only one method "one"
 
 ---
 
@@ -118,24 +110,22 @@ has special methods: `validateAttribute` and check methods `requiresAttr`, `maxS
 
 For example: 
 
-```
-class UserValidator extends EntityValidator {
+    class UserValidator extends EntityValidator {
 
-   protected function register(){
-      $this->requiresAttr('login');
-      $this->requiresAttr('email');
-      $this->requiresAttr('password');
-   }
-}
+       protected function register(){
+          $this->requiresAttr('login');
+          $this->requiresAttr('email');
+          $this->requiresAttr('password');
+       }
+    }
 
-$user = new User();
-$user->login = " ... ";
-$user->email = " ... @ ...";
-$user->password = "123456";
+    $user = new User();
+    $user->login = " ... ";
+    $user->email = " ... @ ...";
+    $user->password = "123456";
 
-$validator = new UserValidator($user);
-$validator->validate();
-```
+    $validator = new UserValidator($user);
+    $validator->validate();
 
 In previous example, we have checked values of fields, but we have only used names of 
 properties. This is key feature of the entity validator - you don't need to get values
@@ -153,43 +143,37 @@ for example.
 Controllers have a few methods for validation, also, they support several validators
 for one check. Next, we consider a simple example:
 
-```
-class MyController extends Controller {
+    class MyController extends Controller {
 
-   public function index(){
+       public function index(){
+          $data = $this->body->asQuery();
+
+          $this->validate(new UserValidator($data));
+          if ($this->hasErrors()){
+            // ... an error occured in validation
+          } else {
+            // ok...
+          }
+       }
+    }
+
+The base controller class has the `validate(Validator $validator, $method = null)` method.
+You can invoke this method repeatedly and it will works. Let's look at an example:
+
+    public function index(){
       $data = $this->body->asQuery();
-      
+
       $this->validate(new UserValidator($data));
+      $this->validate(new CaptchaValidator());
       if ($this->hasErrors()){
         // ... an error occured in validation
       } else {
         // ok...
       }
-   }
-}
-```
-
-The base controller class has the `validate(Validator $validator, $method = null)` method.
-You can invoke this method repeatedly and it will works. Let's look at an example:
-
-```
-public function index(){
-  $data = $this->body->asQuery();
-  
-  $this->validate(new UserValidator($data));
-  $this->validate(new CaptchaValidator());
-  if ($this->hasErrors()){
-    // ... an error occured in validation
-  } else {
-    // ok...
-  }
-}
-```
+    }
 
 Here, we have used two validators for checking user's data and captcha's word. 
 If you want to check by using only one method of validator, use the second argument 
 of the validate method:
 
-```
-$this->validate(new UserValidator($data), 'one'); // the validator should have the "one" method.
-```
+    $this->validate(new UserValidator($data), 'one'); // the validator should have the "one" method.

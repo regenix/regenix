@@ -17,10 +17,12 @@ class RegenixTemplate extends BaseTemplate {
     const ENGINE_NAME = 'Regenix Template';
     const FILE_EXT = 'html';
 
-    private static $tpl;
-    private static $loaded = false;
+    protected static $tpl;
+    protected static $loaded = false;
 
     public function __construct($templateFile, $templateName){
+        parent::__construct($templateFile, $templateName);
+
         if (!self::$loaded){
             self::$tpl = new RegenixTPL();
             self::$tpl->setTempDir( Regenix::getTempPath() . 'regenixtpl/' );

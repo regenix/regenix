@@ -147,27 +147,26 @@ We do not recommend to use the `$_POST` variable for getting body parameters. Th
 1. the `$body` property is an instance of the `regenix\mvc\RequestBody` class.
 2. overriding the special method `onBindParams`. 
 
-```
-public function index(){
-    // parse body as json
-    $form = $this->body->asJson();
-    
-    // parse body as query (key=value&...)
-    $form = $this->body->asQuery();
-    
-    // get body as single string
-    $form = $this->body->asString();
-    
-    // getting a file
-    $file = $this->body->getFile('image');
-    
-    // getting a file group 
-    $file = $this->body->getFiles('images');
-    
-    // getting all files
-    $file = $this->body->getAllFiles();
-}
-```
+
+        public function index(){
+            // parse body as json
+            $form = $this->body->asJson();
+
+            // parse body as query (key=value&...)
+            $form = $this->body->asQuery();
+
+            // get body as single string
+            $form = $this->body->asString();
+
+            // getting a file
+            $file = $this->body->getFile('image');
+
+            // getting a file group
+            $file = $this->body->getFiles('images');
+
+            // getting all files
+            $file = $this->body->getAllFiles();
+        }
 
 > Read about overriding `onBindParams` below.
     
@@ -201,13 +200,11 @@ For rendering any data, our framework has several methods: `render()`, `renderTe
 throwing exceptions therefore you don't need to use `return` to exit the method. Frequently, you 
 need to exit after rendering data and therefore this behaviour is convenient. 
 
-```
-public function action(){
-  $this->render("OK");
-  // exit...
-  // anything below will not work ...
-}
-```
+    public function action(){
+      $this->render("OK");
+      // exit...
+      // anything below will not work ...
+    }
 
 ### Simple formats
 
@@ -215,32 +212,26 @@ For rendering a clear text or html, you need to use `renderText(string $text)` a
 `renderHtml(string $html)` methods. The both methods output a text by changing
 the header's value `Content-type`, for simple text is `text/plain`, for html - `text/html`.
 
-```
-public function action(){
-  $this->renderText("Simple text");
-  $this->renderHtml("<b>Html text</b>");
-}
-```
+    public function action(){
+      $this->renderText("Simple text");
+      $this->renderHtml("<b>Html text</b>");
+    }
 
 Also, you can use the universal method `render(mixed $object, array $args = null)` for
 rendering a simple text:
 
-```
-public function action(){
-  $this->render("Simple text");
-}
-```
+    public function action(){
+      $this->render("Simple text");
+    }
 
 ### JSON Format
 
 For rendering JSON, use the `renderJson(mixed $object)` method. It uses
 the `json_encode` php function and set up header value `Content-type` to `application/json`.
 
-```
-public function action(){
-  $this->renderJson( array('status' => 'ok') );
-}
-```
+    public function action(){
+      $this->renderJson( array('status' => 'ok') );
+    }
 
 ### Templates
 
@@ -248,13 +239,11 @@ For rendering templates, use the `render(mixed $data, array $args = null)` or
 `renderTemplate(string $template, array $args = null)` methods. To learn more about this,
 read the **Views** chapter. However, we yet consider a few examples:
 
-```
-public function action(){
-  $this->renderTemplate("index.html", array("var" => "value"));
-  // or
-  $this->render("index.html", array("var" => "value"));
-}
-```
+    public function action(){
+      $this->renderTemplate("index.html", array("var" => "value"));
+      // or
+      $this->render("index.html", array("var" => "value"));
+    }
 
 Also, there are several helpful methods for templates:
 
@@ -271,23 +260,18 @@ The `$file` argument can be two types: string or `regenix\lang\File` and it shou
 
 Examples:
 
-```
-public function action(){
-  $this->renderFile("/path/to/file.ext");
-  // or
-  $file = new File("/path/to/file.ext");
-  $this->renderFile($file);
-}
-```
+    public function action(){
+      $this->renderFile("/path/to/file.ext");
+      // or
+      $file = new File("/path/to/file.ext");
+      $this->renderFile($file);
+    }
 
 Rendering images:
 
-```
-public function image(){
-  $this->renderFile("/path/to/file.jpg", false);
-}
-```
-
+    public function image(){
+      $this->renderFile("/path/to/file.jpg", false);
+    }
 
 ### Redirects
 
@@ -301,22 +285,19 @@ For redirecting, use methods:
 
 Examples:
 
-```
-  // redirect to external URL.
-  $this->redirectUrl('http://php.net/');
+    // redirect to external URL.
+    $this->redirectUrl('http://php.net/');
 
-  // it will redirect to URL of the Personal.auth action
-  $this->redirect('Personal.auth', array('ref' => 'index'));
-  
-  // in a Personal controller
-  $this->redirect('auth'); // it will redirect to URL of the Personal.auth action.
-  
-  // refresh a current page
-  $this->refresh();
-  // or with args
-  $this->refresh(array('reloaded' => 1, ...)); // to <current_url>?reloaded=1
-}
-```
+    // it will redirect to URL of the Personal.auth action
+    $this->redirect('Personal.auth', array('ref' => 'index'));
+
+    // in a Personal controller
+    $this->redirect('auth'); // it will redirect to URL of the Personal.auth action.
+
+    // refresh a current page
+    $this->refresh();
+    // or with args
+    $this->refresh(array('reloaded' => 1, ...)); // to <current_url>?reloaded=1
 
 ---
 

@@ -28,13 +28,7 @@ class RegenixRenderTag implements RegenixTemplateTag {
             throw new TemplateNotFoundException($tplFile);
 
         $tpl->setFile( $file );
-
-        ob_start();
-        $tpl->render($args);
-        $str = ob_get_contents();
-        ob_end_clean();
-
-        return $str;
+        return $tpl->render($args, true, true);
     }
 
     public function call($args, RegenixTemplate $ctx){

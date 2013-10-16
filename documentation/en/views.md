@@ -68,21 +68,21 @@ For example, we create the `Users` controller and `Users/detail.html` view:
 
 In our view:
 
-```
-views/Users/detail.html
 
-<html>
-    <head>
-        <title>Users: {$user[name]}</title>
-    </head>
-<body>
-    <h1>Hello, {$user[name]}. Your id is "{$user[id]}"</h1>
-    {if $user[is_admin]}
-        [ <a href="/admin/">Admin panel</a> ]
-    {/if}
-</body>
-</html>
-```
+    views/Users/detail.html
+
+    <html>
+        <head>
+            <title>Users: {$user[name]}</title>
+        </head>
+    <body>
+        <h1>Hello, {$user[name]}. Your id is "{$user[id]}"</h1>
+        {if $user[is_admin]}
+            [ <a href="/admin/">Admin panel</a> ]
+        {/if}
+    </body>
+    </html>
+
 
 ---
 
@@ -184,26 +184,25 @@ Create a new class inherited by `RegenixTemplateFilter` anywhere inside the dire
 of your application. Next, you should define two methods: `getName()` and `call( ... )`.
 Consider them example:
 
-```
-use regenix\libs\RegenixTemplate;
-use regenix\libs\RegenixTemplateFilter;
+    use regenix\libs\RegenixTemplate;
+    use regenix\libs\RegenixTemplateFilter;
 
-class RegenixMyFilter extends RegenixTemplateFilter {
-    
-    public function getName(){
-      return "my";
+    class RegenixMyFilter extends RegenixTemplateFilter {
+
+        public function getName(){
+          return "my";
+        }
+
+        public function call($value, array $args, RegenixTemplate $ctx){
+          return $value . "!!!";
+        }
     }
-    
-    public function call($value, array $args, RegenixTemplate $ctx){
-      return $value . "!!!";
-    }
-}
 
 
-and next, we can use "my" filter in a template:
+    and next, we can use "my" filter in a template:
 
-{"Alarm" | my} // will output "Alarm!!!"
-```
+    {"Alarm" | my} // will output "Alarm!!!"
+
 
 
 ---
@@ -213,9 +212,7 @@ and next, we can use "my" filter in a template:
 In regenix template engine, a tag is a special insert that looks like: `{tagName ...args...}`. 
 Usually, a tag have several named arguments and one unnamed (default) argument, see example:
 
-```
-{tag $default, key1: $value1, $key2: $value2}
-```
+    {tag $default, key1: $value1, $key2: $value2}
 
 Our template engine already has built-in tags: `set`, `get`, `render`, `include`, `path`,
 `asset`, `public`, `image.crop`, `image.resize`, `image.captcha`, `deps.assets`, `deps.asset`,
@@ -229,30 +226,24 @@ This tag set a lazy value that can be output in future, it can be used for print
 of a page or keywords. A key feature is that you can change a value below outputting. For
 rendering a value, see the next tag.
 
-```
-{set title: 'My Site'}
-```
+    {set title: 'My Site'}
 
 + **get**
 
 This tag outputs a lazy value that was set by using the `set` tag. In order to understand how it works,
 see the next example:
 
-```
-main.html
+    main.html
 
-<html>
-    <title>{get 'title'}</title>
-    {content}
-</htm>
-```
+    <html>
+        <title>{get 'title'}</title>
+        {content}
+    </htm>
 
 Somewhere in another template:
 
-```
-{extends 'main.html'}
-{set title: 'My Site'}
-```
+    {extends 'main.html'}
+    {set title: 'My Site'}
 
 Here, we have used `extends` and `content` tags. This is a basic feature of our template engine that
 called **Template inheritance**. About this, read below.
@@ -267,13 +258,11 @@ to use `include` tag: `{include "path/to/other.html"}`.
 Also, you can pass named parameters for inserting a file and the parameters will be available inside, 
 see the example:
 
-```
-{render "path/to/other.html", user: "My User"}
+    {render "path/to/other.html", user: "My User"}
 
-// path/to/other.html, 
-// Now, you can get a value of the user argument by using the $user variable.
-<b>{$user}</b>
-```
+    // path/to/other.html,
+    // Now, you can get a value of the user argument by using the $user variable.
+    <b>{$user}</b>
 
 
 + **path**
@@ -295,39 +284,35 @@ You can create them yourself. To create a new php tag, use the special asbtract 
 
 That's all. Next, we will consider a simple example of creating custom php tag.
 
-```
-<?php namespace tags;
+    <?php namespace tags;
 
-use regenix\libs\RegenixTPL\RegenixTemplateTag;
-use regenix\libs\RegenixTPL\RegenixTemplate;
+    use regenix\libs\RegenixTPL\RegenixTemplateTag;
+    use regenix\libs\RegenixTPL\RegenixTemplate;
 
-class MyTag extends RegenixTemplateTag {
+    class MyTag extends RegenixTemplateTag {
 
-  // name of our tag, in view it will look like: {my.tag ...}
-  public function getName(){
-    return 'my.tag';
-  }
-  
-  // here, we need to return an html result of execution of our tag
-  public function call($args, RegenixTemplate $ctx){
-    return "html_code";
-  }
-}
-```
+      // name of our tag, in view it will look like: {my.tag ...}
+      public function getName(){
+        return 'my.tag';
+      }
+
+      // here, we need to return an html result of execution of our tag
+      public function call($args, RegenixTemplate $ctx){
+        return "html_code";
+      }
+    }
 
 In the call method, you can implement anything, also, you will have access to
 passed arguments `$args` and a current context `$ctx`. The `$args` is an array that
 contains named arguments. Above, we explain that there is a default argument in tags,
 to get it, use the `_arg` element of `$args`
 
-```
-...
+    ...
 
-public function call($args, RegenixTemplate $ctx){
-  // return a default argument
-  return $args['_arg'];
-}
-```
+    public function call($args, RegenixTemplate $ctx){
+      // return a default argument
+      return $args['_arg'];
+    }
 
 > **IMPORTANT**: You do not need to register your php tags manually!
 > Our framework itself includes all classes of php tags via the [class scanner](#class_scanner.md)
@@ -346,23 +331,17 @@ html tags is similar to the built-in tag `render` (see above).
 Eventually, you can also insert a html tag via the render tag, for example: `{render ".tags/user/auth.html"}`.
 Consider the following example (`views/.tags/user/auth.html`):
 
-```
-Hello, <b>{$user}</b>
-```
+    Hello, <b>{$user}</b>
 
 and now we can use it:
 
-```
-{tag.user.auth user: 'Name'}
-```
+    {tag.user.auth user: 'Name'}
 
 You can pass any named values into a html tag. To get default value, use the `$_arg` variable.
 
-```
-Hello, <b>{$_arg}</b>
+    Hello, <b>{$_arg}</b>
 
-{tag.user.auth 'Name'}
-```
+    {tag.user.auth 'Name'}
 
 > **NOTICE**: A html tag makes an isolated enviroment for variables and therefore external variables
 > are not available inside.
@@ -380,63 +359,56 @@ We need to create two files: `main.html` and `Application/index.html`. The `main
 the `Application/index.html` page. All files should be located at `/src/views/`. Also, we need to
 create a controller `Application` with `index` method:
 
-```  
-src/controllers/Application.php
 
-<?php namespace controllers;
+    src/controllers/Application.php
 
-use regenix\mvc\Controller;
+    <?php namespace controllers;
 
-class Application extends Controller {
+    use regenix\mvc\Controller;
 
-  public function index(){
-    $this->render(); // render "Application/index.html" template
-  }
-}
-```
+    class Application extends Controller {
+
+      public function index(){
+        $this->render(); // render "Application/index.html" template
+      }
+    }
 
 The main template `src/views/main.html`:
 
-```
-<html>
-  <head>
-    <title> ... </title>
-  </head>
-<body>
-  <h1>My Site</h1>
-  <div>
-    {content}
-  </div>
-</body>
-</html>
-```
+    <html>
+      <head>
+        <title> ... </title>
+      </head>
+    <body>
+      <h1>My Site</h1>
+      <div>
+        {content}
+      </div>
+    </body>
+    </html>
 
 The view `src/views/Application/index.html`.
 
-```
-{extends 'main.html'}
+    {extends 'main.html'}
 
-<b> My Content </b>
-```
+    <b> My Content </b>
 
 In the last file, we have included the main template and have inserted our content.
 The `{content}` in our main template will be replaced to our content from `index.html`.
 As a result, the page will be created like shown below:
 
-```
-<html>
-  <head>
-    <title> ... </title>
-  </head>
-<body>
-  <h1>My Site</h1>
-  <div>
-    
-    <b> My Content </b>
-  </div>
-</body>
-</html>
-```
+    <html>
+      <head>
+        <title> ... </title>
+      </head>
+    <body>
+      <h1>My Site</h1>
+      <div>
+
+        <b> My Content </b>
+      </div>
+    </body>
+    </html>
 
 Template inheritance is a powerful mechanism. You can easily include one template into another template
 and there is no limit for nesting of templates.

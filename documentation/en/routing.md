@@ -45,9 +45,7 @@ Regenix allows to create RESTful application easily.
 There is a special configuration file in an application directory - `conf/route`. This file has the following
 format:
 
-```
-<METHOD>       <PATH>       <ACTION_NAME>
-```
+    <METHOD>       <PATH>       <ACTION_NAME>
 
 There:
 
@@ -57,12 +55,10 @@ There:
 
 To understand this format, you need to look the following example:
 
-```
-*     /             Application.index
+    *     /             Application.index
 
-GET   /news/        News.index
-GET   /news/{id}    News.detail
-```
+    GET   /news/        News.index
+    GET   /news/{id}    News.detail
 
 Here are three rules: two ones for static URLs and other one for a dynamic URL with `id` argument.
 `Application.index`, `News.index` and `News.detail` are the names of actions, the first part of the name
@@ -72,18 +68,16 @@ is the name of a controller class, the last part is a method name of the control
 
 The controller `Application` will look like shown below:
 
-```
-<?php
-namespace controllers;
+    <?php
+    namespace controllers;
 
-use regenix\mvc\Controller;
+    use regenix\mvc\Controller;
 
-class Application extends Controller {
-  public function index(){
-    // action method
-  }
-}
-```
+    class Application extends Controller {
+      public function index(){
+        // action method
+      }
+    }
 
 When you open your application in browser, it will create an instance of the Application class 
 and call the `index` method. 

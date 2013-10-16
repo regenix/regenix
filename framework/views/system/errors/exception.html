@@ -7,30 +7,30 @@
     <p id="detail">
         { $desc | raw }
     </p>
+    {if $file}
+        <h2>In `/{$file}` at line <b>{$stack[line]}</b>.</h2>
+    {/if}
     {if $source}
-        {if $file}
-            <h2>In `/{$file}` at line <b>{$stack[line]}</b>.</h2>
-        {/if}
     <div id="source-code">
         {foreach $source as $i => $line}
-            <pre class="{$i == $stack[line] ? 'error':''}"><span class="line">{$i}</span><span class="code">{$line}</span></pre>
+            <pre class="{{$i == $stack[line] ? 'error':''}}"><span class="line">{{$i}}</span><span class="code">{{$line}}</span></pre>
         {/foreach}
     </div>
     {/if}
 </div>
     {if $controller && !($controller instanceof regenix\mvc\controllers\EmptyController)}
         <b class="stackTraceTitle">Controller:</b>
-        <pre class="stackTrace">Action: {get_class($controller)}-><b>{$controller->actionMethod}</b>( ... )
-Router args: %{ print_r($controller->routeArgs) }</pre>
+        <pre class="stackTrace">Action: {{get_class($controller)}}-><b>{{$controller->actionMethod}}</b>( ... )
+Router args: %{{ print_r($controller->routeArgs) }}</pre>
     {/if}
     {if $stack && $exception}
         <b class="stackTraceTitle">Stack Trace:</b>
-        <pre class="stackTrace">{$exception -> getTraceAsString()}</pre>
+        <pre class="stackTrace">{{$exception -> getTraceAsString()}}</pre>
     {/if}
     {if $debug_info}
         <b class="stackTraceTitle">Debug Info:</b>
-        <pre class="stackTrace">time: <b>{round($debug_info['time'])}</b> ml.sec
-memory: <b>{round($debug_info['memory'] / 1024)}</b> kb
+        <pre class="stackTrace">time: <b>{{round($debug_info['time'])}}</b> ml.sec
+memory: <b>{{round($debug_info['memory'] / 1024)}}</b> kb
         </pre>
     {/if}
 {else}
@@ -40,7 +40,7 @@ memory: <b>{round($debug_info['memory'] / 1024)}</b> kb
         Please contact with administration.
     </p>
     <div id="source-code">
-        <pre><span class="line"> </span><span class="code">Error ID = <b>{$hash}</b></span></pre>
+        <pre><span class="line"> </span><span class="code">Error ID = <b>{{$hash}}</b></span></pre>
     </div>
 </div>
 {/if}

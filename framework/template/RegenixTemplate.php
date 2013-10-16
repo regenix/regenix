@@ -47,7 +47,9 @@ class RegenixTemplate {
 
     private static $ignoreTags = array(
         'style' => 1,
-        'script' => 1
+        'script' => 1,
+        'pre' => 1,
+        'code' => 1
     );
 
     /** @var array */
@@ -245,8 +247,12 @@ class RegenixTemplate {
         return $result;
     }
 
+    protected function getContents(){
+        return file_get_contents($this->file);
+    }
+
     protected function _compile(){
-        $source = file_get_contents($this->file);
+        $source = $this->getContents();
 
         $str = '<?php ';
         if ($this->uses){
