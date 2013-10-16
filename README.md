@@ -39,19 +39,19 @@ Requires
 Documentation (in progress)
 -------------
 
-https://github.com/dim-s/regenix-documentation
+documentation
 
-+ [Installation](https://github.com/dim-s/regenix-documentation/blob/master/en/installation.md)
-+ [Configuration](https://github.com/dim-s/regenix-documentation/blob/master/en/configuration.md)
-+ [Bootstraps](https://github.com/dim-s/regenix-documentation/blob/master/en/bootstraps.md)
-+ [Controllers](https://github.com/dim-s/regenix-documentation/blob/master/en/controllers.md)
-+ [Views](https://github.com/dim-s/regenix-documentation/blob/master/en/views.md)
-+ [Validation](https://github.com/dim-s/regenix-documentation/blob/master/en/validation.md)
-+ [Localization (i18n)](https://github.com/dim-s/regenix-documentation/blob/master/en/i18n.md)
-+ [Logging](https://github.com/dim-s/regenix-documentation/blob/master/en/logs.md)
-+ [CLI for regenix](https://github.com/dim-s/regenix-documentation/blob/master/en/cli.md)
-+ [Class Scanner](https://github.com/dim-s/regenix-documentation/blob/master/en/class_scanner.md)
-+ [Performance](https://github.com/dim-s/regenix-documentation/blob/master/en/performance.md)
++ [Installation](documentation/en/installation.md)
++ [Configuration](documentation/en/configuration.md)
++ [Bootstraps](documentation/en/bootstraps.md)
++ [Controllers](documentation/en/controllers.md)
++ [Views](documentation/en/views.md)
++ [Validation](documentation/en/validation.md)
++ [Localization (i18n)](documentation/en/i18n.md)
++ [Logging](documentation/en/logs.md)
++ [CLI for regenix](documentation/en/cli.md)
++ [Class Scanner](documentation/en/class_scanner.md)
++ [Performance](documentation/en/performance.md)
 
 Getting started
 ---------------
