@@ -36,22 +36,6 @@ Requires
 * Apache, Nginx or another server
 * Mod_rewrite enabled (for apache)
 
-Documentation (in progress)
--------------
-
-documentation
-
-+ [Installation](documentation/en/installation.md)
-+ [Configuration](documentation/en/configuration.md)
-+ [Bootstraps](documentation/en/bootstraps.md)
-+ [Controllers](documentation/en/controllers.md)
-+ [Views](documentation/en/views.md)
-+ [Validation](documentation/en/validation.md)
-+ [Localization (i18n)](documentation/en/i18n.md)
-+ [Logging](documentation/en/logs.md)
-+ [CLI for regenix](documentation/en/cli.md)
-+ [Class Scanner](documentation/en/class_scanner.md)
-+ [Performance](documentation/en/performance.md)
 
 Getting started
 ---------------
@@ -86,6 +70,14 @@ The next step, you need to know the typical structure of an application.
  * `Bootstrap.php` - a bootstrap file with a Bootstrap class (not required)
 * `tests/` - sources of unit and functional tests
 * `assets/` - local asset directory of your app
+
+---
+
+Documentation (in progress)
+-------------
+
+Copy all framework sources to root of your webserver, after this the `localhost/@documentation`
+will be available. You can learn more by openning this address in your browser.
 
 ---
 
