@@ -4,3 +4,4 @@ regenix\test\UnitTest
 regenix\console\RegenixCommand
 regenix\deps\Origin
 regenix\analyze\Analyzer
+regenix\frontend\Language

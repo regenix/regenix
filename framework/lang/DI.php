@@ -233,6 +233,13 @@ final class DI {
             self::$singletons[get_class($object)] = $object;
     }
 
+    /**
+     * @param $class
+     * @return mixed
+     */
+    public static function get($class){
+        return self::$singletons[$class];
+    }
 
     public static function clear(){
         self::$singletons = array();

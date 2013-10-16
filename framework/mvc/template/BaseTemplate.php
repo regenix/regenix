@@ -3,6 +3,8 @@ namespace regenix\mvc\template;
 
 use regenix\core\Application;
 use regenix\core\Regenix;
+use regenix\frontend\FrontendManager;
+use regenix\lang\DI;
 use regenix\lang\SystemCache;
 use regenix\exceptions\TypeException;
 use regenix\lang\File;
@@ -18,6 +20,9 @@ abstract class BaseTemplate implements IClassInitialization {
     protected $file;
     protected $name;
     protected $args = array();
+
+    /** @var FrontendManager */
+    protected $frontendManager;
 
     const ENGINE_NAME = 'abstract';
     const FILE_EXT    = '???';

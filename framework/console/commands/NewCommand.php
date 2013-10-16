@@ -120,8 +120,8 @@ class NewCommand extends RegenixCommand {
                 '{%SECRET_KEY%}' => String::randomRandom(32, 48, true, true),
                 '{%APP_NAME%}' => $name,
                 '{%DEPS%}' => $DEPS,
-                '{%INC_JQUERY%}' => $jquery ? '{deps.asset \'jquery\'}' : '',
-                '{%INC_BOOTSTRAP%}' => $bootstrap ? '{deps.asset \'bootstrap\'}' : '',
+                '{%INC_JQUERY%}' => $jquery ? '{html.asset \'dep:jquery\'}' : '',
+                '{%INC_BOOTSTRAP%}' => $bootstrap ? '{html.asset \'dep:bootstrap\'}' : '',
             );
 
             self::recursive_copy(
