@@ -82,3 +82,6 @@ initialization. See the next example:
 
     ...
     
+> **WARNING**: This enabled constant leads to complete caching file operations. You must known that 
+> sometimes it can be cause of strange behavior of the framework. To fix it, clean your temp directory 
+> and restart your webserver.
