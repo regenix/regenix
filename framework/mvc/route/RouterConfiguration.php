@@ -79,10 +79,9 @@ class RouterConfiguration extends Configuration {
 
         foreach($files as $prefix => $file){
             if (!$file->exists()) continue;
-            
-            $handle = fopen($file->getAbsolutePath(), "r+");
-            while (($buffer = fgets($handle, 4096)) !== false) {
 
+            $file->open('r');
+            while (($buffer = $file->gets()) !== false) {
                 $buffer = trim($buffer);
                 if ( !$buffer || $buffer[0] == '#' )
                     continue;
@@ -201,7 +200,7 @@ class RouterConfiguration extends Configuration {
                     'params'  => $params
                 );
             }
-            fclose($handle);
+            $file->close();
         }
     }
     
