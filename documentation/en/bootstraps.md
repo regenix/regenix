@@ -1,19 +1,19 @@
 # Bootstrap
 
 Regenix supports bootstrap classes within application and global scope. Regenix is
-a multiple-app framework therefore bootstrap classes can be two types - application and global.
+a multiple-app framework and therefore bootstrap classes can be two types - application and global.
 
 The global bootstrap handles global events, the application bootstrap - application events.
 What is bootstrap in Regenix? The regenix bootstrap is a class inherited by an abstract 
-bootstrap class which has a few overrided methods for handling events.
+bootstrap class which has a few overridden methods for handling events.
 
 ---
 
 ## Application bootstrap
 
 To create an application bootstrap you need to write a new class inherited 
-by the `regenix\AbstractBootstrap` class. Inside the class, you can override some 
-methods such as `onStart`, `onEnviroment` and `onTest`. 
+by the `regenix\core\AbstractBootstrap` class. Inside the class, you can override some
+methods such as `onStart`, `onEnvironment` and `onTest`.
 
     namespace {
   
@@ -42,23 +42,23 @@ sending http data.
 
     public function onStart(){
         // ... somethings, for example defining DI rules.
-        // do not include some php files or liberaries
+        // do not include some php files or libraries
     }
     
     
 > **IMPORTANT**: Do not include any php files or libraries in this method
-> because this can be cause of low perfomance. Let Regenix itself 
+> because this can be cause of low performance. Let Regenix itself
 > loads all php files and libraries when needed.
 
 
-###### onEnviroment ######
+###### onEnvironment ######
 
 This method is invoked when the framework tries to set the mode of your
 application. The mode can be switched in the main configuration, but
 sometimes you need to set the mode dynamically. For this, you can override
-the `onEnviroment` method, it looks like this:
+the `onEnvironment` method, it looks like this:
 
-    public function onEnviroment(&$env){
+    public function onEnvironment(&$env){
         // ... here you can change $env dynamically
         if ( ... ){
             $env = 'dev';
@@ -75,7 +75,7 @@ This method is invoked when you start tests of a current application.
 It makes no difference where you will run the tests - in a browser or CLI. 
 This method will be invoked anyway. 
 
-However, this method is needed for sorting tests before starting when neeaded. 
+However, this method is needed for sorting tests before starting when needed.
 
     public function onTest(array &$tests){
         $tests = array(
@@ -94,9 +94,9 @@ you should manually create a new array as shown above. That's it.
 
 Sometimes you need globally handle some processes and events of all your applications. 
 To do this, there is the global bootstrap. It is a class inherited by 
-`regenix\AbstractGlobalBootstrap`.
+`regenix\core\AbstractGlobalBootstrap`.
 
-The global boostrap has several methods for overriding: 
+The global bootstrap has several methods for overriding:
 
 1. `onException(\Exception $e)` - occurs when throws any exceptions  
 2. `onError(array $error)` - when php errors occur (not exception!).
