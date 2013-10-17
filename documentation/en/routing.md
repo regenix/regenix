@@ -82,5 +82,25 @@ The controller `Application` will look like shown below:
 When you open your application in browser, it will create an instance of the Application class 
 and call the `index` method. 
 
+---
+
+## HTTP Methods
+
+Regenix support all http methods in route configuration: `GET`, `POST`, `PUT`, `DELETE`, 
+`PATCH`, `OPTIONS`, `HEAD`. However if you want to bind one action to all http method, 
+you can use a special symbol - `*`. This symbol means that all http requests will be associated
+with an action.
+
+---
+
+## The URI pattern
+
+The URI pattern defines the route's request path. Some parts of the request path can be dynamic.
+If you want a controller method is called by opening some URL, see the next example:
+
+     GET    /news/      NewsController.index
+     
+Here we have defined `/news/` URL which is associated with the `controllers\NewsController` class and
+its method `index`. This URL will only be available via `GET` method.
 
 
