@@ -75,7 +75,7 @@ initialization. See the next example:
     define('REGENIX_DEBUG', true);
 
     // uncomment this in Production if you want to avoid some file operations
-    //define('REGENIX_STAT_OFF', true);  <------------------------ 
+    //define('REGENIX_STAT_OFF', true);  <------------------------ uncomment this!
 
     // require main file
     require __DIR__ . '/framework/include.php';
