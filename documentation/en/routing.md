@@ -98,9 +98,24 @@ with an action.
 The URI pattern defines the route's request path. Some parts of the request path can be dynamic.
 If you want a controller method is called by opening some URL, see the next example:
 
-     GET    /news/      NewsController.index
+    GET    /news/       NewsController.index
      
 Here we have defined `/news/` URL which is associated with the `controllers\NewsController` class and
-its method `index`. This URL will only be available via `GET` method.
+its method `index`. This URL will only be available via `GET` method. This pattern has no dynamic parts.
+Next, we will consider URI pattern with dynamic parts.
 
+##### Dynamic parts
 
+For example a news detail page URL:
+
+    GET   /news/{id}    NewsController.detail
+
+There is the `id` dynamic part. Dynamic parts are enclosed to braces `{...}`. By default
+a dynamic part corresponds to the regex `[^/]+` pattern. To get value of dynamic parts, use
+arguments of a controller method, for example:
+
+    public function detail($id){
+        // $id equals to the value of `{id}` from URI pattern:     GET   /news/{id}    NewsController.detail
+    }
+    
+The names of method arguments corresponds to the names of route's dynamic parts.
