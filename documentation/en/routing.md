@@ -104,6 +104,8 @@ Here we have defined `/news/` URL which is associated with the `controllers\News
 its method `index`. This URL will only be available via `GET` method. This pattern has no dynamic parts.
 Next, we will consider URI pattern with dynamic parts.
 
+---
+
 ##### Dynamic parts
 
 For example a news detail page URL:
@@ -134,3 +136,24 @@ You can use default values in arguments:
         // if the route pattern do not contain `category` dynamic part then `$category` will equal to `common`
     }
 
+---
+
+#### Regex URI patterns
+
+Sometime you need to use regex in URI patterns. Regenix supports this feature. For example:
+
+    GET   /news/{id<[0-9]+>}      NewsController.detail
+
+Here we have set `id` as a numeric value via the regex expression - `[0-9]+`. To set a regex expression
+for dynamic parts use the next syntax: `{name<regex>}`.
+
+---
+
+#### Backslashes (/) at the end of URLs
+
+Often times you need URLs are available with and without backslash at the end. This is easy to implement,
+use a regex char `?` at the end of the URI pattern:
+
+    GET   /news/?       NewsController.detail
+    
+The URL `/news/` will also be availble at `/news` (without backslash).
