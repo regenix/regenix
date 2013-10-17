@@ -118,4 +118,19 @@ arguments of a controller method, for example:
         // $id equals to the value of `{id}` from URI pattern:     GET   /news/{id}    NewsController.detail
     }
     
-The names of method arguments corresponds to the names of route's dynamic parts.
+The names of method arguments corresponds to the names of route's dynamic parts. Look at a few examples:
+
+    GET   /news/{category}/{id}     NewsController.detail 
+    
+    public function detail($category, $id){
+        ...
+        
+        $this->render();
+    }
+
+You can use default values in arguments:
+
+    public function detail($category = 'common', $id){
+        // if the route pattern do not contain `category` dynamic part then `$category` will equal to `common`
+    }
+
