@@ -15,7 +15,7 @@ To learn about the framework, use your web-server and an installed copy of Regen
 Regenix has a special application - `.documentation` and you can open it by using
 a browser, it will be available at `localhost/@documentation` or `<address_your_webserver>/@documentation`.
 
-> *WARNING*: In producation stage you should delete `.documentation` from the `<root>/apps/` directory.
+> **WARNING**: In producation stage you should delete `.documentation` from the `<root>/apps/` directory.
 
 
 
