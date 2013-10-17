@@ -19,7 +19,7 @@
 
 ### License
 
-Regenix is lecensed under the Apach License 2.0. This means that you are free to modify, 
+Regenix is lecensed under the Apache License 2.0. This means that you are free to modify,
 distribute and republish the source code on the condition that the copyright notices are left intact. 
 You are also free to incorporate Regenix into any commercial or closed source application.
 
@@ -32,6 +32,8 @@ need to install git and run following commands in the git-bash:
 
     cd <root_of_server>
     git clone git@github.com:dim-s/regenix.git ./
+    git submodule init
+    git submodule update
     
 That's it. There will be a directory for your future applications. By default this directory 
 is located in root and named as `apps`. 
@@ -148,7 +150,7 @@ Regenix has a few of directories in root:
     
 Also has some files:
 
-- `index.php` - the main file for including framework and proccessing requests.
+- `index.php` - the main file for including framework and processing requests.
 - `.htaccess` - the apache configuration (if you use an apache server)
 - `regenix`, `regenix.bat` - the bash files for windows and unix.
     
