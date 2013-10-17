@@ -6,6 +6,7 @@ Regenix is easy to configure framework. There are a few typical files to configu
   2. **Dependencies configuration** - contains all asset and module dependencies of your app, named as `deps.json`
   3. **Route configuration** - contains routing rules for urls of your app, named as `route`
   4. **Subroute configurations** - additional configurations to include into a main configuration of router.
+  5. **Analyzer's configuration** - configuration for static analyzer of source code.
 
 All configurations are located at the directory `/apps/<your_app>/conf/`.
 
@@ -101,11 +102,11 @@ your site can be opened with multiple addresses.
 
 Regenix supports two modes for applications - `prod` and `dev`.
 
-  1. **Production** (prod) - production mode, it is uses all optiomizations and caching. 
+  1. **Production** (prod) - production mode, it is uses all optimizations and caching.
       It has high performance. Do not use this mode during development.
 
   2. **Development** (dev) - development mode, it is used for development stage, it not uses
-      caching and most of optiomizations.
+      caching and most of optimizations.
 
 Read more about this in the _development_ chapter.
 
@@ -126,9 +127,9 @@ and not applicable to sources of modules, vendors and the framework.
 
 --- 
 
-#### Secrect code
+#### Secret code
 
-Every application should have its own secrect code. It is used in a few
+Every application should have its own secret code. It is used in a few
 of places in the framework for security. The code should be a string of 
 any random symbols, for example:
 
@@ -172,7 +173,7 @@ Read more about this feature in the `logger` chapter.
 
 #### Logger fatal enabled
 
-Fatal errors are an espacial type of errors therefore they log to 
+Fatal errors are a spacial type of errors therefore they log to
 a separate file named as `fatal.log`. The errors may be discovered 
 if you make a mistake in syntax (for example). In general, 
 fatal errors are not runtime errors.
