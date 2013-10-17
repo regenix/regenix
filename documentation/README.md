@@ -9,7 +9,7 @@ Regenix is a classic MVC web-framework for PHP. General goals of our project are
 fast and effective development with REST architecture.
 
 #### How use documentation ?
-If you are seeing this article via GitHub for learning about Regenix, stop it! 
+If you are reading this article via GitHub for learning about Regenix, stop it! 
 To learn about the framework, use your web-server and an installed copy of Regenix.
 
 Regenix has a special application - `.documentation` and you can open it by using
