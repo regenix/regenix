@@ -20,7 +20,7 @@
                 <td>{$i ? '&#160;&#160;&#160; - - - >' : $method | raw}</td>
                 <td>{$call['message'] ? $call['message'] : '-'}</td>
                 <td>[ <a href="{path id: $detail['class'], line: $call['line']}">{$call['line']}</a> ]</td>
-                <td><pre>{ trim(current($call['source'])) }</pre></td>
+                <td><pre>{{ trim(current($call['source'])) }}</pre></td>
             </tr>
             {/foreach}
         {/foreach}
