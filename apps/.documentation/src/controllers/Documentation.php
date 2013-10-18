@@ -33,6 +33,7 @@ class Documentation extends Controller {
         $this->put('currentAction', '.' . get_class($this) .'.'. $this->actionMethod);
         $this->put('languages', array('en' => 'English', 'ru' => 'Русский'));
         $this->put('LANG', $lang);
+        $this->put('ONLINE', $this->request->getHost() === 'regenix.ru');
     }
 
     public function index(){
