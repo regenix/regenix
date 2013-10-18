@@ -6,14 +6,14 @@ has a special type of configuration for routing, it is located at `conf/route` f
 
 ---
 
-## Introducation
+## Introduction
 
 A typical http request contains information about:
 
 + `protocol` - http or https
-+ `host` - or doman, example: `example.com`
++ `host` - or domain, example: `example.com`
 + `port` - http port, default http port - 80
-+ `path` - a string after host and port, exmaple `/news/list`.
++ `path` - a string after host and port, example `/news/list`.
 + `query` - a string after path and `?`, example `id=2&open=true`
 + `method` - POST, GET, PUT, etc.
 
@@ -86,8 +86,8 @@ and call the `index` method.
 
 ## HTTP Methods
 
-Regenix support all http methods in route configuration: `GET`, `POST`, `PUT`, `DELETE`, 
-`PATCH`, `OPTIONS`, `HEAD`. However if you want to bind one action to all http method, 
+Regenix supports all http methods in route configuration: `GET`, `POST`, `PUT`, `DELETE`,
+`PATCH`, `OPTIONS`, `HEAD`. However if you want to bind one action to all http methods,
 you can use a special symbol - `*`. This symbol means that all http requests will be associated
 with an action.
 
@@ -133,14 +133,14 @@ The names of method arguments corresponds to the names of route's dynamic parts.
 You can use default values in arguments:
 
     public function detail($category = 'common', $id){
-        // if the route pattern do not contain `category` dynamic part then `$category` will equal to `common`
+        // if the route pattern does not contain `category` dynamic part then `$category` will equal to `common`
     }
 
 ---
 
 #### Regex URI patterns
 
-Sometime you need to use regex in URI patterns. Regenix supports this feature. For example:
+Sometimes you need to use regex in URI patterns. Regenix supports this feature. For example:
 
     GET   /news/{id<[0-9]+>}      NewsController.detail
 
@@ -156,4 +156,54 @@ use a regex char `?` at the end of the URI pattern:
 
     GET   /news/?       NewsController.detail
     
-The URL `/news/` will also be availble at `/news` (without backslash).
+The URL `/news/` will also be available at `/news` (without backslash).
+
+---
+
+#### Reverse routing
+
+You can generate a URL by using the `Router::path()` method. This means that a URL can be generated with
+an action name and parameters. Regenix tries to find a router's rule and reverse it to a URL.
+Consider the next example:
+
+    GET   /news/{id}    NewsController.detail
+
+    $url = Router::path('NewsController.detail', array('id' => 123));
+    // $url will be `/news/123`
+
+The `path` method is quite flexible to resolve difficult rules.
+
+**How generate URLs in templates?**
+
+Regenix templates have a special tag for this - `{path ...}`. Learn the next example:
+
+    <a href="{path 'NewsController.detail', id: 123}">detail link</a>
+
+Read more about it in [`views` chapter](views.md).
+
+---
+
+## How add new router's rule dynamically?
+
+You can add a new rule by not using the `conf/route` file. To do this, use Router's instance
+and method `addRoute`:
+
+    public function addRoute($method, $path, $action, $params = '')
+
+To get Router's instance, use DI or the Application `router` property:
+
+    $router = Regenix::app()->router;
+    $router->addRoute('GET', '/news/{id}', 'NewsController.detail');
+
+Or by using dependency injection:
+
+    $router = DI::getInstance(Router::type);
+    $router->addRoute('GET', '/news/{id}', 'NewsController.detail');
+
+Read about DI in [this chapter](di.md).
+
+---
+
+## Routing priority
+
+Many routes can match the same request. If there is a conflict, the first route (in declaration order) is used.

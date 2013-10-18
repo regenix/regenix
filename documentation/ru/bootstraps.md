@@ -96,7 +96,25 @@ Regenix поддерживает бутстрапы в рамках прилож
 
 Иногда вам необходимо глобально перехватывать события всех ваших приложений.
 Для этого существуют глобальный бутстрап - класс, который унаследован от
-`regenix\core\AbstractGlobalBootstrap`.
+`regenix\core\AbstractGlobalBootstrap` и распологается в файле `apps/GlobalBootstrap.php`,
+соответствено этот класс должен называться `GlobalBootstrap`. Следующий пример поможет
+вам разобраться:
+
+    <?php
+    namespace {
+
+        use regenix\core\AbstractGlobalBootstrap;
+
+        class GlobalBootstrap extends AbstractGlobalBootstrap {
+
+            // override on exception globally, for all projects in apps directory
+            public function onException(\Exception $e){
+                $controller = Controller::current();
+                $controller->render('error.html', array('e' => $e));
+            }
+        }
+    }
+
 
 Глобальный бутстрап имеет несколько методов для переопределения:
 
