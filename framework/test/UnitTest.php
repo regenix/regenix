@@ -242,7 +242,6 @@ abstract class UnitTest extends StrictObject {
                 if ($array[$key] !== $value)
                     return $this->assertWrite(false, $message);
             } else {
-                dump($value); dump($array[$key]);
                 if ($array[$key] != $value)
                     return $this->assertWrite(false, $message);
             }

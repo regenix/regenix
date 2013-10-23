@@ -15,6 +15,6 @@ class JsonParseException extends CoreException {
             case JSON_ERROR_SYNTAX: $msg = 'syntax error'; break;
             /*JSON_ERROR_UTF8*/ case 5: $msg = 'malformed UTF-8 characters, possibly incorrectly encoded'; break;
         }
-        parent::__construct($msg);
+        parent::__construct('JSON Parse: ' . $msg);
     }
 }
