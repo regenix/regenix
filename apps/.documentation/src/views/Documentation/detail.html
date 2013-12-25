@@ -1,3 +1,10 @@
 {extends 'main'}
 
 {include.markdown $file}
+
+{if $ONLINE}
+    <hr>
+    <h2>_{'Comments'}:</h2>
+
+    {include '.inc/disqus.html', name: 'regenix-framework'}
+{/if}

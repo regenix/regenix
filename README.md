@@ -73,11 +73,13 @@ The next step, you need to know the typical structure of an application.
 
 ---
 
-Documentation (in progress)
+[Documentation](http://regenix.ru/@documentation) (in progress)
 -------------
 
-Copy all framework sources to root of your webserver, after this the `localhost/@documentation`
-will be available. You can learn more by openning this address in your browser.
+**OR** for your local web-server:
+
+Copy all framework sources to root of your web-server, after this the `localhost/@documentation`
+will be available. You can learn more by opening this address in your browser.
 
 ---
 

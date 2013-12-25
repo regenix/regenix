@@ -5,13 +5,13 @@ a multiple-app framework and therefore bootstrap classes can be two types - appl
 
 The global bootstrap handles global events, the application bootstrap - application events.
 What is bootstrap in Regenix? The regenix bootstrap is a class inherited by an abstract 
-bootstrap class which has a few overrided methods for handling events.
+bootstrap class which has a few overridden methods for handling events.
 
 ---
 
 ## Application bootstrap
 
-To create an application bootstrap you need to write a new class inherited 
+To create an application bootstrap you need to create a new class inherited
 by the `regenix\core\AbstractBootstrap` class. Inside the class, you can override some
 methods such as `onStart`, `onEnvironment` and `onTest`.
 
@@ -22,7 +22,7 @@ methods such as `onStart`, `onEnvironment` and `onTest`.
         class Bootstrap extends AbstractBootstrap {
     
             public function onStart(){
-                // overrided method ...
+                // overridden method ...
             }
             
         }
@@ -31,7 +31,7 @@ methods such as `onStart`, `onEnvironment` and `onTest`.
 > **IMPORTANT**: A bootstrap class should be 
 > located at `<app>/src/Bootstrap.php` and named `Bootstrap`.
 
-Next, we consider all methods that can be overriden.
+Next, we consider all methods that can be overridden.
 
 ---
 
@@ -75,7 +75,7 @@ This method is invoked when you start tests of a current application.
 It makes no difference where you will run the tests - in a browser or CLI. 
 This method will be invoked anyway. 
 
-However, this method is needed for sorting tests before starting when neeaded. 
+However, this method is needed for sorting tests before starting when needed.
 
     public function onTest(array &$tests){
         $tests = array(
@@ -94,7 +94,23 @@ you should manually create a new array as shown above. That's it.
 
 Sometimes you need globally handle some processes and events of all your applications. 
 To do this, there is the global bootstrap. It is a class inherited by 
-`regenix\core\AbstractGlobalBootstrap`.
+`regenix\core\AbstractGlobalBootstrap` and located at `/apps/GlobalBootstrap.php`,
+therefore this class should named as `GlobalBootstrap`. The next example helps you to understand:
+
+    <?php
+    namespace {
+
+        use regenix\core\AbstractGlobalBootstrap;
+
+        class GlobalBootstrap extends AbstractGlobalBootstrap {
+
+            // override on exception globally, for all projects in apps directory
+            public function onException(\Exception $e){
+                $controller = Controller::current();
+                $controller->render('error.html', array('e' => $e));
+            }
+        }
+    }
 
 The global bootstrap has several methods for overriding:
 

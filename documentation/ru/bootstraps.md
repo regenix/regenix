@@ -1,8 +1,8 @@
 # Bootstrap
 
 Regenix поддерживает бутстрапы в рамках приложения и глобально. Regenix это
-мульти-проектный фреймворк и следовательно классы бутстрапов могут быть двух
-типов - для приложения и глобальные.
+мульти-проектный фреймворк и поэтому классы бутстрапов могут быть двух
+типов - для приложений и глобальные.
 
 Глобальный бутстрап перехватывает глобальные события, бутстрап приложения -
 события приложения. Что такое бутстрап в Regenix? Это класс, который унаследован
@@ -48,15 +48,15 @@ Regenix поддерживает бутстрапы в рамках прилож
     }
     
 
-> **ВАЖНО**: Не подключайте любые php файлы или библиотеки в этом методы,
-> т.к. это может быть причиной падения производительности. Дайте Regenix
-> самому загружать все php файлы и библиотек только когда это нужно.
+> **ВАЖНО**: Не подключайте любые php файлы или библиотеки в этом методе,
+> т.к. это может стать причиной падения производительности. Дайте Regenix
+> самому загружать все php файлы и библиотеки только когда это нужно.
 
 
 ###### onEnvironment ######
 
 Этот метод вызывается когда фреймворк пытается задать режим работы
-вашему приложения. Режим может переключать в главном конфигурационном файле,
+вашему приложения. Режим можно переключать в главном конфигурационном файле,
 но иногда вам необходимо задавать его динамически. Для этого вы можете
 переопределить `onEnvironment` метод, выглядит это так:
 
@@ -73,7 +73,7 @@ Regenix поддерживает бутстрапы в рамках прилож
 
 ###### onTest ######
 
-Этот метод вызывается когда вы запускается на выполнение тесты вашего приложения.
+Этот метод вызывается когда вы запускаете на выполнение тесты вашего приложения.
 Не имеет значения - где вы запускаете ваши тесты - в браузере или в CLI.
 Этот метод будет вызываться всегда.
 
@@ -96,18 +96,37 @@ Regenix поддерживает бутстрапы в рамках прилож
 
 Иногда вам необходимо глобально перехватывать события всех ваших приложений.
 Для этого существуют глобальный бутстрап - класс, который унаследован от
-`regenix\core\AbstractGlobalBootstrap`.
+`regenix\core\AbstractGlobalBootstrap` и распологается в файле `apps/GlobalBootstrap.php`,
+соответствено этот класс должен называться `GlobalBootstrap`. Следующий пример поможет
+вам разобраться:
+
+    <?php
+    namespace {
+
+        use regenix\core\AbstractGlobalBootstrap;
+
+        class GlobalBootstrap extends AbstractGlobalBootstrap {
+
+            // override on exception globally, for all projects in apps directory
+            public function onException(\Exception $e){
+                $controller = Controller::current();
+                $controller->render('error.html', array('e' => $e));
+            }
+        }
+    }
+
 
 Глобальный бутстрап имеет несколько методов для переопределения:
 
 1. `onException(\Exception $e)` - вызывается когда поднимается какое-то исключение
 2. `onError(array $error)` - когда php выводит ошибку (не исключение!).
-3. `onBeforeRegisterApps(File &$pathToApps)` - before regenix finds apps in the `apps` path. 
-4. `onAfterRegisterApps(&$apps)` - after regenix finds apps
-5. `onBeforeRegisterCurrentApp(Application $app)` - before regenix registers a application at the current request
-6. `onAfterRegisterCurrentApp(Application $app)` - after the registration of the current application
-7. `onBeforeRequest(Request $request)` - before regenix tries to render a page.
-8. `onAfterRequest(Request $request)` - after a request, but before to render a page
-9. `onFinallyRequest(Request $request)` - after render a page
+3. `onBeforeRegisterApps(File &$pathToApps)` - беред тем как regenix найдет все приложения в `apps` директории.
+4. `onAfterRegisterApps(&$apps)` - после того как regenix найдет все приложения
+5. `onBeforeRegisterCurrentApp(Application $app)` - перед регистрацией текущего приложения для текущего запроса
+6. `onAfterRegisterCurrentApp(Application $app)` - после регистрации текущего приложения для текущего запроса
+7. `onBeforeRequest(Request $request)` - перед тем как regenix попытается отобразить контент
+8. `onAfterRequest(Request $request)` - после запроса, но перед выводом контента на страницу
+9. `onFinallyRequest(Request $request)` - после вывода контента на страницу
+
 
 

@@ -1,6 +1,7 @@
 <?php
 namespace regenix\libs\ws;
 
+use regenix\exceptions\JsonParseException;
 use regenix\lang\ArrayTyped;
 use regenix\lang\CoreException;
 use regenix\lang\File;
@@ -56,15 +57,13 @@ class WSResponse {
     }
 
     /**
-     *
-     * @throws \regenix\lang\CoreException
+     * @throws \regenix\exceptions\JsonParseException
      * @return mixed
      */
     public function asJson(){
         $result = json_decode($this->body, true);
-        $last = json_last_error();
-        if ($last){
-            throw new CoreException('Can`t parse JSON data');
+        if (json_last_error()){
+            throw new JsonParseException();
         }
         return $result;
     }

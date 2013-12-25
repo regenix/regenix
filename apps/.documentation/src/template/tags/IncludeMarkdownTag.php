@@ -1,5 +1,5 @@
 <?php
-namespace template\filters;
+namespace template\tags;
 
 use regenix\core\Regenix;
 use regenix\exceptions\TemplateNotFoundException;

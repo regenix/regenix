@@ -120,7 +120,7 @@ abstract class Controller extends StrictObject
         $value = null;
         switch($name){
             case 'body':    $value = DI::getSingleton(RequestBody::type); break;
-            case 'request': $value = DI::getSingleton(Regenix::type); break;
+            case 'request': $value = DI::getSingleton(Request::type); break;
             case 'cookie':  $value = DI::getSingleton(Cookie::type); break;
             case 'session': $value = DI::getSingleton(Session::type); break;
             case 'flash':   $value = DI::getSingleton(Flash::type); break;
