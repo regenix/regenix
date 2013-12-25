@@ -1,7 +1,7 @@
 <?php
 namespace {
 
-    use regenix\AbstractBootstrap;
+    use regenix\core\AbstractBootstrap;
 
     class Bootstrap extends AbstractBootstrap {
 
