@@ -72,11 +72,11 @@ class Flash extends StrictObject
 
     /**
      * @param string $name
-     * @param scalar $value
+     * @param mixed $value
      * @return $this
      */
     public function put($name, $value){
-        $this->session->put($name . '$$flash', $value);
+        $this->session->put($name . '$$flash', base64_encode(serialize($value)));
         $this->session->put($name . '$$flash_i', 1);
         return $this;
     }
@@ -115,7 +115,11 @@ class Flash extends StrictObject
     }
 
     public function get($name, $def = null){
-        return $this->session->get($name . '$$flash', $def);
+        $p = $this->session->get($name . '$$flash', $def);
+        if (!$p)
+            return $p;
+
+        return unserialize(base64_decode($p));
     }
 
     /**

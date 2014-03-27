@@ -275,6 +275,8 @@ abstract class Controller extends StrictObject
             throw new CoreException('Can`t reverse url for action "%s(%s)"',
                 $action, implode(', ', array_keys($args)));
 
+        $this->saveErrors();
+
         $this->__redirectUrl($url, $permanent);
     }
 
@@ -293,7 +295,7 @@ abstract class Controller extends StrictObject
      * @param bool $permanent
      */
     public function refreshUrl(array $args = array(), $permanent = false){
-        $this->redirectUrl($this->request->getUri(), $args, $permanent);
+        $this->redirectUrl($this->request->getur, $args, $permanent);
     }
 
     /**
@@ -320,6 +322,18 @@ abstract class Controller extends StrictObject
             $template   = $controller . '/' . $this->actionMethod;
         }
         return str_replace('\\', '/', $template);
+    }
+
+    protected function saveErrors() {
+        $errors = array();
+        foreach($this->validators as $validator){
+            $errors = array_merge($errors, $validator->getErrors());
+        }
+
+        if ($errors) {
+            $this->put("errors", $errors);
+            $this->flash->put("errors", $errors);
+        }
     }
 
     /**
@@ -351,11 +365,7 @@ abstract class Controller extends StrictObject
         $this->put("session", $this->session);
         $this->put("request", $this->request);
 
-        $errors = array();
-        foreach($this->validators as $validator){
-            $errors = array_merge($errors, $validator->getErrors());
-        }
-        $this->put("errors", $errors);
+        $this->saveErrors();
 
         $template = template\TemplateLoader::load($template);
         $template->putArgs( $this->renderArgs );

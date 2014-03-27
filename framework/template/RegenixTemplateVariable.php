@@ -22,6 +22,9 @@ class RegenixTemplateVariable {
     }
 
     public function format($format){
+        if ($this->var > 2147483647)
+            $this->var = (int)($this->var / 1000);
+
         $this->var = date($format, $this->var);
         return $this;
     }
