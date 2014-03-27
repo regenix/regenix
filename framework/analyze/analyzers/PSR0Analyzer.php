@@ -63,7 +63,7 @@ class PSR0Analyzer extends Analyzer {
         if ($this->prefix)
             $current = $this->prefix . ($current ? '\\' . $current : '');
 
-        if ($name !== $current){
+        if ((string)$name !== $current){
             throw new PSR0AnalyzeException(
                 $this->file,
                 $statement->getLine(),

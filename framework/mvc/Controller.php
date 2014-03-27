@@ -126,7 +126,10 @@ abstract class Controller extends StrictObject
             case 'flash':   $value = DI::getSingleton(Flash::type); break;
             case 'query':   $value = DI::getSingleton(RequestQuery::type); break;
             case 'actionMethodAnnotations':
-                $value = Annotations::getMethodAnnotation($this->actionMethodReflection); break;
+                $value = Annotations::getMethodAnnotation($this->actionMethodReflection);
+                if ($value == null)
+                    $value = Annotations::getEmpty();
+                break;
 
             default: {
                 return parent::__get($name);
@@ -282,6 +285,15 @@ abstract class Controller extends StrictObject
      */
     public function refresh(array $args = array(), $permanent = false){
         $this->redirect($this->actionMethod, $args, $permanent);
+    }
+
+    /**
+     * redirect to current open url
+     * @param array $args
+     * @param bool $permanent
+     */
+    public function refreshUrl(array $args = array(), $permanent = false){
+        $this->redirectUrl($this->request->getUri(), $args, $permanent);
     }
 
     /**

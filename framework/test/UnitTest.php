@@ -22,6 +22,7 @@ abstract class UnitTest extends StrictObject {
     protected $currentMethod = null;
     private $results = array();
     private $lastOk = true;
+    private $checkRequired = false;
 
     protected function onBefore(){}
     protected function onAfter(){}
@@ -54,6 +55,7 @@ abstract class UnitTest extends StrictObject {
     }
 
     protected function sleep($sec, $mlsec = 0){
+        $time = time();
         if (!time_nanosleep($sec, $mlsec * 1000000)){
             if ($sec && $mlsec){
                 sleep($sec);
@@ -64,6 +66,7 @@ abstract class UnitTest extends StrictObject {
                 usleep($mlsec * 1000000);
             }
         }
+        return $time;
     }
 
     public function getRequires(){
@@ -72,6 +75,10 @@ abstract class UnitTest extends StrictObject {
 
     protected function requiredOk($unitTestClass){
         $this->required($unitTestClass, true);
+    }
+
+    public function setCheckRequired($checkRequired) {
+        $this->checkRequired = $checkRequired;
     }
 
     /**
@@ -140,6 +147,8 @@ abstract class UnitTest extends StrictObject {
      * @return $this
      */
     protected function assertEqual($with, $what, $message = ''){
+        $message = $what != $with ? "$with != $what" : $message;
+
         return $this->assertWrite($what == $with, $message);
     }
 
@@ -348,10 +357,12 @@ abstract class UnitTest extends StrictObject {
         foreach($this->requires as $require => $options){
             if ( !isset(self::$tested[$require]) ){
                 /** @var $test UnitTest */
-                $test = new $require();
-                $test->startTesting();
-                if ( $options['needOk'] && (!$test->isOk() || self::$tested[$require] === false) )
-                    return null;
+                if ($this->checkRequired){
+                    $test = new $require();
+                    $test->startTesting();
+                    if ( $options['needOk'] && (!$test->isOk() || self::$tested[$require] === false) )
+                        return null;
+                }
             } else {
 
                 if ( self::$tested[$require] !== false &&

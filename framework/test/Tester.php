@@ -10,7 +10,7 @@ use regenix\mvc\Controller;
 
 class Tester extends Controller {
 
-    public static function startTesting($id = null, $moduleWithVersion = null){
+    public static function startTesting($id = null, $moduleWithVersion = null, $callback = null){
         if ($moduleWithVersion){
             if (!is_dir(ROOT . 'modules/' . $moduleWithVersion . '/'))
                 throw new CoreException('Module `%s` not found', $moduleWithVersion);
@@ -34,6 +34,8 @@ class Tester extends Controller {
             if (!($tests[0] instanceof UnitTest))
                 throw new CoreException('Class "%s" should be inherited by "%s"',
                     $testClass->getName(), UnitTest::type);
+
+            $tests[0]->setCheckRequired(false);
         } else {
             $app = Regenix::app();
             $testClass = ClassScanner::find(UnitTest::type);
@@ -54,6 +56,9 @@ class Tester extends Controller {
         foreach($tests as $test){
             /** @var $test UnitTest */
             $test->startTesting();
+            if ($callback){
+                call_user_func($callback, $test);
+            }
         }
     }
 

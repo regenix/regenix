@@ -1,6 +1,7 @@
 <?php
 namespace regenix\mvc\http\session;
 
+use regenix\core\Regenix;
 use regenix\lang\DI;
 use regenix\lang\Injectable;
 use regenix\lang\Singleton;
@@ -53,6 +54,20 @@ class Flash extends StrictObject
             return $this->get("warning");
         else
             return $this->put("warning", $value);
+    }
+
+    /**
+     * @param null $value
+     * @return $this|scalar|null
+     */
+    public function debug($value = null){
+        $app = Regenix::app();
+        if ($app && $app->isDev()){
+            if ( $value === null )
+                return $this->get("debug");
+            else
+                return $this->put("debug", $value);
+        }
     }
 
     /**

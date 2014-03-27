@@ -118,8 +118,7 @@ class URL extends StrictObject {
     /**
      * @param string $query
      */
-    public function setQuery($query)
-    {
+    public function setQuery($query) {
         $this->query = $query;
     }
 
@@ -133,6 +132,24 @@ class URL extends StrictObject {
 
     public function getUrl(){
         return $this->url;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAddress() {
+        $s = $this->protocol . '://' . $this->host;
+        if ($this->port == 80)
+            return $s;
+        else
+            return $s . ':' . $this->port;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRelativeUrl() {
+        return str_replace($this->getAddress(), '', $this->url);
     }
 
     public function getPath(){

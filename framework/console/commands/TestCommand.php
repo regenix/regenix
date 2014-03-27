@@ -10,6 +10,7 @@ use regenix\console\RegenixCommand;
 use regenix\lang\CoreException;
 use regenix\modules\Module;
 use regenix\test\Tester;
+use regenix\test\UnitTest;
 
 class TestCommand extends RegenixCommand {
 
@@ -37,7 +38,9 @@ class TestCommand extends RegenixCommand {
             $this->checkApplicationLoaded();
             $console->app->register(false);
             $this->writeln('Start "%s" testing ...', $console->app->getName());
-            Tester::startTesting();
+            Tester::startTesting(null, null, function(UnitTest $test){
+                $this->writeln('    - %s [%s]', get_class($test), $test->isOk() ? 'ok' : 'fail');
+            });
         }
         $this->writeln();
 

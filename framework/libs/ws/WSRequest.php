@@ -267,6 +267,11 @@ class WSRequest {
         }
 
         $return = curl_exec($ch);
+        $err = curl_errno($ch);
+        if ($err){
+            throw new CoreException('Curl exec error - %s: %s' , $err, curl_error($ch));
+        }
+
         $response = new WSResponse($ch, $return);
 
         curl_close($ch);

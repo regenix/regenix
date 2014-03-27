@@ -422,6 +422,10 @@ class Annotations {
             self::$types[ $scope ][ $type ] = $info;
         }
     }
+
+    public static function getEmpty() {
+        return new Annotations("", "", 0);
+    }
 }
 
 Annotations::registerAnnotation('var', array(

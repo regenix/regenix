@@ -311,8 +311,9 @@ class Application {
 
         SystemCache::setId($this->name);
 
-        if (file_exists($boostrap = $this->getSrcPath() . 'Bootstrap.php'))
-            require $boostrap;
+        if (file_exists($bootstrap = $this->getSrcPath() . 'Bootstrap.php')) {
+            require $bootstrap;
+        }
 
         if (class_exists('\\Bootstrap')){
             $nameClass = '\\Bootstrap';
