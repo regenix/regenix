@@ -88,6 +88,10 @@ class Request extends StrictObject
         return $this->uri;
     }
 
+    public function getURL() {
+        return $this->currentUrl;
+    }
+
     /**
      * @param $name
      * @param null $def

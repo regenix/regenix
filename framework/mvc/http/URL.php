@@ -161,7 +161,7 @@ class URL extends StrictObject {
      * @return boolean
      */
     public function constraints(URL $url){
-        return $this->port === $url->port
+        return ($url->port === $url->port || ($url->port == 80))
             && $this->protocol === $url->protocol
             && (!$url->host || $this->host === $url->host)
             && strpos( $this->path, $url->path ) === 0;

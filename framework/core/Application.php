@@ -196,8 +196,10 @@ class Application {
      * @return boolean
      */
     public function findCurrentPath(){
+        /** @var $request Request */
         $request = DI::getInstance(Request::type);
-        foreach ($this->rules as $url){
+
+        foreach ($this->rules as $url) {
             if ( $request->isBase( $url ) )
                 return $url;
         }
