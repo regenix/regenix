@@ -295,7 +295,7 @@ abstract class Controller extends StrictObject
      * @param bool $permanent
      */
     public function refreshUrl(array $args = array(), $permanent = false){
-        $this->redirectUrl($this->request->getur, $args, $permanent);
+        $this->redirectUrl($this->request->getUri(), $args, $permanent);
     }
 
     /**
