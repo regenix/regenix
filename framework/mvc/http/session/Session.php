@@ -64,6 +64,30 @@ class Session extends StrictObject
     }
 
     /**
+     * @param string $prefix
+     * @return array
+     */
+    public function getList($prefix){
+        $result = array();
+        foreach($this->all() as $key => $value) {
+            if (strpos($key, $prefix) === 0)
+                $result[$key] = $value;
+        }
+        return $result;
+    }
+
+    /**
+     * @param array $list
+     * @param string $prefix
+     */
+    public function putList(array $list, $prefix = '') {
+        $this->check();
+        foreach($list as $key => $value) {
+            $this->put($prefix . $key, $value);
+        }
+    }
+
+    /**
      * @param $name string
      * @param $value string|int|float|null
      */

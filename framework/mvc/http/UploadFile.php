@@ -69,6 +69,14 @@ class UploadFile extends File implements BindStaticValue {
     }
 
     /**
+     * @return bool
+     */
+    public function isImage() {
+        $ext = $this->getMimeExtension();
+        return $ext == 'jpeg' || $ext == 'jpg' || $ext == 'png' || $ext == 'gif';
+    }
+
+    /**
      * Get user upload file name
      * @param null $suffix
      * @return mixed
