@@ -52,9 +52,18 @@ class RequestBody extends StrictObject
             $meta = array($meta);
 
         $result = array();
-        foreach($meta as $el){
-            $result[] = new UploadFile($prefix, $el);
+        $metas = array();
+        foreach($meta as $key => $el){
+            foreach($el as $i => $v) {
+                $metas[$i][$key] = $v;
+            }
         }
+
+        foreach($metas as $el) {
+            if ($el['name'])
+                $result[] = new UploadFile($prefix, $el);
+        }
+
         return $result;
     }
 
