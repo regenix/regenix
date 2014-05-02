@@ -260,7 +260,7 @@ class Router extends StrictObject
                             $value = $this->binder->getValue(null, $class->getName(), $name);
                             $args[$name] = $value;
                         } else
-                            $args[$name] = null;
+                            $args[$name] = $param->getDefaultValue();
                     }
                 }
             }
