@@ -59,8 +59,8 @@ abstract class ResponseProvider {
         if ( !$type ){
             $reflect = new \ReflectionClass($providerClass);
             $type = $reflect->getConstant('CLASS_TYPE');
-            if ( $type[0] !== '\\' )
-                $type = '\\' . $type;
+            /*if ( $type[0] !== '\\' )
+                $type = '\\' . $type;*/
         }
 
         self::$providers[ $type ] = $providerClass;
