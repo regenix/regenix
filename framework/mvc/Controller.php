@@ -251,9 +251,10 @@ abstract class Controller extends StrictObject
     /**
      * @param $url
      * @param bool $permanent
+     * @param bool $absolute
      */
-    public function redirectUrl($url, $permanent = false){
-        if (String::startsWith($url, "/")){
+    public function redirectUrl($url, $permanent = false, $absolute = false){
+        if (String::startsWith($url, "/") && !$absolute){
             $app = Regenix::app();
             $url = $app->getUriPath($url);
         }
