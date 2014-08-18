@@ -99,8 +99,11 @@ final class DI {
             if ($constructor){
                 foreach($constructor->getParameters() as $parameter){
                     $cls = $parameter->getClass();
-                    if ($cls){
-                        $args[] = self::getInstance($cls->getName());
+                    if ($cls) {
+                        if (strtolower($cls->getName()) === strtolower($class))
+                            $args[] = null;
+                        else
+                            $args[] = self::getInstance($cls->getName());
                     } else {
                         $args[] = null;
                     }
@@ -231,6 +234,15 @@ final class DI {
             self::$singletons[$interface] = $object;
         } else
             self::$singletons[get_class($object)] = $object;
+    }
+
+    /**
+     * @param string $className
+     * @return bool
+     */
+    public static function bindExists($className) {
+        $className = str_replace('.', '\\', $className);
+        return !!self::$singletons[$className];
     }
 
     /**

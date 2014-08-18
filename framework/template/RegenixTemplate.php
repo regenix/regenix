@@ -86,7 +86,7 @@ class RegenixTemplate {
         if ($autoRegister){
             $meta = ClassScanner::find(RegenixTemplateTag::regenixTemplateTag_type);
             foreach($meta->getAllChildren() as $class){
-                if (!$class->isAbstract()){
+                if (!$class->isAbstract()) {
                     $instance = DI::getInstance($class->getName());
                     $this->registerTag($instance);
                 }

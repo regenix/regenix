@@ -72,6 +72,7 @@ class Application {
     /**
      * @param File $appPath
      * @param bool $inWeb
+     * @throws \regenix\lang\CoreException
      * @internal param string $appName root directory name of src
      */
     public function __construct(File $appPath, $inWeb = true){
