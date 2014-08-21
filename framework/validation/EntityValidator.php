@@ -52,9 +52,8 @@ abstract class EntityValidator extends Validator {
         $value = null;
         while(list($i, $attribute) = each($attrs)){
             if (is_object($obj)){
-                if (property_exists($obj, $attribute))
-                    $value = $obj = $obj->{$attribute};
-                else
+                $value = $obj->{$attribute};
+                if (!isset($obj->{$attribute}))
                     throw new ValidationException('`%s` attribute does not exist in the %s class', $attribute, get_class($this->entity));
             } else if (is_array($obj)){
                 $value = $obj = $obj[$attribute];
