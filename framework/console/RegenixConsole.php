@@ -31,7 +31,9 @@ class RegenixConsole extends ConsoleApplication {
         $baseCommand = ClassScanner::find(RegenixCommand::type);
         $commands = $baseCommand->getAllChildren();
         foreach($commands as $command){
-            $this->add($command->newInstance());
+            if (class_exists($command->getName())) {
+                $this->add($command->newInstance());
+            }
         }
     }
 

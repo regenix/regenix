@@ -137,8 +137,6 @@ class NewCommand extends RegenixCommand {
             $console->registerCurrentApp();
             $this->writeln();
 
-            $console->executeAndDisplay('propel');
-
             $process = new Process('regenix deps update');
             $process->run(function($type, $out){
                 $this->write($out);

@@ -424,7 +424,7 @@ final class ClassMetaInfo {
             if ($file = $this->getFilename()){
                 if ($file[0] !== '/' && $file[1] !== ':') {
                     // once because double including can be with two classes in initialize section
-                    require_once ROOT . $file;
+                    include_once ROOT . $file;
                 } else
                     require $file;
 
