@@ -79,7 +79,7 @@ class DisableAnalyzer extends Analyzer {
                 throw new DisableAnalyzeException(
                     $this->file,
                     $node->getLine(),
-                    'Forbidden usage of global variables, see `disable.features` in configuration'
+                    'Forbidden usage of global variables, see `disable.features` in `conf/analyzer.conf`'
                 );
         } else if ($node instanceof \PHPParser_Node_Stmt_Function){
             if ($this->disableFeatures['functions'] || $this->disableFeatures['function']){
@@ -87,7 +87,7 @@ class DisableAnalyzer extends Analyzer {
                     throw new DisableAnalyzeException(
                         $this->file,
                         $node->getLine(),
-                        'Forbidden usage of simple named functions, see `disable.features` in configuration'
+                        'Forbidden usage of simple named functions, see `disable.features` in `conf/analyzer.conf`'
                     );
                 }
             }
@@ -96,7 +96,7 @@ class DisableAnalyzer extends Analyzer {
                 throw new DisableAnalyzeException(
                     $this->file,
                     $node->getLine(),
-                    'Forbidden usage of GOTO statement, see `disable.features` in configuration'
+                    'Forbidden usage of GOTO statement, see `disable.features` in `conf/analyzer.conf`'
                 );
             }
         } else if ($node instanceof \PHPParser_Node_Expr_FuncCall){
@@ -111,7 +111,7 @@ class DisableAnalyzer extends Analyzer {
                     throw new DisableAnalyzeException(
                         $this->file,
                         $node->getLine(),
-                        'Forbidden usage of the "%s()" function, see `disable.functions` in configuration',
+                        'Forbidden usage of the "%s()" function, see `disable.functions` in `conf/analyzer.conf`',
                         $name
                     );
 
@@ -121,7 +121,7 @@ class DisableAnalyzer extends Analyzer {
                             throw new DisableAnalyzeException(
                                 $this->file,
                                 $node->getLine(),
-                                'Forbidden usage of the "%s()" function, see "%s" pattern in `disable.functions` in configuration',
+                                'Forbidden usage of the "%s()" function, see "%s" pattern in `disable.functions` in `conf/analyzer.conf`',
                                 $name, $one
                             );
                         }

@@ -2,14 +2,11 @@ Imagine/docs
 Imagine/tests
 Jamm/Memory/tests
 kcaptcha/fonts
-Phing
 PHPMailer/docs
 PHPMailer/examples
 PHPMailer/language
 PHPMailer/test
 PHPMailer/test_script
-Propel/generator
-Propel/test
 Symfony/Component/Config/Tests
 Symfony/Component/Console/Tests
 Symfony/Component/DependencyInjection/Tests

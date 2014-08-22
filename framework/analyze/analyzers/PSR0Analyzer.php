@@ -48,8 +48,10 @@ class PSR0Analyzer extends Analyzer {
 
         foreach($this->exclude as $one){
             $one = str_replace('.', '\\', $one);
-            if (String::startsWith($name, $one))
+            if (String::startsWith($name, $one)) {
+                $this->enable = false;
                 return;
+            }
         }
 
         $base = $this->manager->getDirectory()->getPath();
@@ -81,6 +83,7 @@ class PSR0Analyzer extends Analyzer {
 
         if ($node instanceof \PHPParser_Node_Stmt_Class){
             $name = $node->name;
+
             $this->i++;
 
             if ($this->i === 1){

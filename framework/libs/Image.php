@@ -8,7 +8,6 @@ use Imagine\Image\ImageInterface;
 use Imagine\Image\Point;
 use regenix\lang\File;
 
-
 class Image {
     /** @var ImageInterface */
     protected $img;
@@ -95,6 +94,16 @@ class Image {
      */
     public function strip() {
         $this->img->strip();
+        return $this;
+    }
+
+    /**
+     * @param $angle
+     * @param null $color
+     * @return $this
+     */
+    public function rotate($angle, $color = null) {
+        $this->img->rotate($angle, new Color($color));
         return $this;
     }
 

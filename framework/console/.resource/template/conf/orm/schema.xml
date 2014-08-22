@@ -1,9 +1,0 @@
-<database name="{%APP_NAME%}" defaultIdMethod="native" namespace="models">
-    <table name="article" phpName="Article">
-        <column name="id" type="INTEGER" required="true" primaryKey="true" autoIncrement="true"/>
-        <column name="date_created" type="TIMESTAMP" phpName="dateCreated" defaultExpr="NOW()" required="true" />
-        <column name="date_updated" type="TIMESTAMP" phpName="dateUpdated" />
-        <column name="title" type="VARCHAR" size="255" required="true" />
-        <column name="content" type="LONGVARCHAR" required="true" />
-    </table>
-</database>

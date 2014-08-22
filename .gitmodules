@@ -19,9 +19,6 @@
 [submodule "modules/activerecord~0.5"]
 	path = modules/activerecord~0.5
 	url = git://github.com/dim-s/regenix-activerecord.git
-[submodule "framework/vendor/Propel"]
-	path = framework/vendor/Propel
-	url = git://github.com/propelorm/Propel.git
 [submodule "framework/vendor/Symfony/Component/Process"]
 	path = framework/vendor/Symfony/Component/Process
 	url = https://github.com/symfony/Process.git

@@ -7,7 +7,7 @@
 ### Requirements
 
 1. Web Server (nginx, apache or other). For apache, mod_rewrite must be installed.
-2. PHP 5.3.2+ (also supports 5.4+, 5.5+ versions).
+2. PHP 5.4+ (also supports 5.5+, 5.6+ versions).
 3. GD extension (for some features)
 4. Memory Cache: APC or XCache (for performance)
 
@@ -31,7 +31,7 @@ Our source repository is located on Github: <https://github.com/dim-s/regenix>. 
 need to install git and run following commands in the git-bash: 
 
     cd <root_of_server>
-    git clone git@github.com:dim-s/regenix.git ./
+    git clone https://github.com/dim-s/regenix.git .
     git submodule init
     git submodule update
     

@@ -26,7 +26,8 @@ class StaticAnalyzer extends Analyzer {
         } elseif ($node instanceof \PHPParser_Node_Stmt_Class){
             $this->checkDefinedClass($node);
         } elseif ($node instanceof \PHPParser_Node_Expr_StaticCall){
-            $this->checkStaticCall($node);
+            // TODO: remove or optimize
+            //$this->checkStaticCall($node);
         }
     }
 
