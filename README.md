@@ -14,7 +14,7 @@ Features
 * Multiple applications within one core.
 * Easy and powerful routing (sub-routing, inserts, etc).
 * Easy debugging, displaying errors in the detailed form.
-* [Propel ORM](http://propelorm.org/) integration for models
+* [RedBean 4](http://redbeanphp.com/) integration for models
 * Dependency Manager for assets and modules (git, local repos).
 * REST and other special types of controllers.
 * Dependency Injection Container.
@@ -32,10 +32,10 @@ Features
 Requires
 --------
 
-* PHP 5.3 or greater
+* PHP 5.4 or greater
 * Apache, Nginx or another server
 * Mod_rewrite enabled (for apache)
-
+* GD extension for some features
 
 Getting started
 ---------------
@@ -60,7 +60,6 @@ The next step, you need to know the typical structure of an application.
  * `conf/deps.json` - the configuration of asset and module dependencies
  * `conf/route` - the url routing config
  * `conf/routes/` - directory of sub-routes
- * `conf/orm/` - configurations for Propel ORM (schema.xml, built.properties, etc.)
 * `src/` - php sources of your application
  * `src/controllers/`
  * `src/models/`
