@@ -6,7 +6,6 @@ use dao\DBPagination;
 use regenix\lang\CoreException;
 use regenix\lang\IClassInitialization;
 use regenix\mvc\Model;
-use regenix\mvc\Pagination;
 
 abstract class GenericDao implements IClassInitialization {
 
@@ -57,7 +56,8 @@ abstract class GenericDao implements IClassInitialization {
      * @return Model
      */
     public function get($id) {
-        return \R::load($this->getType(), $id)->box();
+        $r = \R::load($this->getType(), $id);
+        return $r ? $r->box() : null;
     }
 
     /**
