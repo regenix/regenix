@@ -19,7 +19,7 @@ class Model extends \RedBean_SimpleModel implements IClassInitialization {
         }
     }
 
-    public function __get($prop) {
+    /*public function __get($prop) {
         $propTypes = $this->getPropertyTypes();
         if ($type = $propTypes[$prop]) {
             if (!(($value = parent::__get($prop)) instanceof Model))
@@ -28,7 +28,7 @@ class Model extends \RedBean_SimpleModel implements IClassInitialization {
         } else {
             return parent::__get($prop);
         }
-    }
+    }*/
 
     /**
      * @return array
@@ -48,7 +48,7 @@ class Model extends \RedBean_SimpleModel implements IClassInitialization {
      * @return bool
      */
     public function isNew() {
-        return !!$this->getId();
+        return !!$this->id;
     }
 
     /**

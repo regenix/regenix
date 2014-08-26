@@ -56,7 +56,7 @@ abstract class GenericDao implements IClassInitialization {
      * @return Model
      */
     public function get($id) {
-        $r = \R::load($this->getType(), $id);
+        $r = \R::findOne($this->getType(), 'id = ?', [$id]);
         return $r ? $r->box() : null;
     }
 
