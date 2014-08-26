@@ -11,7 +11,7 @@ use regenix\lang\StrictObject;
 use regenix\lang\String;
 
 class RequestBody extends StrictObject
-    implements Singleton, Injectable {
+    implements Singleton, Injectable, \ArrayAccess {
 
     const type = __CLASS__;
 
@@ -163,5 +163,21 @@ class RequestBody extends StrictObject
      */
     public static function getInstance() {
         return DI::getInstance(__CLASS__);
+    }
+
+    public function offsetExists($offset) {
+        return isset($this->asArray()[$offset]);
+    }
+
+    public function offsetGet($offset) {
+        return $this->asArray()[$offset];
+    }
+
+    public function offsetSet($offset, $value) {
+        throw new CoreException("Unable to change body data");
+    }
+
+    public function offsetUnset($offset) {
+        throw new CoreException("Unable to change body data");
     }
 }
