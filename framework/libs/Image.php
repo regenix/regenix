@@ -113,6 +113,9 @@ class Image {
      * @return $this
      */
     public function save($newPath, array $options = array()) {
+        if ($newPath instanceof File)
+            $newPath = $newPath->getPath();
+
         $this->img->save($newPath, $options);
         return $this;
     }

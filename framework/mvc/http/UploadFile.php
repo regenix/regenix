@@ -39,6 +39,9 @@ class UploadFile extends File implements BindStaticValue {
      * @return File
      */
     public static function buildFromUrl($uploadUrl){
+        if (($p = strpos($uploadUrl, '?')) !== false)
+            $uploadUrl = substr($uploadUrl, 0, $p);
+
         $file = new File(ROOT . $uploadUrl);
         return $file->isFile() ? $file : null;
     }
