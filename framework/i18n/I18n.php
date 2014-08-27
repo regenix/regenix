@@ -5,6 +5,7 @@ use regenix\core\Application;
 use regenix\core\Regenix;
 use regenix\lang\DI;
 use regenix\lang\IClassInitialization;
+use regenix\mvc\http\Cookie;
 use regenix\mvc\http\Request;
 use regenix\mvc\http\RequestQuery;
 use regenix\mvc\http\session\Session;
@@ -39,6 +40,10 @@ class I18n implements IClassInitialization {
                 case 'session': {
                     $session = DI::getInstance(Session::type);
                     $session->put( self::$detectArg, self::$lang );
+                } break;
+                case 'cookie': {
+                    $cookie = Cookie::getInstance();
+                    $cookie->put( self::$detectArg, self::$lang, 1000 * 1000 * 1000 );
                 } break;
             }
         }
@@ -137,6 +142,10 @@ class I18n implements IClassInitialization {
             case 'session': {
                 $session = DI::getInstance(Session::type);
                 $lang = $session->get(self::$detectArg);
+            } break;
+            case 'cookie': {
+                $cookie = Cookie::getInstance();
+                $lang = $cookie->get(self::$detectArg, 'default');
             } break;
             default: {
                 $lang = $app->config->getString('i18n.lang', 'default');

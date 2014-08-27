@@ -2,6 +2,7 @@
 namespace regenix\mvc\http;
 
 use regenix\lang\ArrayTyped;
+use regenix\lang\CoreException;
 use regenix\lang\DI;
 use regenix\lang\Injectable;
 use regenix\lang\Singleton;
@@ -26,9 +27,11 @@ class Cookie extends StrictObject
      * @param string $name
      * @param string|int|float|boolean $value
      * @param null|int|string $expires
+     * @throws \regenix\lang\CoreException
      */
     public function put($name, $value, $expires = null){
-        setcookie($name, $value, $expires ? Time::parseDuration($expires) : $expires, '/');
+        if (!setcookie($name, $value, $expires ? Time::parseDuration($expires) : $expires, '/'))
+            throw new CoreException("Cannot set cookie '$name = $value'");
         $this->data = new ArrayTyped($_COOKIE);
     }
 
