@@ -151,6 +151,10 @@ class I18n implements IClassInitialization {
                 $lang = $app->config->getString('i18n.lang', 'default');
             }
         }
+
+        if (!$lang)
+            $lang = 'default';
+        
         return $lang;
     }
 

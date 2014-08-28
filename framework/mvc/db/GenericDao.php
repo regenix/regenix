@@ -108,7 +108,7 @@ abstract class GenericDao implements IClassInitialization {
 
     /**
      * @param DBPagination $pagination
-     * @return GenericDao
+     * @return $this
      */
     public function withPagination(DBPagination $pagination) {
         $r = clone $this;
@@ -119,7 +119,7 @@ abstract class GenericDao implements IClassInitialization {
     /**
      * @param DBPagination $pagination
      * @param DBOrder $order
-     * @return GenericDao
+     * @return $this
      */
     public function with(DBPagination $pagination = null, DBOrder $order = null) {
         $r = clone $this;
@@ -130,7 +130,7 @@ abstract class GenericDao implements IClassInitialization {
 
     /**
      * @param int $limit
-     * @return GenericDao
+     * @return $this
      */
     public function withLimit($limit) {
         return $this->withPagination(DBPagination::of(1, $limit));

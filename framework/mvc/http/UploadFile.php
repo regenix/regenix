@@ -18,10 +18,16 @@ class UploadFile extends File implements BindStaticValue {
     /**
      * @param string $uploadName
      * @param array $meta
+     * @throws \regenix\lang\CoreException
      */
     public function __construct($uploadName, $meta){
         $this->uploadName = $uploadName;
         $this->meta       = $meta;
+        if ($meta['error']) {
+            throw new CoreException(
+                "Cannot upload file '$uploadName', see upload_max_filesize and post_max_size options in your php.ini"
+            );
+        }
 
         parent::__construct($meta['tmp_name']);
     }
