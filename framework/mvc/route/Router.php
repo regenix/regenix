@@ -125,7 +125,7 @@ class Router extends StrictObject
             $action = str_replace('\\', '.', $action);
 
             if ($action[0] != '.')
-                $action = '.controllers.' . $action;
+                $action = APP_NAMESPACE_DOT . '.controllers.' . $action;
 
             $originalAction = $action;
             $action = strtolower($action);

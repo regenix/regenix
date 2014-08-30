@@ -339,6 +339,10 @@ class Application {
         define('APP_MODE_STRICT', $this->config->getBoolean('app.mode.strict', IS_DEV));
 
         define('APP_MODE', $this->mode);
+        define('APP_NAMESPACE', str_replace('.', '\\', $this->config->getString('app.namespace', '')));
+        define('APP_NAMESPACE_DOT', str_replace('\\', '.', APP_NAMESPACE));
+        define('APP_NAMESPACE_DOT_F', APP_NAMESPACE_DOT ? '.' . APP_NAMESPACE_DOT : '');
+
         $this->stat = !REGENIX_STAT_OFF;
         $this->config->setEnv( $this->mode );
 

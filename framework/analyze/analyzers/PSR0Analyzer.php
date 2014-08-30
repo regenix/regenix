@@ -46,6 +46,11 @@ class PSR0Analyzer extends Analyzer {
         if ($name)
             $name = $name->toString();
 
+        $name = str_replace(APP_NAMESPACE, '', $name);
+
+        if ($name[0] == '\\')
+            $name = substr($name, 1);
+
         foreach($this->exclude as $one){
             $one = str_replace('.', '\\', $one);
             if (String::startsWith($name, $one)) {

@@ -315,11 +315,16 @@ abstract class Controller extends StrictObject
     public function template($template = false){
         if (!$template){
             $class = $this->actionMethodReflection->getDeclaringClass()->getName();
-            $controller = str_replace('\\', '/', $class);
 
-            if ( String::startsWith($controller, 'controllers/') )
+            $controller = $class;
+            
+            if (APP_NAMESPACE) {
+                if ( String::startsWith($controller, APP_NAMESPACE . '\\controllers\\') )
+                    $controller = substr($controller, strlen(APP_NAMESPACE) + 1 + 12);
+            } elseif ( String::startsWith($controller, 'controllers\\') )
                 $controller = substr($controller, 12);
 
+            $controller = str_replace('\\', '/', $controller);
             $template   = $controller . '/' . $this->actionMethod;
         }
         return str_replace('\\', '/', $template);

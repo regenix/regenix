@@ -23,6 +23,9 @@ For example:
     
     # ...
     app.rules = /sub/
+
+    # ...
+    app.namespace = company\name
     
     # etc.
     dev.app.rules = /
@@ -95,6 +98,26 @@ your site can be opened with multiple addresses.
 
 > **NOTICE**: Your site always uses default server port, but you can redefine it.
 > To do this, specify your port in the address after the domain: `site.com:port/`.
+
+---
+
+### Application namespace
+
+If you want that your all the names of classes start with a namespace, you can get it via this
+option:
+
+    app.namespace = <your_namespace_of_app>
+
+For example:
+
+    app.namespace = ru\regenix
+
+and all classes in the `src` directory of your application must start with the `ru\regenix` namespace:
+
+    <?php
+    namespace ru\regenix\controllers;
+
+    class MainCtrl ...
 
 ---
 

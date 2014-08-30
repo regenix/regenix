@@ -121,8 +121,8 @@ class RouterConfiguration extends Configuration {
 
                     $tmpRoutes = $tmpRouter->getRouters();
                     foreach($tmpRoutes as &$rule){
-                        if (String::startsWith($rule['action'], '.controllers.')){
-                            $rule['action'] = $info['prefix'] . substr($rule['action'], 13);
+                        if (String::startsWith($rule['action'], APP_NAMESPACE_DOT_F . '.controllers.')){
+                            $rule['action'] = $info['prefix'] . substr($rule['action'], 13 + strlen(APP_NAMESPACE));
                         }
                         if (substr($path, -1) == '/')
                             $path = substr($path, 0, -1);
@@ -151,7 +151,7 @@ class RouterConfiguration extends Configuration {
 
                     if ($patternRoutes){
                         if ($base[0] != '.')
-                            $base = '.controllers.' . $base;
+                            $base = APP_NAMESPACE_DOT_F . '.controllers.' . $base;
 
                         $_keys = array_map(function($value){
                             return '[' . $value . ']';
@@ -162,7 +162,7 @@ class RouterConfiguration extends Configuration {
                         foreach($patternRoutes as $el){
                             $relative = $el['path'][0] === '/';
 
-                            if ($base !== '*' && $base !== '.controllers.*')
+                            if ($base !== '*' && $base !== APP_NAMESPACE_DOT_F . '.controllers.*')
                                 $el['action'] = $base . $el['action'];
                             else {
                                 if ($relative)
@@ -187,7 +187,7 @@ class RouterConfiguration extends Configuration {
                 
                 if (is_numeric($prefix)){
                     if ($action[0] != '.')
-                        $action = '.controllers.' . $action;
+                        $action = APP_NAMESPACE_DOT_F . '.controllers.' . $action;
                 } else {
                     $action = $prefix . $action;
                 }

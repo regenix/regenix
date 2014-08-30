@@ -35,10 +35,11 @@ class TemplateLoader implements IClassInitialization {
     public static $ASSET_PATH;
 
     /** @var string */
-    public static $CONTROLLER_NAMESPACE = '.controllers.';
+    public static $CONTROLLER_NAMESPACE;
 
     public static function __lazyLoad(){
         if ( !self::$lazyLoaded ){
+            self::$CONTROLLER_NAMESPACE = APP_NAMESPACE_DOT_F . '.controllers.';
 
             self::registerPath(ROOT . 'modules/', false);
             self::registerPath(Regenix::getFrameworkPath() . 'views/', false);
