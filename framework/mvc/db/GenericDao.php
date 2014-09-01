@@ -2,7 +2,6 @@
 namespace regenix\mvc\db;
 
 use RedBeanPHP\OODBBean;
-use dao\DBPagination;
 use regenix\lang\CoreException;
 use regenix\lang\IClassInitialization;
 use regenix\mvc\Model;
@@ -29,14 +28,21 @@ abstract class GenericDao implements IClassInitialization {
     }
 
     /**
-     * @return \dao\DBOrder
+     * @return DBCriteria
+     */
+    public function query() {
+        return new DBCriteria($this);
+    }
+
+    /**
+     * @return DBOrder
      */
     public function getOrder() {
         return $this->order;
     }
 
     /**
-     * @return \dao\DBPagination
+     * @return DBPagination
      */
     public function getPagination() {
         return $this->pagination;
@@ -81,6 +87,7 @@ abstract class GenericDao implements IClassInitialization {
     }
 
     /**
+     * @param \regenix\mvc\Model $entity
      * @param Model $entity
      */
     public function delete(Model $entity) {
@@ -99,6 +106,7 @@ abstract class GenericDao implements IClassInitialization {
     /**
      * @param DBOrder $order
      * @return GenericDao
+     * @return \regenix\mvc\db\GenericDao
      */
     public function withOrder(DBOrder $order) {
         $r = clone $this;

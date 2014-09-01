@@ -117,7 +117,7 @@ class I18n implements IClassInitialization {
 
     /**
      * @param \regenix\mvc\http\Request $request
-     * @return bool|\regenix\mvc\scalar|null|string
+     * @return bool|scalar|null|string
      */
     public static function detectLang(Request $request){
         $app = Regenix::app();

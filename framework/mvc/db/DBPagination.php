@@ -1,5 +1,5 @@
 <?php
-namespace dao;
+namespace regenix\mvc\db;
 
 use regenix\lang\CoreException;
 

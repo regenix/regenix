@@ -25,10 +25,11 @@ class DBOrder {
     }
 
     /**
+     * @param bool $full
      * @return string
      */
-    public function toSql() {
-        return " ORDER BY $this->field $this->type ";
+    public function toSql($full = true) {
+        return ($full ? ' ORDER BY' : '') . " $this->field $this->type ";
     }
 
     public static function asc($field) {
