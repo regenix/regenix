@@ -33,6 +33,8 @@ class DBPagination {
     public function setElementCount($elementCount) {
         $this->elementCount = $elementCount;
         $this->pageCount = (int)ceil($elementCount / $this->limit);
+        if ($this->pageCount == 0)
+            $this->pageCount = 1;
     }
 
     public function getPageCount() {

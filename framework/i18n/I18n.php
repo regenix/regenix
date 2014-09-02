@@ -154,7 +154,7 @@ class I18n implements IClassInitialization {
 
         if (!$lang)
             $lang = 'default';
-        
+
         return $lang;
     }
 
