@@ -56,7 +56,7 @@ class Configuration extends StrictObject {
         if ( $this->files ){
             $this->loadData();
         } else {
-            if ($this->file == null || !$this->file->canRead() ){
+            if ($this->file == null/* || !$this->file->canRead() #fix small bug, check it! */){
                 throw new FileIOException( $this->file );
             } else
                 $this->loadData();
