@@ -335,7 +335,7 @@ final class Regenix {
             $files = SystemCache::getWithCheckFile($key, $file->getPath());
         }
 
-        if (!is_array($files)){
+        if (!$files){
             $files = $file->find();
             SystemCache::setWithCheckFile($key, $files, $file->getPath());
         }
@@ -349,7 +349,7 @@ final class Regenix {
         foreach($paths as $path){
             /** @var $path File */
             $tmp = $path->getName();
-            if (!$path->getExtension() || $tmp[0] === '.'){
+            if ($path->isDirectory()){
                 $name = $origin = $path->getName();
                 $i = 1;
                 while(isset(self::$apps[$name])){
