@@ -145,7 +145,7 @@ class I18n implements IClassInitialization {
             } break;
             case 'cookie': {
                 $cookie = Cookie::getInstance();
-                $lang = $cookie->get(self::$detectArg, 'default');
+                $lang = $cookie->get(self::$detectArg, $app->config->getString('i18n.lang', 'default'));
             } break;
             default: {
                 $lang = $app->config->getString('i18n.lang', 'default');
@@ -153,7 +153,7 @@ class I18n implements IClassInitialization {
         }
 
         if (!$lang)
-            $lang = 'default';
+            $lang = $app->config->getString('i18n.lang', 'default');
 
         return $lang;
     }
