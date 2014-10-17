@@ -133,7 +133,7 @@ final class Regenix {
         defined('REGENIX_STAT_OFF') or define('REGENIX_STAT_OFF', false);
         defined('REGENIX_DEBUG') or define('REGENIX_DEBUG', false);
 
-        self::$rootTempPath = sys_get_temp_dir() . '/regenix_v' . self::getVersion() . '/';
+        self::$rootTempPath = $rootDir . '/tmp/regenix_v' . self::getVersion() . '/';
 
         require REGENIX_ROOT . 'lang/PHP.php';
         CoreException::showOnlyPublic(!REGENIX_DEBUG);

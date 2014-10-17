@@ -42,7 +42,7 @@ class CoreException extends \Exception {
     const type = __CLASS__;
 
     public function __construct($message){
-        $args = array();
+        $args = [];
         if (func_num_args() > 1)
             $args = array_slice(func_get_args(), 1);
 
@@ -98,8 +98,8 @@ class CoreException extends \Exception {
         return null; //current($e->getTrace());
     }
 
-    private static $files = array();
-    private static $offsets = array();
+    private static $files = [];
+    private static $offsets = [];
 
     private static $externalFile = null;
     private static $externalLine = 0;
@@ -312,7 +312,7 @@ final class ClassMetaInfo {
      * @param array $args
      * @return object
      */
-    public function newInstance($args = array()){
+    public function newInstance($args = []){
         if ($args){
             $reflect = new \ReflectionClass($this->name);
             return $reflect->newInstanceArgs($args);
@@ -340,7 +340,7 @@ final class ClassMetaInfo {
             unset($el);
             return $items;
         } else
-            return array();
+            return [];
     }
 
     /**
@@ -370,7 +370,7 @@ final class ClassMetaInfo {
             if ($namespace && !String::endsWith($namespace, '\\'))
                 $namespace .= '\\';
 
-            $result = array();
+            $result = [];
             foreach($items as $className => $el){
                 if (!$namespace || String::startsWith($className, $namespace)){
                     $result[$className] = ClassScanner::find($className);
@@ -379,7 +379,7 @@ final class ClassMetaInfo {
 
             return $result;
         } else
-            return array();
+            return [];
     }
 
     /**
@@ -454,28 +454,28 @@ class ClassScanner {
     protected static $debug = false;
 
     /** @var array */
-    protected static $debugUseClasses = array();
+    protected static $debugUseClasses = [];
 
     /** @var string */
     protected static $includePath;
 
     /** @var array */
-    protected static $paths = array();
+    protected static $paths = [];
 
     /** @var array */
-    protected static $ignorePaths = array();
+    protected static $ignorePaths = [];
 
     /** @var array */
-    protected static $onlyMeta = array();
+    protected static $onlyMeta = [];
 
     /** @var array */
-    protected static $scanned = array();
+    protected static $scanned = [];
 
     /** @var array */
-    protected static $extensions = array('php');
+    protected static $extensions = ['php'];
 
     /** @var array */
-    public static $metaInfo = array();
+    public static $metaInfo = [];
 
     /**
      * @param string $className
@@ -494,11 +494,11 @@ class ClassScanner {
             return null;
     }
 
-    private static function compressMeta(&$metaInfo, $onlyMeta = array()){
+    private static function compressMeta(&$metaInfo, $onlyMeta = []){
         if (!$onlyMeta)
             return;
 
-        $newMetaInfo = array();
+        $newMetaInfo = [];
         foreach($metaInfo as $class => $meta){
             $compress = true;
             foreach($onlyMeta as $onlyClass => $el){
@@ -590,8 +590,8 @@ class ClassScanner {
      */
     public static function clear(){
         unset(self::$metaInfo);
-        self::$metaInfo = array();
-        self::$scanned  = array();
+        self::$metaInfo = [];
+        self::$scanned  = [];
     }
 
     /**
@@ -607,7 +607,7 @@ class ClassScanner {
      * @param bool $scan
      */
     public static function addClassPath($path, $scan = true){
-        $path = str_replace(array('\\', '//', '///', '////'), '/', $path);
+        $path = str_replace(['\\', '//', '///', '////'], '/', $path);
         if (substr($path, -1) !== '/')
             $path .= '/';
 
@@ -622,7 +622,7 @@ class ClassScanner {
      * @param $path
      */
     public static function addIgnorePath($path){
-        $path = str_replace(array('\\', '//', '///', '////'), '/', $path);
+        $path = str_replace(['\\', '//', '///', '////'], '/', $path);
         if (substr($path, -1) !== '/')
             $path .= '/';
 
@@ -672,7 +672,7 @@ class ClassScanner {
     }
 
     protected static function addClassMeta($className, $meta){
-        $result = array();
+        $result = [];
         $result[0] = str_replace(self::$includePath, '', $meta[0]);
 
         // type
@@ -696,7 +696,7 @@ class ClassScanner {
         // if exists parent...
         if ($extends || $implements){
             if (!$implements)
-                $implements = array();
+                $implements = [];
 
             if ($extends){
                 $implements[] = $extends;
@@ -704,7 +704,7 @@ class ClassScanner {
 
             foreach($implements as $extend){
                 if (!$metaInfo[$extend])
-                    $metaInfo[$extend] = array();
+                    $metaInfo[$extend] = [];
 
                 $metaInfo[$extend][255][$className] = 1;
             }
@@ -719,7 +719,7 @@ class ClassScanner {
      * @return array
      */
     protected static function scanPath($path){
-        $result = array();
+        $result = [];
         if (self::$ignorePaths[$path]){
             return $result;
         }
@@ -785,14 +785,14 @@ class ClassScanner {
     }
 
     public static function registerAutoLoader(){
-        spl_autoload_register(array(__CLASS__, 'autoLoadHandler'));
+        spl_autoload_register([__CLASS__, 'autoLoadHandler']);
     }
 
     public static function unregisterAutoLoader(){
-        spl_autoload_unregister(array(__CLASS__, 'autoLoadHandler'));
+        spl_autoload_unregister([__CLASS__, 'autoLoadHandler']);
     }
 
-    public static function init($rootPath, array $classPaths = array()){
+    public static function init($rootPath, array $classPaths = []){
         self::unregisterAutoLoader();
         self::registerAutoLoader();
 
@@ -870,7 +870,7 @@ class ClassFileScanner {
     }
 
     protected function parse(){
-        $this->meta   = array();
+        $this->meta   = [];
         $this->tokens = token_get_all($this->source);
         $this->cursor = 0;
         $size = sizeof($this->tokens);
@@ -923,16 +923,16 @@ class ClassFileScanner {
         }
     }
 
-    protected function addMeta($className, $parentClassName, $implements = array(), $type = T_CLASS){
+    protected function addMeta($className, $parentClassName, $implements = [], $type = T_CLASS){
         if ($className){
             $className = ($this->_namespace ? $this->_namespace . '\\' : '') . $className;
-            $result = array($this->file, $type);
+            $result = [$this->file, $type];
 
             if ($parentClassName)
                 $result[2] = $this->getRealClassName($parentClassName);
 
             if ($implements){
-                $result[3] = array_map(array($this, 'getRealClassName'), $implements);
+                $result[3] = array_map([$this, 'getRealClassName'], $implements);
             }
 
             $this->meta[$className] = $result;
@@ -1002,7 +1002,7 @@ class ClassFileScanner {
                 $className = $next[1];
 
                 $parentClassName = '';
-                $implements      = array();
+                $implements      = [];
                 if ($token[0] === T_CLASS){
                     $cursor = $this->cursor;
                     if($this->nextTokenToType(T_EXTENDS)){
@@ -1061,7 +1061,7 @@ final class String {
      * @param array $args
      * @return string
      */
-    public static function formatArgs($string, array $args = array()){
+    public static function formatArgs($string, array $args = []){
         return vsprintf($string, $args);
     }
 
@@ -1148,7 +1148,7 @@ class ArrayTyped implements \Iterator {
      * @param array $data
      */
     public function __construct(array $data = null){
-        $this->data = $data == null ? array() : $data;
+        $this->data = $data == null ? [] : $data;
     }
 
     /**
@@ -1324,8 +1324,8 @@ class File extends StrictObject {
      * @return mixed
      */
     public function getRelativePath(File $baseFile){
-        $base = str_replace(array('\\', '////', '///', '//'), '/', $baseFile->getPath());
-        $path = str_replace(array('\\', '////', '///', '//'), '/', $this->path);
+        $base = str_replace(['\\', '////', '///', '//'], '/', $baseFile->getPath());
+        $path = str_replace(['\\', '////', '///', '//'], '/', $this->path);
 
         if (String::startsWith($path, $base)){
             return substr($path, strlen($base));
@@ -1728,7 +1728,7 @@ class File extends StrictObject {
             $path .= '/';
 
         $files = scandir($path);
-        $result = array();
+        $result = [];
         foreach($files as $file){
             if ($file != '..' && $file != '.')
                 $result[] = $path . $file;
@@ -1749,7 +1749,7 @@ class File extends StrictObject {
             unset($file);
         }
         if ($recursive){
-            $addFiles = array();
+            $addFiles = [];
             /** @var $file File */
             foreach($files as $file){
                 if ($file->isDirectory()){
@@ -1831,7 +1831,7 @@ class SystemFileCache {
     }
 
     public static function setWithCheckFile($name, $value, $path, $expires = 3600){
-        $value = array(filemtime($path), $value);
+        $value = [filemtime($path), $value];
         self::set($name, $value, $expires);
     }
 
@@ -2017,8 +2017,12 @@ namespace {
         return $className;
     }
 
-    if(!function_exists('apc_store')){
+    if(!function_exists('apc_store')) {
         function apc_store($key, $var, $ttl = 0){
+			if (!XCACHE_ENABLED) {
+				return false;
+			}
+
             if (is_object($var))
                 $var = chr(1) . '$$$$' . serialize($var);
 
@@ -2026,6 +2030,10 @@ namespace {
         }
 
         function apc_fetch($key, &$success=true){
+			if (!XCACHE_ENABLED) {
+				return false;
+			}
+
             $success = xcache_isset($key);
             if ($success){
                 $value = (xcache_get($key));
@@ -2038,12 +2046,17 @@ namespace {
         }
 
         function apc_delete($key){
-            return xcache_unset($key);
+			if (XCACHE_ENABLED)
+            	return xcache_unset($key);
         }
 
         function apc_exists($keys){
+			if (!XCACHE_ENABLED) {
+				return false;
+			}
+
             if(is_array($keys)){
-                $exists = array();
+                $exists = [];
                 foreach($keys as $key){
                     if(xcache_isset($key))
                         $exists[]=$key;
@@ -2055,8 +2068,9 @@ namespace {
         }
 
         function apc_clear_cache($group = ''){
-            if (!IS_CLI)
+            if (!IS_CLI && XCACHE_ENABLED) {
                 xcache_clear_cache(XC_TYPE_VAR);
+			}
         }
     }
 }
