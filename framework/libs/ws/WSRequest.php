@@ -263,7 +263,7 @@ class WSRequest {
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, strtoupper($method));
         if (String::startsWith($this->url, 'https://')){
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
         }
 
         $return = curl_exec($ch);

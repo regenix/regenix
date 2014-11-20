@@ -163,9 +163,15 @@ abstract class GenericDao implements IClassInitialization {
         }
 
         if ($this->pagination) {
-            $sql .= ' LIMIT ?, ?';
-            $bindings[] = ($this->pagination->getPage() - 1) * $this->pagination->getLimit();
-            $bindings[] = $this->pagination->getLimit();
+			if (strpos($sql, '?') !== false) {
+				$sql .= ' LIMIT ?, ?';
+				$bindings[] = ($this->pagination->getPage() - 1) * $this->pagination->getLimit();
+				$bindings[] = $this->pagination->getLimit();
+			} else {
+				$sql .= ' LIMIT :_pagination_from, :_pagination_to';
+				$bindings[':_pagination_from'] = ($this->pagination->getPage() - 1) * $this->pagination->getLimit();
+				$bindings[':_pagination_to'] = $this->pagination->getLimit();
+			}
         }
 
         return $this->_find($sql, $bindings);
